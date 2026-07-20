@@ -24,11 +24,11 @@
 | 项目状态 | Active |
 | 当前 Phase | Phase 0 — Idea Capture |
 | 当前 AI 角色 | Idea Facilitator（创意引导者） |
-| 当前主要目标 | 捕获并确认 Project Incubator 的原始想法、触发原因和真实使用场景 |
+| 当前主要目标 | 完成 Phase 0 阶段门确认，并由 Maker 决定是否进入 Phase 1 |
 | 当前阶段交付物 | `DOCS/00-idea/IDEA.md` |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 是否确认 `IDEA.md` 已准确表达一句话想法、产生原因和至少一个真实场景 |
+| 下一项决定 | Maker 是进入 Phase 1 — Intent Discovery，还是继续停留在 Phase 0 补充想法 |
 | 最近更新时间 | 2026-07-20 |
 
 ## 2. 当前阶段说明
@@ -77,15 +77,15 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - 已将分支规则与任务闭环规则合并为基线治理提交 `3a16a6d`，并推送至 `origin/main`；
 - 已确认项目与任务均采用自适应规划深度，简单任务不强制创建设计文档或实施计划；
 - 已创建跨 Phase 复用的 Maker 任务启动 Prompt Draft，进入 Phase 0 真实任务验证，尚未提升为稳定模板。
+- Maker 已确认 `DOCS/00-idea/IDEA.md` 中的一句话想法准确；
+- Maker 已确认想法产生原因来自当前正在进行的真实经历；
+- Maker 已确认 Project Incubator 自身是首个具体、真实的使用场景。
 
 ## 5. 当前未确认事项
 
-- 一句话想法是否准确表达 Maker 的真实意图；
-- 最初触发 Project Incubator 的具体个人经历或高频场景；
 - 第一目标用户、边界与非目标；
 - Project Incubator 自身的成功标准；
 - Personal Tool 的具体形态；
-- 首个用于验证孵化流程的真实场景；
 - 状态模型的完整字段、状态枚举与版本规则；
 - 未来具体项目工作区的位置与创建方式；
 - Framework 如何版本化、验证和批准变更；
@@ -93,27 +93,25 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - 空 `CHANGELOG.md` 应在什么阶段启用；
 - 空 `.agents/` 目录应保留、定义用途还是移除。
 
-前三项与 Phase 0 退出及 Phase 1 启动直接相关；其余事项应在适当的后续 Phase 中逐步确认，不在 Phase 0 一次性解决。
+第一目标用户、边界与非目标应在 Phase 1 继续澄清；其余事项应在适当的后续 Phase 中逐步确认，不在 Phase 0 一次性解决。
 
 ## 6. 当前阻塞项
 
-当前没有执行层面的技术阻塞。
-
-阶段推进的唯一阻塞是 Maker 尚未确认 `DOCS/00-idea/IDEA.md` 是否准确反映原始想法、触发原因和真实使用场景。
+当前没有执行层面或阶段门层面的阻塞。Phase 0 Exit Criteria 已满足，下一步等待 Maker 决定是否进入 Phase 1。
 
 ## 7. Phase 0 退出检查
 
 | Exit Criteria | 当前状态 | 证据 |
 | --- | --- | --- |
-| 能用一句话描述想法 | 待 Maker 确认 | `DOCS/00-idea/IDEA.md` 第 2 节 |
-| 能说明为什么产生这个想法 | 待 Maker 确认 | `DOCS/00-idea/IDEA.md` 第 3、4 节 |
-| 能识别至少一个真实使用场景 | 待 Maker 确认 | `DOCS/00-idea/IDEA.md` 第 3 节 |
+| 能用一句话描述想法 | 已由 Maker 确认 | `DOCS/00-idea/IDEA.md` 第 2、9 节 |
+| 能说明为什么产生这个想法 | 已由 Maker 确认 | `DOCS/00-idea/IDEA.md` 第 3、4、9 节 |
+| 能识别至少一个真实使用场景 | 已由 Maker 确认 | `DOCS/00-idea/IDEA.md` 第 3、9 节；Project Incubator 自身为首个真实项目 |
 
 ## 8. 下一步
 
-由 Maker 审阅 `DOCS/00-idea/IDEA.md`，指出不准确、缺失或需要删除的内容。
+由 Maker 决定进入 Phase 1 — Intent Discovery，或继续停留在 Phase 0 补充想法。
 
-如果三项 Exit Criteria 均获得 Maker 明确确认，则更新本文件并由 Maker 决定进入 Phase 1 — Intent Discovery。确认前继续保持 Phase 0。
+在 Maker 明确决定切换前，项目继续保持 Phase 0，AI 继续使用 Idea Facilitator 身份。
 
 ## 9. 当前权威文档集合
 
@@ -137,7 +135,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读或 Phase 0 必读的文档。
 
-恢复后的第一项工作是继续以 Idea Facilitator 身份协助 Maker 审阅 `DOCS/00-idea/IDEA.md`，不得自动进入 Phase 1。
+恢复后的第一项工作是继续以 Idea Facilitator 身份询问 Maker 的阶段决定：进入 Phase 1，或继续停留在 Phase 0。不得自动进入 Phase 1。
 
 新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认 `p0/docs-idea-review` 工作分支，再进行文档修改。
 
