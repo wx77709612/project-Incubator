@@ -74,8 +74,9 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - 已确认 Git 分支采用 `p<当前Phase>/<type>-<topic>`，并授权 Agent 为后续写入任务自动创建本地工作分支；
 - 已确认 Git 任务采用“新任务启动检查 + IDE Diff 人工验收”的双重保证；
 - 已确认 Maker 接受 Diff 后，由 Agent 自动完成提交、推送、squash 合并、`main` 推送和已合并分支清理；
-- 已撤销尚未推送的 Git 治理本地提交，将分支规则与任务闭环规则合并为同一次基线治理提交；
-- Maker 已确认本次基线治理 Diff，并授权 Agent 创建及推送合并后的基线治理提交。
+- 已将分支规则与任务闭环规则合并为基线治理提交 `3a16a6d`，并推送至 `origin/main`；
+- 已确认项目与任务均采用自适应规划深度，简单任务不强制创建设计文档或实施计划；
+- 已创建跨 Phase 复用的 Maker 任务启动 Prompt Draft，进入 Phase 0 真实任务验证，尚未提升为稳定模板。
 
 ## 5. 当前未确认事项
 
@@ -130,6 +131,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 | Skill 规范 | `FRAMEWORK/Codex-Skill-Specification.md` | Draft | 讨论 Skill 化时必读 |
 | Skill 目录状态 | `SKILL/README.md` | Active | 准备 Skill 实现前读取 |
 | 通用文档元数据模板 | `TEMPLATES/DOCUMENT-METADATA.template.md` | Draft | 创建权威项目文档时读取 |
+| Maker 任务启动 Prompt 模板 | `TEMPLATES/MAKER-TASK-PROMPT.template.md` | Draft | Maker 发起新任务时按需使用 |
 
 ## 10. 下一会话恢复入口
 
