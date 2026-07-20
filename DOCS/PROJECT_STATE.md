@@ -22,38 +22,38 @@
 | 项目名称 | Project Incubator |
 | Maker | 当前项目的人类所有者，即正在与 AI 协作的用户 |
 | 项目状态 | Active |
-| 当前 Phase | Phase 0 — Idea Capture |
-| 当前 AI 角色 | Idea Facilitator（创意引导者） |
-| 当前主要目标 | 完成 Phase 0 阶段门确认，并由 Maker 决定是否进入 Phase 1 |
-| 当前阶段交付物 | `DOCS/00-idea/IDEA.md` |
+| 当前 Phase | Phase 1 — Intent Discovery |
+| 当前 AI 角色 | Project Coach（项目教练） |
+| 当前主要目标 | 明确为什么做、为谁做、项目边界以及第一阶段成功标准 |
+| 当前阶段交付物 | 待创建：`DOCS/01-intent/INTENT.md`、`DOCS/01-intent/PROJECT_PROFILE.md` |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 是进入 Phase 1 — Intent Discovery，还是继续停留在 Phase 0 补充想法 |
+| 下一项决定 | Maker 对主要项目意图、主要项目类型与第一目标使用者的确认 |
 | 最近更新时间 | 2026-07-20 |
 
 ## 2. 当前阶段说明
 
 Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
-项目当前正式处于 Phase 0，而不是 Phase 4。已有设计输入和 Framework 文件是自举所需的初始骨架，不代表 Intent、Explore、Validate 或 Design 已经完成，也不能作为跳过前序阶段的依据。
+项目已完成 Phase 0 的三项 Exit Criteria，并由 Maker 明确批准进入 Phase 1。已有设计输入和 Framework 文件仍只是自举所需的初始骨架，不代表 Intent、Explore、Validate 或 Design 已经完成，也不能作为跳过当前阶段工作的依据。
 
 ## 3. 当前 AI 协作契约
 
-当前 AI 应以 Idea Facilitator 身份工作：
+当前 AI 应以 Project Coach 身份工作：
 
-- 帮助 Maker 描述并提炼想法；
-- 区分已确认事实、初步方案和未确认假设；
-- 识别真实触发场景；
-- 将零散信息同步到 `DOCS/00-idea/IDEA.md`；
-- 以理解、复述和澄清为主。
+- 澄清 Maker 为什么做、为谁做以及希望获得什么价值；
+- 区分兴趣、个人需求与商业目标；
+- 协助确认主要项目类型、边界、非目标和现实约束；
+- 帮助 Maker 定义可衡量的第一阶段成功标准；
+- 形成 `INTENT.md` 与 `PROJECT_PROFILE.md`，并区分已确认事实与未确认假设。
 
 当前 AI 不应：
 
-- 把 Framework 骨架视为最终定稿；
-- 直接进入产品设计、任务规划、开发或 Skill 实现；
-- 过早确定技术栈、商业模式或完整功能范围；
-- 未经 Maker 确认自动切换到 Phase 1；
-- 把未确认假设写成正式需求或架构决策。
+- 默认项目需要公开、商业化或市场验证；
+- 用市场规模否定 Personal Tool 的个人价值；
+- 在意图、边界和成功标准明确前进入设计或开发；
+- 未经 Maker 确认自动切换到 Phase 2；
+- 把未确认假设写成正式范围或成功标准。
 
 ## 4. 已完成内容
 
@@ -80,10 +80,13 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - Maker 已确认 `DOCS/00-idea/IDEA.md` 中的一句话想法准确；
 - Maker 已确认想法产生原因来自当前正在进行的真实经历；
 - Maker 已确认 Project Incubator 自身是首个具体、真实的使用场景。
+- Phase 0 的三项 Exit Criteria 已全部满足；
+- Maker 已明确批准进入 Phase 1 — Intent Discovery；
+- `DOCS/00-idea/IDEA.md` 已完成 Phase 0 审核并转为 Active。
 
 ## 5. 当前未确认事项
 
-- 第一目标用户、边界与非目标；
+- 主要项目类型的正式确认，以及第一目标用户、边界与非目标；
 - Project Incubator 自身的成功标准；
 - Personal Tool 的具体形态；
 - 状态模型的完整字段、状态枚举与版本规则；
@@ -93,25 +96,26 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - 空 `CHANGELOG.md` 应在什么阶段启用；
 - 空 `.agents/` 目录应保留、定义用途还是移除。
 
-第一目标用户、边界与非目标应在 Phase 1 继续澄清；其余事项应在适当的后续 Phase 中逐步确认，不在 Phase 0 一次性解决。
+主要项目类型、第一目标用户、边界、非目标与成功标准应在 Phase 1 澄清；其余事项应在适当的后续 Phase 中逐步确认，不在当前阶段一次性解决。
 
 ## 6. 当前阻塞项
 
-当前没有执行层面或阶段门层面的阻塞。Phase 0 Exit Criteria 已满足，下一步等待 Maker 决定是否进入 Phase 1。
+当前没有执行层面或阶段门层面的阻塞。Phase 1 的意图澄清与交付物尚未开始。
 
-## 7. Phase 0 退出检查
+## 7. Phase 1 退出检查
 
 | Exit Criteria | 当前状态 | 证据 |
 | --- | --- | --- |
-| 能用一句话描述想法 | 已由 Maker 确认 | `DOCS/00-idea/IDEA.md` 第 2、9 节 |
-| 能说明为什么产生这个想法 | 已由 Maker 确认 | `DOCS/00-idea/IDEA.md` 第 3、4、9 节 |
-| 能识别至少一个真实使用场景 | 已由 Maker 确认 | `DOCS/00-idea/IDEA.md` 第 3、9 节；Project Incubator 自身为首个真实项目 |
+| 已明确主要项目意图 | 待澄清 | 待形成 `DOCS/01-intent/INTENT.md` |
+| 已确定主要项目类型 | 待 Maker 确认 | 待形成 `DOCS/01-intent/PROJECT_PROFILE.md` |
+| 已定义第一阶段成功标准 | 待澄清 | 待形成 `DOCS/01-intent/INTENT.md` |
+| 已确定哪些 Phase 可轻量执行或跳过 | 待 Maker 确认 | 待形成 `DOCS/01-intent/PROJECT_PROFILE.md` |
 
 ## 8. 下一步
 
-由 Maker 决定进入 Phase 1 — Intent Discovery，或继续停留在 Phase 0 补充想法。
+以 Project Coach 身份与 Maker 开展意图澄清，确认主要项目类型、第一目标用户、边界、约束和成功标准，并按需创建 Phase 1 的两份必需交付物。
 
-在 Maker 明确决定切换前，项目继续保持 Phase 0，AI 继续使用 Idea Facilitator 身份。
+在 Phase 1 Exit Criteria 获得 Maker 明确确认前，不进入 Phase 2，也不提前开始产品设计或开发。
 
 ## 9. 当前权威文档集合
 
@@ -120,7 +124,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 | 项目入口 | `README.md` | Active | Maker 初次进入时读取 |
 | Agent 启动协议 | `AGENTS.md` | Active | 启动时必读 |
 | 当前项目状态 | `DOCS/PROJECT_STATE.md` | Active | 启动时必读 |
-| 当前阶段想法 | `DOCS/00-idea/IDEA.md` | Draft | Phase 0 必读 |
+| 上游阶段想法 | `DOCS/00-idea/IDEA.md` | Active | Phase 1 必读 |
 | 架构决策 | `SPECS/ARCHITECTURE_DECISIONS.md` | Active | 启动时必读 |
 | 设计背景 | `SPECS/PROJECT_INCUBATOR_DESIGN_SPEC.md` | Active | 修改 Framework 或设计输入时必读 |
 | Phase 规则 | `FRAMEWORK/Phase-System.md` | Active | 读取当前 Phase 章节 |
@@ -133,10 +137,10 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 ## 10. 下一会话恢复入口
 
-下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读或 Phase 0 必读的文档。
+下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读或 Phase 1 必读的文档。
 
-恢复后的第一项工作是继续以 Idea Facilitator 身份询问 Maker 的阶段决定：进入 Phase 1，或继续停留在 Phase 0。不得自动进入 Phase 1。
+恢复后的第一项工作是以 Project Coach 身份协助 Maker 澄清主要意图、项目类型、第一目标用户、边界、约束与成功标准，不得提前进入 Phase 2。
 
-新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认 `p0/docs-idea-review` 工作分支，再进行文档修改。
+新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认 `p1/docs-intent-discovery` 工作分支，再进行文档修改。
 
 如果新会话发现当前工作区、未推送提交或任务分支尚未闭环，必须先提醒 Maker 处理上一任务，不得直接开始新的写入任务。

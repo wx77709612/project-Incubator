@@ -8,7 +8,7 @@
 | --- | --- |
 | 所属项目 | Project Incubator |
 | 所有者 Phase | Phase 0 — Idea Capture |
-| 文档状态 | Draft |
+| 文档状态 | Active |
 | 权威范围 | Project Incubator 的原始想法、触发场景、当前问题、初步方案、预期价值与未确认假设 |
 | 消费 Phase | Phase 0–9，按需读取 |
 | 更新条件 | Maker 补充或修正想法、触发原因、真实场景与未确认假设 |
