@@ -26,6 +26,8 @@
 | 当前 AI 角色 | Idea Facilitator（创意引导者） |
 | 当前主要目标 | 捕获并确认 Project Incubator 的原始想法、触发原因和真实使用场景 |
 | 当前阶段交付物 | `DOCS/00-idea/IDEA.md` |
+| 稳定分支 | `main` |
+| 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
 | 下一项决定 | Maker 是否确认 `IDEA.md` 已准确表达一句话想法、产生原因和至少一个真实场景 |
 | 最近更新时间 | 2026-07-20 |
 
@@ -56,7 +58,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 ## 4. 已完成内容
 
 - 已建立 Project Incubator 的总体设计输入；
-- 已记录 Architecture Decisions 001–009；
+- 已将同类架构决定合并整理为 Architecture Decisions 001–008；
 - 已建立五份 Framework 初始骨架文档；
 - 已建立项目级 `AGENTS.md`；
 - Maker 已明确 Project Incubator 本身是首个孵化对象；
@@ -68,7 +70,12 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - 已创建通用文档元数据模板；
 - 已创建根目录项目入口 `README.md`；
 - 已为保留的 `SKILL/` 目录创建状态说明，当前没有实现 Skill；
-- 已将当前 Phase 0 自举文档提交为 Git 基线，提交为 `5b9ff60`，远端为 `origin`。
+- 已将当前 Phase 0 自举文档提交为 Git 基线，提交为 `5b9ff60`，远端为 `origin`；
+- 已确认 Git 分支采用 `p<当前Phase>/<type>-<topic>`，并授权 Agent 为后续写入任务自动创建本地工作分支；
+- 已确认 Git 任务采用“新任务启动检查 + IDE Diff 人工验收”的双重保证；
+- 已确认 Maker 接受 Diff 后，由 Agent 自动完成提交、推送、squash 合并、`main` 推送和已合并分支清理；
+- 已撤销尚未推送的 Git 治理本地提交，将分支规则与任务闭环规则合并为同一次基线治理提交；
+- Maker 已确认本次基线治理 Diff，并授权 Agent 创建及推送合并后的基线治理提交。
 
 ## 5. 当前未确认事项
 
@@ -129,3 +136,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读或 Phase 0 必读的文档。
 
 恢复后的第一项工作是继续以 Idea Facilitator 身份协助 Maker 审阅 `DOCS/00-idea/IDEA.md`，不得自动进入 Phase 1。
+
+新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认 `p0/docs-idea-review` 工作分支，再进行文档修改。
+
+如果新会话发现当前工作区、未推送提交或任务分支尚未闭环，必须先提醒 Maker 处理上一任务，不得直接开始新的写入任务。

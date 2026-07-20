@@ -69,3 +69,18 @@ Project Incubator 通过阶段化流程、结构化文档和随 Phase 切换的 
 - 是否已记录至少一个真实使用场景。
 
 完成 Maker 确认前，项目保持在 Phase 0，不自动进入 Phase 1。
+
+## Git 工作方式
+
+- `main` 保存已经验证并由 Maker 接受的稳定检查点；
+- 会修改仓库的独立任务使用 `p<当前Phase>/<type>-<topic>` 分支；
+- 当前 Phase 读取自 `DOCS/PROJECT_STATE.md`；
+- 只读任务不创建分支；
+- Agent 在工作区安全时自动创建本地工作分支；
+- 新任务开始前检查上一任务是否存在未提交、未推送或未合并状态；
+- Agent 完成修改和验证后保留 IDE Diff，等待 Maker 检查；
+- Maker 确认 Diff 后，Agent 自动完成工作分支提交与推送、squash 合并、`main` 推送和已合并分支清理；
+- Maker 确认前不提交、不推送、不合并；
+- Phase 切换经 Maker 接受并合并到 `main` 后，才创建下一 Phase 分支。
+
+当前 Phase 0 的下一项工作分支建议为 `p0/docs-idea-review`。完整规则见 `AGENTS.md` 和 `SPECS/ARCHITECTURE_DECISIONS.md` 的 Decision 008。
