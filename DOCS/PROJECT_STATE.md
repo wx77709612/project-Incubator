@@ -83,6 +83,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - Phase 0 的三项 Exit Criteria 已全部满足；
 - Maker 已明确批准进入 Phase 1 — Intent Discovery；
 - `DOCS/00-idea/IDEA.md` 已完成 Phase 0 审核并转为 Active。
+- Maker 已确认：验收 IDE Diff 后，暂存、提交、推送、合并和分支清理由 Maker 本人执行；Agent 负责重新验证并提供当前任务专用的手动 Git 闭环命令。
 
 ## 5. 当前未确认事项
 
