@@ -67,7 +67,8 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - 已创建 Phase 0 的 `DOCS/00-idea/IDEA.md` 草案；
 - 已创建通用文档元数据模板；
 - 已创建根目录项目入口 `README.md`；
-- 已为保留的 `SKILL/` 目录创建状态说明，当前没有实现 Skill。
+- 已为保留的 `SKILL/` 目录创建状态说明，当前没有实现 Skill；
+- 已将当前 Phase 0 自举文档提交为 Git 基线，提交为 `5b9ff60`，远端为 `origin`。
 
 ## 5. 当前未确认事项
 
