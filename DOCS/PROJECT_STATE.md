@@ -29,7 +29,7 @@
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
 | 下一项决定 | Maker 描述当前从点子到结果的真实工作流、现有替代方式与最痛苦或最耗时的环节 |
-| 最近更新时间 | 2026-07-20 |
+| 最近更新时间 | 2026-07-21 |
 
 ## 2. 当前阶段说明
 
@@ -84,10 +84,13 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - Maker 已确认：验收 IDE Diff 后，暂存、提交、推送、合并和分支清理由 Maker 本人执行；Agent 负责重新验证并提供当前任务专用的手动 Git 闭环命令。
 - 已完成 Phase 1 意图澄清；Maker 已接受 `DOCS/01-intent/INTENT.md` 与 `DOCS/01-intent/PROJECT_PROFILE.md`，两份文档现为 Active。
 - Phase 1 的四项退出条件已满足；Maker 已明确批准进入 Phase 2 — Explore。
+- Maker 已确认：Maker 新任务 Prompt 模板未被 Agent 强制消费，是需要在 Phase 2 研究的真实工作流治理问题；当前只记录问题，不提前决定解决机制。
+- Maker 已确认：Git 闭环以 Phase 内有意义的里程碑为单位，而非每次消息或状态更新；对应治理规则已更新，等待 Maker 审阅当前 Diff。
 
 ## 5. 当前未确认事项
 
 - Project Incubator 当前工作流中的核心问题、现有替代方式、自行构建必要性与最重要假设；
+- Maker 新任务 Prompt 模板如何成为 Agent 的强制消费入口，避免 AI 自由扩写 Prompt、重复项目状态或增加 Maker 负担；
 - token、时间和维护成本的具体阈值；
 - 已有项目的接入流程、阶段推断依据、确认机制和文档补全规则；
 - 自动识别阶段、生成草案和更新状态文档的具体权限分级；
@@ -103,7 +106,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 ## 6. 当前阻塞项
 
-当前没有执行层面或阶段门层面的阻塞。Phase 1 退出条件已有对应证据，当前等待 Maker 决定后续路径。
+当前没有执行层面或阶段门层面的阻塞。Phase 2 的探索与交付物尚未开始。
 
 ## 7. Phase 2 退出检查
 
