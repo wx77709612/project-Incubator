@@ -25,10 +25,11 @@
 | 当前 Phase | Phase 2 — Explore |
 | 当前 AI 角色 | Product Researcher（产品研究员） |
 | 当前主要目标 | 基于 Maker 的真实工作流，理解核心问题、当前解决方式与最重要的假设，并确认自行构建的必要性 |
-| 当前阶段交付物 | 待创建：`DOCS/02-explore/PROBLEM.md`、`DOCS/02-explore/RESEARCH.md` |
+| 当前阶段交付物 | Active：`DOCS/02-explore/PROBLEM.md`、`DOCS/02-explore/RESEARCH.md` |
+| 当前任务状态 | Accepted（Phase 2 里程碑 Diff 已获 Maker 接受，等待 Maker 手动 Git 闭环） |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 描述当前从点子到结果的真实工作流、现有替代方式与最痛苦或最耗时的环节 |
+| 下一项决定 | Maker 先完成当前 `p2/docs-explore-workflow` 里程碑的手动 Git 闭环；闭环后再决定是否进入轻量 Phase 3 — Validate |
 | 最近更新时间 | 2026-07-21 |
 
 ## 2. 当前阶段说明
@@ -85,11 +86,17 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - 已完成 Phase 1 意图澄清；Maker 已接受 `DOCS/01-intent/INTENT.md` 与 `DOCS/01-intent/PROJECT_PROFILE.md`，两份文档现为 Active。
 - Phase 1 的四项退出条件已满足；Maker 已明确批准进入 Phase 2 — Explore。
 - Maker 已确认：Maker 新任务 Prompt 模板未被 Agent 强制消费，是需要在 Phase 2 研究的真实工作流治理问题；当前只记录问题，不提前决定解决机制。
-- Maker 已确认：Git 闭环以 Phase 内有意义的里程碑为单位，而非每次消息或状态更新；对应治理规则已更新，等待 Maker 审阅当前 Diff。
+- Maker 已确认：Git 闭环以 Phase 内有意义的里程碑为单位，而非每次消息或状态更新；对应治理规则已更新并进入当前基线。
+- Maker 已描述 Phase 2 真实工作流痛点：从新想法到 AI 协作通常会经历实现讨论、现有方案讨论、可行性讨论、AI 代码生成、人肉测试、发现问题、解决问题并继续分叉出新问题；分叉也可能来自 Maker 在与 AI 对话过程中受到启发而产生的新想法；最痛苦和最耗时的是问题解决或新想法展开过程不断分叉，导致上下文变长、token 与时间成本上涨、AI 丢失主线并跑偏。
+- Maker 已确认 Phase 2 外部轻量研究的目的不是完整产品或竞品研究，而是补充识别其他人在相似项目孵化、点子推进和 AI 协作工作流中遇到的普遍痛点，以判断 Maker 是否也遇到但尚未提及。
+- Maker 已确认 Phase 2 当前写入重点应先钉住问题，而不是提前设计解决方案。
+- Maker 已审阅并确认：`DOCS/02-explore/PROBLEM.md` 中的核心问题描述准确；`DOCS/02-explore/RESEARCH.md` 中外部痛点与 Maker 真实体验的对应关系准确；当前最重要假设没有明显过早、过窄或遗漏的问题。
+- Maker 已确认 Phase 2 两份草案不需要继续修改；`DOCS/02-explore/PROBLEM.md` 与 `DOCS/02-explore/RESEARCH.md` 已转为 Active。
+- Maker 已确认 Project Incubator 与市面项目 / Issue / Agent 协作平台的关键差异：后者更偏团队协作，通常围绕多人任务分配、评审、路线图和组织状态同步；Project Incubator 当前面向 indie developer / solo maker，重点是个人主线保护、AI 协作分叉治理、上下文恢复和个人验收。
+- Maker 已批准 Phase 2 完成，并确认当前 `p2/docs-explore-workflow` Diff 作为 Phase 2 里程碑闭环。
 
 ## 5. 当前未确认事项
 
-- Project Incubator 当前工作流中的核心问题、现有替代方式、自行构建必要性与最重要假设；
 - Maker 新任务 Prompt 模板如何成为 Agent 的强制消费入口，避免 AI 自由扩写 Prompt、重复项目状态或增加 Maker 负担；
 - token、时间和维护成本的具体阈值；
 - 已有项目的接入流程、阶段推断依据、确认机制和文档补全规则；
@@ -106,22 +113,22 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 ## 6. 当前阻塞项
 
-当前没有执行层面或阶段门层面的阻塞。Phase 2 的探索与交付物尚未开始。
+当前没有执行层面或阶段门层面的阻塞。Phase 2 的两份必需交付物已获 Maker 接受并转为 Active，等待 Maker 作出下一步阶段决定。
 
 ## 7. Phase 2 退出检查
 
 | Exit Criteria | 当前状态 | 证据 |
 | --- | --- | --- |
-| 已清晰描述核心问题 | 待澄清 | 待形成 `DOCS/02-explore/PROBLEM.md` |
-| 已理解当前解决方式 | 待澄清 | 待形成 `DOCS/02-explore/RESEARCH.md` |
-| 已确认自行构建的必要性 | 待澄清 | 待形成 `DOCS/02-explore/RESEARCH.md` |
-| 已识别最重要的假设 | 待澄清 | 待形成 `DOCS/02-explore/RESEARCH.md` |
+| 已清晰描述核心问题 | 已满足 | `DOCS/02-explore/PROBLEM.md` 已获 Maker 确认并转为 Active |
+| 已理解当前解决方式 | 已满足 | `DOCS/02-explore/RESEARCH.md` 已获 Maker 确认并转为 Active |
+| 已确认自行构建的必要性 | 已满足 | `DOCS/02-explore/RESEARCH.md` 已获 Maker 确认并转为 Active |
+| 已识别最重要的假设 | 已满足 | `DOCS/02-explore/RESEARCH.md` 已获 Maker 确认并转为 Active |
 
 ## 8. 下一步
 
-以 Product Researcher 身份，基于 Maker 的真实工作流理解 Project Incubator 需要解决的问题、当前替代方式与关键假设，并按需创建 Phase 2 的两份必需交付物。
+以 Product Researcher 身份，协助 Maker 完成当前 `p2/docs-explore-workflow` 里程碑的手动 Git 闭环；闭环完成并回到同步干净的 `main` 后，再决定是否进入轻量 Phase 3 — Validate。
 
-在 Phase 2 Exit Criteria 获得 Maker 明确确认前，不进入 Phase 3，也不提前开始产品设计或开发。
+在当前里程碑完成 Git 闭环前，不进入 Phase 3，也不提前开始产品设计或开发。
 
 ## 9. 当前权威文档集合
 
@@ -133,6 +140,8 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 | 上游阶段想法 | `DOCS/00-idea/IDEA.md` | Active | Phase 2 按需读取 |
 | Phase 1 项目意图 | `DOCS/01-intent/INTENT.md` | Active | Phase 2 必读 |
 | Phase 1 项目画像 | `DOCS/01-intent/PROJECT_PROFILE.md` | Active | Phase 2 必读 |
+| Phase 2 问题定义 | `DOCS/02-explore/PROBLEM.md` | Active | Phase 2 必读 |
+| Phase 2 轻量研究 | `DOCS/02-explore/RESEARCH.md` | Active | Phase 2 必读 |
 | 架构决策 | `SPECS/ARCHITECTURE_DECISIONS.md` | Active | 启动时必读 |
 | 设计背景 | `SPECS/PROJECT_INCUBATOR_DESIGN_SPEC.md` | Active | 修改 Framework 或设计输入时必读 |
 | Phase 规则 | `FRAMEWORK/Phase-System.md` | Active | 读取当前 Phase 章节 |
@@ -147,7 +156,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读或 Phase 1 必读的文档。
 
-恢复后的第一项工作是以 Product Researcher 身份，基于 Maker 的真实工作流理解 Project Incubator 的核心问题、当前解决方式、自行构建必要性与最重要假设；未获得明确决定前不得进入 Phase 3。
+恢复后的第一项工作是以 Product Researcher 身份，协助 Maker 完成 `p2/docs-explore-workflow` 里程碑的手动 Git 闭环；闭环完成并回到同步干净的 `main` 后，再决定是否进入轻量 Phase 3 — Validate。
 
 新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认符合当前任务范围的 `p2/<type>-<topic>` 工作分支，再进行文档修改。
 
