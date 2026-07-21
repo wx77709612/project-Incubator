@@ -26,10 +26,10 @@
 | 当前 AI 角色 | Product Researcher（产品研究员） |
 | 当前主要目标 | 基于 Maker 的真实工作流，理解核心问题、当前解决方式与最重要的假设，并确认自行构建的必要性 |
 | 当前阶段交付物 | Active：`DOCS/02-explore/PROBLEM.md`、`DOCS/02-explore/RESEARCH.md` |
-| 当前任务状态 | Accepted（`p2/governance-state-convergence` Diff 已获 Maker 接受，等待 Maker 手动 Git 闭环） |
+| 当前任务状态 | Ready for Next Task（`p2/governance-state-convergence` 里程碑已闭环） |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 手动闭环 `p2/governance-state-convergence`；闭环完成并回写状态后，再新开任务进入轻量 Phase 3 — Validate |
+| 下一项决定 | 新开任务进入轻量 Phase 3 — Validate |
 | 最近更新时间 | 2026-07-21 |
 
 ## 2. 当前阶段说明
@@ -109,7 +109,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 当前没有执行层面或阶段门层面的阻塞。Phase 2 的两份必需交付物已获 Maker 接受并转为 Active；Prompt 生成路由规则与 Git 闭环完成回写规则均已完成治理修正并闭环。
 
-进入 Phase 3 前，状态收敛治理 Diff 已获 Maker 接受，等待 Maker 手动 Git 闭环。
+进入 Phase 3 前的状态收敛治理已闭环；下一步可新开任务进入轻量 Phase 3 — Validate。
 
 ## 7. Phase 2 退出检查
 
@@ -122,7 +122,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 ## 8. 下一步
 
-等待 Maker 手动闭环 `p2/governance-state-convergence`。闭环完成并回写状态后，再新开任务进入轻量 Phase 3 — Validate。
+新开任务进入轻量 Phase 3 — Validate。
 
 ## 9. 当前权威文档集合
 
@@ -150,7 +150,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读、当前 Phase 必读或本轮按需读取的文档。
 
-恢复后的第一项工作是检查 `p2/governance-state-convergence` 是否已完成手动 Git 闭环；若尚未闭环，先协助 Maker 闭环并回写状态。闭环完成后，再新开任务进入轻量 Phase 3 — Validate。
+恢复后的第一项工作是以 Product Researcher 身份，协助 Maker 新开任务进入轻量 Phase 3 — Validate。不得在同一任务中直接切换 Phase；Phase 切换仍需按 `AGENTS.md` 阶段切换协议检查并等待 Maker 决定。
 
 新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认符合当前任务范围的 `p2/<type>-<topic>` 工作分支，再进行文档修改。
 
