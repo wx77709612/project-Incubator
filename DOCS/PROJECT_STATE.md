@@ -13,7 +13,7 @@
 | 消费 Phase | Phase 0–9，启动时必读 |
 | 更新条件 | 状态、Phase、角色、文档路径、决定、阻塞项或下一步发生变化 |
 | 依赖文档 | `AGENTS.md`、`SPECS/ARCHITECTURE_DECISIONS.md`、当前 Phase 规则与交付物 |
-| 最后更新 | 2026-07-20 |
+| 最后更新 | 2026-07-21 |
 
 ## 1. 基本状态
 
@@ -24,11 +24,11 @@
 | 项目状态 | Active |
 | 当前 Phase | Phase 1 — Intent Discovery |
 | 当前 AI 角色 | Project Coach（项目教练） |
-| 当前主要目标 | 明确为什么做、为谁做、项目边界以及第一阶段成功标准 |
-| 当前阶段交付物 | 待创建：`DOCS/01-intent/INTENT.md`、`DOCS/01-intent/PROJECT_PROFILE.md` |
+| 当前主要目标 | 完成 Phase 1 退出检查，并等待 Maker 决定是否进入 Phase 2 |
+| 当前阶段交付物 | 已确认：`DOCS/01-intent/INTENT.md`、`DOCS/01-intent/PROJECT_PROFILE.md` |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 对主要项目意图、主要项目类型与第一目标使用者的确认 |
+| 下一项决定 | Maker 决定继续 Phase 1、进入 Phase 2、带已知风险推进、返回、跳过、暂停或归档 |
 | 最近更新时间 | 2026-07-20 |
 
 ## 2. 当前阶段说明
@@ -84,12 +84,14 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - Maker 已明确批准进入 Phase 1 — Intent Discovery；
 - `DOCS/00-idea/IDEA.md` 已完成 Phase 0 审核并转为 Active。
 - Maker 已确认：验收 IDE Diff 后，暂存、提交、推送、合并和分支清理由 Maker 本人执行；Agent 负责重新验证并提供当前任务专用的手动 Git 闭环命令。
+- 已完成 Phase 1 意图澄清；Maker 已接受 `DOCS/01-intent/INTENT.md` 与 `DOCS/01-intent/PROJECT_PROFILE.md`，两份文档现为 Active。
 
 ## 5. 当前未确认事项
 
-- 主要项目类型的正式确认，以及第一目标用户、边界与非目标；
-- Project Incubator 自身的成功标准；
-- Personal Tool 的具体形态；
+- token、时间和维护成本的具体阈值；
+- 已有项目的接入流程、阶段推断依据、确认机制和文档补全规则；
+- 自动识别阶段、生成草案和更新状态文档的具体权限分级；
+- Project Incubator 的具体实现形态；
 - 状态模型的完整字段、状态枚举与版本规则；
 - 未来具体项目工作区的位置与创建方式；
 - Framework 如何版本化、验证和批准变更；
@@ -97,24 +99,24 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - 空 `CHANGELOG.md` 应在什么阶段启用；
 - 空 `.agents/` 目录应保留、定义用途还是移除。
 
-主要项目类型、第一目标用户、边界、非目标与成功标准应在 Phase 1 澄清；其余事项应在适当的后续 Phase 中逐步确认，不在当前阶段一次性解决。
+主要项目类型、第一目标用户、边界、非目标、成功标准和推荐流程路径已经在 Phase 1 中确认；其余事项应在适当的后续 Phase 中逐步确认，不在当前阶段一次性解决。
 
 ## 6. 当前阻塞项
 
-当前没有执行层面或阶段门层面的阻塞。Phase 1 的意图澄清与交付物尚未开始。
+当前没有执行层面或阶段门层面的阻塞。Phase 1 退出条件已有对应证据，当前等待 Maker 决定后续路径。
 
 ## 7. Phase 1 退出检查
 
 | Exit Criteria | 当前状态 | 证据 |
 | --- | --- | --- |
-| 已明确主要项目意图 | 待澄清 | 待形成 `DOCS/01-intent/INTENT.md` |
-| 已确定主要项目类型 | 待 Maker 确认 | 待形成 `DOCS/01-intent/PROJECT_PROFILE.md` |
-| 已定义第一阶段成功标准 | 待澄清 | 待形成 `DOCS/01-intent/INTENT.md` |
-| 已确定哪些 Phase 可轻量执行或跳过 | 待 Maker 确认 | 待形成 `DOCS/01-intent/PROJECT_PROFILE.md` |
+| 已明确主要项目意图 | 已确认 | `DOCS/01-intent/INTENT.md` |
+| 已确定主要项目类型 | 已确认 | `DOCS/01-intent/PROJECT_PROFILE.md` |
+| 已定义第一阶段成功标准 | 已确认 | `DOCS/01-intent/INTENT.md` |
+| 已确定哪些 Phase 可轻量执行或跳过 | 已确认 | `DOCS/01-intent/PROJECT_PROFILE.md` |
 
 ## 8. 下一步
 
-以 Project Coach 身份与 Maker 开展意图澄清，确认主要项目类型、第一目标用户、边界、约束和成功标准，并按需创建 Phase 1 的两份必需交付物。
+以 Project Coach 身份汇总 Phase 1 退出检查，并等待 Maker 决定后续路径。
 
 在 Phase 1 Exit Criteria 获得 Maker 明确确认前，不进入 Phase 2，也不提前开始产品设计或开发。
 
@@ -126,6 +128,8 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 | Agent 启动协议 | `AGENTS.md` | Active | 启动时必读 |
 | 当前项目状态 | `DOCS/PROJECT_STATE.md` | Active | 启动时必读 |
 | 上游阶段想法 | `DOCS/00-idea/IDEA.md` | Active | Phase 1 必读 |
+| Phase 1 项目意图 | `DOCS/01-intent/INTENT.md` | Active | 后续 Phase 按需读取 |
+| Phase 1 项目画像 | `DOCS/01-intent/PROJECT_PROFILE.md` | Active | 后续 Phase 按需读取 |
 | 架构决策 | `SPECS/ARCHITECTURE_DECISIONS.md` | Active | 启动时必读 |
 | 设计背景 | `SPECS/PROJECT_INCUBATOR_DESIGN_SPEC.md` | Active | 修改 Framework 或设计输入时必读 |
 | Phase 规则 | `FRAMEWORK/Phase-System.md` | Active | 读取当前 Phase 章节 |
@@ -140,7 +144,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读或 Phase 1 必读的文档。
 
-恢复后的第一项工作是以 Project Coach 身份协助 Maker 澄清主要意图、项目类型、第一目标用户、边界、约束与成功标准，不得提前进入 Phase 2。
+恢复后的第一项工作是以 Project Coach 身份汇总 Phase 1 退出检查，并等待 Maker 决定继续、进入 Phase 2、带已知风险推进、返回、跳过、暂停或归档；未获得明确决定前不得进入 Phase 2。
 
 新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认 `p1/docs-intent-discovery` 工作分支，再进行文档修改。
 
