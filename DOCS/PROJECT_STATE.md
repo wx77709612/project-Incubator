@@ -26,10 +26,10 @@
 | 当前 AI 角色 | Product Researcher（产品研究员） |
 | 当前主要目标 | 基于 Maker 的真实工作流，理解核心问题、当前解决方式与最重要的假设，并确认自行构建的必要性 |
 | 当前阶段交付物 | Active：`DOCS/02-explore/PROBLEM.md`、`DOCS/02-explore/RESEARCH.md` |
-| 当前任务状态 | Accepted（Prompt 生成路由规则 Diff 已获 Maker 接受，等待 Maker 手动 Git 闭环） |
+| 当前任务状态 | Accepted（`p2/docs-state-closeout` Diff 已获 Maker 接受，等待 Maker 手动 Git 闭环） |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 先完成当前 `p2/governance-prompt-routing` 里程碑的手动 Git 闭环；闭环后再新开任务进入轻量 Phase 3 — Validate |
+| 下一项决定 | Maker 手动闭环 `p2/docs-state-closeout`；闭环完成后，新开任务解决 `DOCS/PROJECT_STATE.md` 中 `## 4. 已完成内容` 只追加、不归类、不收敛的问题 |
 | 最近更新时间 | 2026-07-21 |
 
 ## 2. 当前阶段说明
@@ -99,6 +99,10 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - Maker 已确认：当 Maker 请求生成用于新任务、新会话、新线程、阶段交接或任务交接的 Prompt 指令时，Agent 必须先读取 `TEMPLATES/MAKER-TASK-PROMPT.template.md`；Prompt 只承载本次任务的新增目标、授权、限制或确认，项目状态由 `AGENTS.md` 与 `DOCS/PROJECT_STATE.md` 恢复。
 - Maker 已确认：Maker 任务 Prompt 生成规则不应作为启动顺序中的线性步骤，而应作为 `AGENTS.md` 中独立的条件触发协议；本轮 Diff 已将其调整为 `## 4. Maker 任务 Prompt 生成协议`。
 - Maker 已接受本轮 `p2/governance-prompt-routing` Diff，确认 Prompt 生成路由规则可作为进入 Phase 3 前的治理修正里程碑。
+- Maker 已完成 `p2/governance-prompt-routing` 里程碑的手动 Git 闭环，当前 `main` 已恢复干净并与远端同步。
+- Maker 已指出：Agent 在 Maker 报告“执行完毕”并请求生成下一任务指令时，漏掉了先回写 `DOCS/PROJECT_STATE.md` 的处理过程。该遗漏属于流程门未被强制执行的问题。
+- Maker 已确认：当 Maker 报告 Git 闭环完成时，Agent 必须先只读检查 Git 并回写 `DOCS/PROJECT_STATE.md`；如果 Maker 同时请求下一任务 Prompt，状态回写优先于 Prompt 生成。该规则已进入 `AGENTS.md` 的 `## 5. Maker Git 闭环完成回写协议`。
+- Maker 已接受本轮 `p2/docs-state-closeout` Diff，确认可将“Maker Git 闭环完成回写协议”和本次状态补写作为进入下一项状态收敛任务前的治理修正里程碑。
 
 ## 5. 当前未确认事项
 
@@ -118,7 +122,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 ## 6. 当前阻塞项
 
-当前没有执行层面或阶段门层面的阻塞。Phase 2 的两份必需交付物已获 Maker 接受并转为 Active；本轮正在补充 Prompt 生成路由规则，作为进入 Phase 3 前的流程治理修正。
+当前没有执行层面或阶段门层面的阻塞。Phase 2 的两份必需交付物已获 Maker 接受并转为 Active；Prompt 生成路由规则已完成治理修正并闭环；`p2/docs-state-closeout` Diff 已获 Maker 接受，等待 Maker 手动 Git 闭环。进入 Phase 3 前，Maker 决定先新开任务处理 `PROJECT_STATE.md` 已完成内容膨胀问题。
 
 ## 7. Phase 2 退出检查
 
@@ -131,9 +135,9 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 ## 8. 下一步
 
-以 Product Researcher 身份，协助 Maker 完成当前 `p2/governance-prompt-routing` 里程碑的手动 Git 闭环；闭环完成并回到同步干净的 `main` 后，再新开任务进入轻量 Phase 3 — Validate。
+等待 Maker 手动闭环 `p2/docs-state-closeout`。闭环完成并回写状态后，以 Product Researcher 身份，新开任务处理 `DOCS/PROJECT_STATE.md` 中 `## 4. 已完成内容` 只追加、不归类、不收敛的问题。
 
-在当前里程碑完成 Git 闭环前，不进入 Phase 3，也不提前开始产品设计或开发。
+在状态收敛机制明确前，不进入 Phase 3，也不提前开始产品设计或开发。
 
 ## 9. 当前权威文档集合
 
@@ -161,7 +165,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读或 Phase 1 必读的文档。
 
-恢复后的第一项工作是以 Product Researcher 身份，协助 Maker 完成 `p2/governance-prompt-routing` 里程碑的手动 Git 闭环；闭环完成并回到同步干净的 `main` 后，再新开任务进入轻量 Phase 3 — Validate。
+恢复后的第一项工作是检查 `p2/docs-state-closeout` 是否已完成手动 Git 闭环；若尚未闭环，先协助 Maker 闭环并回写状态。闭环完成后，以 Product Researcher 身份，协助 Maker 处理 `DOCS/PROJECT_STATE.md` 中 `## 4. 已完成内容` 只追加、不归类、不收敛的问题；该问题处理完成后，再新开任务进入轻量 Phase 3 — Validate。
 
 新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认符合当前任务范围的 `p2/<type>-<topic>` 工作分支，再进行文档修改。
 
