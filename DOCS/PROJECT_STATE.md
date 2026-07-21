@@ -26,10 +26,10 @@
 | 当前 AI 角色 | Product Researcher（产品研究员） |
 | 当前主要目标 | 基于 Maker 的真实工作流，理解核心问题、当前解决方式与最重要的假设，并确认自行构建的必要性 |
 | 当前阶段交付物 | Active：`DOCS/02-explore/PROBLEM.md`、`DOCS/02-explore/RESEARCH.md` |
-| 当前任务状态 | Accepted（Phase 2 里程碑 Diff 已获 Maker 接受，等待 Maker 手动 Git 闭环） |
+| 当前任务状态 | Accepted（Prompt 生成路由规则 Diff 已获 Maker 接受，等待 Maker 手动 Git 闭环） |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 先完成当前 `p2/docs-explore-workflow` 里程碑的手动 Git 闭环；闭环后再决定是否进入轻量 Phase 3 — Validate |
+| 下一项决定 | Maker 先完成当前 `p2/governance-prompt-routing` 里程碑的手动 Git 闭环；闭环后再新开任务进入轻量 Phase 3 — Validate |
 | 最近更新时间 | 2026-07-21 |
 
 ## 2. 当前阶段说明
@@ -85,7 +85,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - Maker 已确认：验收 IDE Diff 后，暂存、提交、推送、合并和分支清理由 Maker 本人执行；Agent 负责重新验证并提供当前任务专用的手动 Git 闭环命令。
 - 已完成 Phase 1 意图澄清；Maker 已接受 `DOCS/01-intent/INTENT.md` 与 `DOCS/01-intent/PROJECT_PROFILE.md`，两份文档现为 Active。
 - Phase 1 的四项退出条件已满足；Maker 已明确批准进入 Phase 2 — Explore。
-- Maker 已确认：Maker 新任务 Prompt 模板未被 Agent 强制消费，是需要在 Phase 2 研究的真实工作流治理问题；当前只记录问题，不提前决定解决机制。
+- Maker 已确认：Maker 新任务 Prompt 模板未被 Agent 强制消费，是 Phase 2 研究中识别出的真实工作流治理问题；对应路由规则已进入本轮治理 Diff。
 - Maker 已确认：Git 闭环以 Phase 内有意义的里程碑为单位，而非每次消息或状态更新；对应治理规则已更新并进入当前基线。
 - Maker 已描述 Phase 2 真实工作流痛点：从新想法到 AI 协作通常会经历实现讨论、现有方案讨论、可行性讨论、AI 代码生成、人肉测试、发现问题、解决问题并继续分叉出新问题；分叉也可能来自 Maker 在与 AI 对话过程中受到启发而产生的新想法；最痛苦和最耗时的是问题解决或新想法展开过程不断分叉，导致上下文变长、token 与时间成本上涨、AI 丢失主线并跑偏。
 - Maker 已确认 Phase 2 外部轻量研究的目的不是完整产品或竞品研究，而是补充识别其他人在相似项目孵化、点子推进和 AI 协作工作流中遇到的普遍痛点，以判断 Maker 是否也遇到但尚未提及。
@@ -94,10 +94,15 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - Maker 已确认 Phase 2 两份草案不需要继续修改；`DOCS/02-explore/PROBLEM.md` 与 `DOCS/02-explore/RESEARCH.md` 已转为 Active。
 - Maker 已确认 Project Incubator 与市面项目 / Issue / Agent 协作平台的关键差异：后者更偏团队协作，通常围绕多人任务分配、评审、路线图和组织状态同步；Project Incubator 当前面向 indie developer / solo maker，重点是个人主线保护、AI 协作分叉治理、上下文恢复和个人验收。
 - Maker 已批准 Phase 2 完成，并确认当前 `p2/docs-explore-workflow` Diff 作为 Phase 2 里程碑闭环。
+- Maker 已完成 `p2/docs-explore-workflow` 里程碑的手动 Git 闭环，当前 `main` 已恢复干净并与远端同步。
+- Maker 已确认：此前 Agent 在提供新任务 Prompt 时再次搬运了项目状态，根因不是模板正文不够硬，而是“生成新任务 Prompt 时必须先读取模板”的路由规则没有固化到 Agent 启动协议中。
+- Maker 已确认：当 Maker 请求生成用于新任务、新会话、新线程、阶段交接或任务交接的 Prompt 指令时，Agent 必须先读取 `TEMPLATES/MAKER-TASK-PROMPT.template.md`；Prompt 只承载本次任务的新增目标、授权、限制或确认，项目状态由 `AGENTS.md` 与 `DOCS/PROJECT_STATE.md` 恢复。
+- Maker 已确认：Maker 任务 Prompt 生成规则不应作为启动顺序中的线性步骤，而应作为 `AGENTS.md` 中独立的条件触发协议；本轮 Diff 已将其调整为 `## 4. Maker 任务 Prompt 生成协议`。
+- Maker 已接受本轮 `p2/governance-prompt-routing` Diff，确认 Prompt 生成路由规则可作为进入 Phase 3 前的治理修正里程碑。
 
 ## 5. 当前未确认事项
 
-- Maker 新任务 Prompt 模板如何成为 Agent 的强制消费入口，避免 AI 自由扩写 Prompt、重复项目状态或增加 Maker 负担；
+- `PROJECT_STATE.md` 的“已完成内容”已经开始膨胀，后续需要设计“当前状态摘要 + 按需历史索引”的收敛机制；历史文档若创建，不得成为普通启动必读文档。
 - token、时间和维护成本的具体阈值；
 - 已有项目的接入流程、阶段推断依据、确认机制和文档补全规则；
 - 自动识别阶段、生成草案和更新状态文档的具体权限分级；
@@ -113,7 +118,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 ## 6. 当前阻塞项
 
-当前没有执行层面或阶段门层面的阻塞。Phase 2 的两份必需交付物已获 Maker 接受并转为 Active，等待 Maker 作出下一步阶段决定。
+当前没有执行层面或阶段门层面的阻塞。Phase 2 的两份必需交付物已获 Maker 接受并转为 Active；本轮正在补充 Prompt 生成路由规则，作为进入 Phase 3 前的流程治理修正。
 
 ## 7. Phase 2 退出检查
 
@@ -126,7 +131,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 ## 8. 下一步
 
-以 Product Researcher 身份，协助 Maker 完成当前 `p2/docs-explore-workflow` 里程碑的手动 Git 闭环；闭环完成并回到同步干净的 `main` 后，再决定是否进入轻量 Phase 3 — Validate。
+以 Product Researcher 身份，协助 Maker 完成当前 `p2/governance-prompt-routing` 里程碑的手动 Git 闭环；闭环完成并回到同步干净的 `main` 后，再新开任务进入轻量 Phase 3 — Validate。
 
 在当前里程碑完成 Git 闭环前，不进入 Phase 3，也不提前开始产品设计或开发。
 
@@ -156,7 +161,7 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读或 Phase 1 必读的文档。
 
-恢复后的第一项工作是以 Product Researcher 身份，协助 Maker 完成 `p2/docs-explore-workflow` 里程碑的手动 Git 闭环；闭环完成并回到同步干净的 `main` 后，再决定是否进入轻量 Phase 3 — Validate。
+恢复后的第一项工作是以 Product Researcher 身份，协助 Maker 完成 `p2/governance-prompt-routing` 里程碑的手动 Git 闭环；闭环完成并回到同步干净的 `main` 后，再新开任务进入轻量 Phase 3 — Validate。
 
 新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认符合当前任务范围的 `p2/<type>-<topic>` 工作分支，再进行文档修改。
 
