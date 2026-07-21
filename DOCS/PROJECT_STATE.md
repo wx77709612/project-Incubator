@@ -22,38 +22,36 @@
 | 项目名称 | Project Incubator |
 | Maker | 当前项目的人类所有者，即正在与 AI 协作的用户 |
 | 项目状态 | Active |
-| 当前 Phase | Phase 1 — Intent Discovery |
-| 当前 AI 角色 | Project Coach（项目教练） |
-| 当前主要目标 | 完成 Phase 1 退出检查，并等待 Maker 决定是否进入 Phase 2 |
-| 当前阶段交付物 | 已确认：`DOCS/01-intent/INTENT.md`、`DOCS/01-intent/PROJECT_PROFILE.md` |
+| 当前 Phase | Phase 2 — Explore |
+| 当前 AI 角色 | Product Researcher（产品研究员） |
+| 当前主要目标 | 基于 Maker 的真实工作流，理解核心问题、当前解决方式与最重要的假设，并确认自行构建的必要性 |
+| 当前阶段交付物 | 待创建：`DOCS/02-explore/PROBLEM.md`、`DOCS/02-explore/RESEARCH.md` |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 决定继续 Phase 1、进入 Phase 2、带已知风险推进、返回、跳过、暂停或归档 |
+| 下一项决定 | Maker 描述当前从点子到结果的真实工作流、现有替代方式与最痛苦或最耗时的环节 |
 | 最近更新时间 | 2026-07-20 |
 
 ## 2. 当前阶段说明
 
 Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
-项目已完成 Phase 0 的三项 Exit Criteria，并由 Maker 明确批准进入 Phase 1。已有设计输入和 Framework 文件仍只是自举所需的初始骨架，不代表 Intent、Explore、Validate 或 Design 已经完成，也不能作为跳过当前阶段工作的依据。
+项目已完成 Phase 0 与 Phase 1 的退出条件，并由 Maker 明确批准进入 Phase 2。已有设计输入和 Framework 文件仍只是自举所需的初始骨架，不代表 Explore、Validate 或 Design 已经完成，也不能作为跳过当前阶段工作的依据。
 
 ## 3. 当前 AI 协作契约
 
-当前 AI 应以 Project Coach 身份工作：
+当前 AI 应以 Product Researcher 身份工作：
 
-- 澄清 Maker 为什么做、为谁做以及希望获得什么价值；
-- 区分兴趣、个人需求与商业目标；
-- 协助确认主要项目类型、边界、非目标和现实约束；
-- 帮助 Maker 定义可衡量的第一阶段成功标准；
-- 形成 `INTENT.md` 与 `PROJECT_PROFILE.md`，并区分已确认事实与未确认假设。
+- 理解 Maker 从点子到结果的真实工作流、使用场景与当前替代方式；
+- 区分已被证据支持的问题、Maker 的判断与仍待验证的假设；
+- 识别最痛苦或最耗时的环节，以及自行构建的必要性；
+- 形成 `PROBLEM.md` 与 `RESEARCH.md`，只开展服务于下一项决定的轻量研究。
 
 当前 AI 不应：
 
-- 默认项目需要公开、商业化或市场验证；
-- 用市场规模否定 Personal Tool 的个人价值；
-- 在意图、边界和成功标准明确前进入设计或开发；
-- 未经 Maker 确认自动切换到 Phase 2；
-- 把未确认假设写成正式范围或成功标准。
+- 对 Personal Tool 强制进行市场规模、竞品或商业验证；
+- 未经 Maker 判断，把检索或推断结果当作真实需求；
+- 在核心问题、当前解决方式与关键假设未明确前进入设计或开发；
+- 因为读取到后续 Phase 内容而自动推进。
 
 ## 4. 已完成内容
 
@@ -85,9 +83,11 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - `DOCS/00-idea/IDEA.md` 已完成 Phase 0 审核并转为 Active。
 - Maker 已确认：验收 IDE Diff 后，暂存、提交、推送、合并和分支清理由 Maker 本人执行；Agent 负责重新验证并提供当前任务专用的手动 Git 闭环命令。
 - 已完成 Phase 1 意图澄清；Maker 已接受 `DOCS/01-intent/INTENT.md` 与 `DOCS/01-intent/PROJECT_PROFILE.md`，两份文档现为 Active。
+- Phase 1 的四项退出条件已满足；Maker 已明确批准进入 Phase 2 — Explore。
 
 ## 5. 当前未确认事项
 
+- Project Incubator 当前工作流中的核心问题、现有替代方式、自行构建必要性与最重要假设；
 - token、时间和维护成本的具体阈值；
 - 已有项目的接入流程、阶段推断依据、确认机制和文档补全规则；
 - 自动识别阶段、生成草案和更新状态文档的具体权限分级；
@@ -105,20 +105,20 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 当前没有执行层面或阶段门层面的阻塞。Phase 1 退出条件已有对应证据，当前等待 Maker 决定后续路径。
 
-## 7. Phase 1 退出检查
+## 7. Phase 2 退出检查
 
 | Exit Criteria | 当前状态 | 证据 |
 | --- | --- | --- |
-| 已明确主要项目意图 | 已确认 | `DOCS/01-intent/INTENT.md` |
-| 已确定主要项目类型 | 已确认 | `DOCS/01-intent/PROJECT_PROFILE.md` |
-| 已定义第一阶段成功标准 | 已确认 | `DOCS/01-intent/INTENT.md` |
-| 已确定哪些 Phase 可轻量执行或跳过 | 已确认 | `DOCS/01-intent/PROJECT_PROFILE.md` |
+| 已清晰描述核心问题 | 待澄清 | 待形成 `DOCS/02-explore/PROBLEM.md` |
+| 已理解当前解决方式 | 待澄清 | 待形成 `DOCS/02-explore/RESEARCH.md` |
+| 已确认自行构建的必要性 | 待澄清 | 待形成 `DOCS/02-explore/RESEARCH.md` |
+| 已识别最重要的假设 | 待澄清 | 待形成 `DOCS/02-explore/RESEARCH.md` |
 
 ## 8. 下一步
 
-以 Project Coach 身份汇总 Phase 1 退出检查，并等待 Maker 决定后续路径。
+以 Product Researcher 身份，基于 Maker 的真实工作流理解 Project Incubator 需要解决的问题、当前替代方式与关键假设，并按需创建 Phase 2 的两份必需交付物。
 
-在 Phase 1 Exit Criteria 获得 Maker 明确确认前，不进入 Phase 2，也不提前开始产品设计或开发。
+在 Phase 2 Exit Criteria 获得 Maker 明确确认前，不进入 Phase 3，也不提前开始产品设计或开发。
 
 ## 9. 当前权威文档集合
 
@@ -127,9 +127,9 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 | 项目入口 | `README.md` | Active | Maker 初次进入时读取 |
 | Agent 启动协议 | `AGENTS.md` | Active | 启动时必读 |
 | 当前项目状态 | `DOCS/PROJECT_STATE.md` | Active | 启动时必读 |
-| 上游阶段想法 | `DOCS/00-idea/IDEA.md` | Active | Phase 1 必读 |
-| Phase 1 项目意图 | `DOCS/01-intent/INTENT.md` | Active | 后续 Phase 按需读取 |
-| Phase 1 项目画像 | `DOCS/01-intent/PROJECT_PROFILE.md` | Active | 后续 Phase 按需读取 |
+| 上游阶段想法 | `DOCS/00-idea/IDEA.md` | Active | Phase 2 按需读取 |
+| Phase 1 项目意图 | `DOCS/01-intent/INTENT.md` | Active | Phase 2 必读 |
+| Phase 1 项目画像 | `DOCS/01-intent/PROJECT_PROFILE.md` | Active | Phase 2 必读 |
 | 架构决策 | `SPECS/ARCHITECTURE_DECISIONS.md` | Active | 启动时必读 |
 | 设计背景 | `SPECS/PROJECT_INCUBATOR_DESIGN_SPEC.md` | Active | 修改 Framework 或设计输入时必读 |
 | Phase 规则 | `FRAMEWORK/Phase-System.md` | Active | 读取当前 Phase 章节 |
@@ -144,8 +144,8 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读或 Phase 1 必读的文档。
 
-恢复后的第一项工作是以 Project Coach 身份汇总 Phase 1 退出检查，并等待 Maker 决定继续、进入 Phase 2、带已知风险推进、返回、跳过、暂停或归档；未获得明确决定前不得进入 Phase 2。
+恢复后的第一项工作是以 Product Researcher 身份，基于 Maker 的真实工作流理解 Project Incubator 的核心问题、当前解决方式、自行构建必要性与最重要假设；未获得明确决定前不得进入 Phase 3。
 
-新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认 `p1/docs-intent-discovery` 工作分支，再进行文档修改。
+新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认符合当前任务范围的 `p2/<type>-<topic>` 工作分支，再进行文档修改。
 
 如果新会话发现当前工作区、未推送提交或任务分支尚未闭环，必须先提醒 Maker 处理上一任务，不得直接开始新的写入任务。
