@@ -22,37 +22,39 @@
 | 项目名称 | Project Incubator |
 | Maker | 当前项目的人类所有者，即正在与 AI 协作的用户 |
 | 项目状态 | Active |
-| 当前 Phase | Phase 2 — Explore |
-| 当前 AI 角色 | Product Researcher（产品研究员） |
-| 当前主要目标 | 基于 Maker 的真实工作流，理解核心问题、当前解决方式与最重要的假设，并确认自行构建的必要性 |
-| 当前阶段交付物 | Active：`DOCS/02-explore/PROBLEM.md`、`DOCS/02-explore/RESEARCH.md` |
-| 当前任务状态 | Ready for Next Task（`p2/governance-state-convergence` 里程碑已闭环） |
+| 当前 Phase | Phase 3 — Validate |
+| 当前 AI 角色 | Validation Strategist（验证策略顾问） |
+| 当前主要目标 | 以最低成本在 Maker 的真实自用任务中验证：轻量治理流程是否有助于保持主线、处理分叉，并减少重复解释或上下文漂移。 |
+| 当前阶段交付物 | Draft：`DOCS/03-validate/VALIDATION_PLAN.md`；上游 Active：`DOCS/02-explore/PROBLEM.md`、`DOCS/02-explore/RESEARCH.md` |
+| 当前任务状态 | Accepted（`p2/docs-lightweight-validation`：Phase 3 切换、轻量验证计划与首个反馈修正；等待 Maker 手动 Git 闭环） |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | 新开任务进入轻量 Phase 3 — Validate |
+| 下一项决定 | Maker 手动完成 `p2/docs-lightweight-validation` 的 Git 闭环；闭环后回写任务状态并继续首轮自用验证。 |
 | 最近更新时间 | 2026-07-21 |
 
 ## 2. 当前阶段说明
 
 Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
-项目已完成 Phase 0 与 Phase 1 的退出条件，并由 Maker 明确批准进入 Phase 2。已有设计输入和 Framework 文件仍只是自举所需的初始骨架，不代表 Explore、Validate 或 Design 已经完成，也不能作为跳过当前阶段工作的依据。
+项目已完成 Phase 0、Phase 1 与 Phase 2 的退出条件。Maker 已于 2026-07-21 明确批准进入轻量 Phase 3 — Validate；本阶段仅验证自用价值，不接触外部用户，不进行市场、付费或重型商业验证。
+
+已有设计输入和 Framework 文件仍只是自举所需的初始骨架，不代表 Design 已经完成，也不能作为跳过当前阶段工作的依据。
 
 ## 3. 当前 AI 协作契约
 
-当前 AI 应以 Product Researcher 身份工作：
+当前 AI 应以 Validation Strategist 身份工作：
 
-- 理解 Maker 从点子到结果的真实工作流、使用场景与当前替代方式；
-- 区分已被证据支持的问题、Maker 的判断与仍待验证的假设；
-- 识别最痛苦或最耗时的环节，以及自行构建的必要性；
-- 形成 `PROBLEM.md` 与 `RESEARCH.md`，只开展服务于下一项决定的轻量研究。
+- 围绕最关键假设设计最低成本、可观察的自用验证；
+- 收集 Maker 在真实任务中的行为与体验证据，区分积极表达与实际使用；
+- 根据证据帮助 Maker 决定继续、调整、暂停或结束验证；
+- 仅在验证确实需要时维护 `VALIDATION_PLAN.md`、`VALIDATION_RESULTS.md` 或 `FEEDBACK.md`。
 
 当前 AI 不应：
 
-- 对 Personal Tool 强制进行市场规模、竞品或商业验证；
-- 未经 Maker 判断，把检索或推断结果当作真实需求；
-- 在核心问题、当前解决方式与关键假设未明确前进入设计或开发；
-- 因为读取到后续 Phase 内容而自动推进。
+- 接触外部用户，或对 Personal Tool 强制进行市场、付费或商业验证；
+- 默认开发完整产品、进入产品设计或以功能产出代替验证；
+- 未经 Maker 判断，把检索、推断或礼貌性意见当作验证证据；
+- 因为出现初步积极结果而自动推进到 Phase 4。
 
 ## 4. 已完成内容（当前基线）
 
@@ -63,7 +65,8 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 - Phase 0 — Idea Capture 已完成，`DOCS/00-idea/IDEA.md` 为 Active；
 - Phase 1 — Intent Discovery 已完成，`DOCS/01-intent/INTENT.md` 与 `DOCS/01-intent/PROJECT_PROFILE.md` 为 Active；
 - Phase 2 — Explore 的必需交付物已获 Maker 接受，`DOCS/02-explore/PROBLEM.md` 与 `DOCS/02-explore/RESEARCH.md` 为 Active；
-- Phase 2 的四项 Exit Criteria 均已满足，但 Maker 决定在进入 Phase 3 前先完成状态收敛治理。
+- Phase 2 的四项 Exit Criteria 均已满足，Maker 已确认切换至轻量 Phase 3；
+- Phase 3 的首份按需交付物 `DOCS/03-validate/VALIDATION_PLAN.md` 已创建为 Draft，并已根据 Maker 的首个反向信号做轻量校准。
 
 ### 4.2 当前有效治理基线
 
@@ -107,35 +110,25 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 
 ## 6. 当前阻塞项
 
-当前没有执行层面或阶段门层面的阻塞。Phase 2 的两份必需交付物已获 Maker 接受并转为 Active；Prompt 生成路由规则与 Git 闭环完成回写规则均已完成治理修正并闭环。
+当前没有执行层面或阶段门层面的阻塞。Phase 2 的两份必需交付物已获 Maker 接受并转为 Active；Maker 已确认本阶段只进行自用验证，不接触外部用户。
 
-进入 Phase 3 前的状态收敛治理已闭环；下一步可新开任务进入轻量 Phase 3 — Validate。
+## 7. 下一步
 
-## 7. Phase 2 退出检查
+本次 Phase 3 切换、简短验证计划与首个反馈修正已获 Maker 接受。下一步由 Maker 手动完成 `p2/docs-lightweight-validation` 的 Git 闭环；闭环后继续在真实任务中开展轻量自用验证，不进入产品设计或开发。
 
-| Exit Criteria | 当前状态 | 证据 |
-| --- | --- | --- |
-| 已清晰描述核心问题 | 已满足 | `DOCS/02-explore/PROBLEM.md` 已获 Maker 确认并转为 Active |
-| 已理解当前解决方式 | 已满足 | `DOCS/02-explore/RESEARCH.md` 已获 Maker 确认并转为 Active |
-| 已确认自行构建的必要性 | 已满足 | `DOCS/02-explore/RESEARCH.md` 已获 Maker 确认并转为 Active |
-| 已识别最重要的假设 | 已满足 | `DOCS/02-explore/RESEARCH.md` 已获 Maker 确认并转为 Active |
-
-## 8. 下一步
-
-新开任务进入轻量 Phase 3 — Validate。
-
-## 9. 当前权威文档集合
+## 8. 当前权威文档集合
 
 | 内容类别 | 权威路径 | 状态 | 本轮读取要求 |
 | --- | --- | --- | --- |
 | 项目入口 | `README.md` | Active | Maker 初次进入时读取 |
 | Agent 启动协议 | `AGENTS.md` | Active | 启动时必读 |
 | 当前项目状态 | `DOCS/PROJECT_STATE.md` | Active | 启动时必读 |
-| 上游阶段想法 | `DOCS/00-idea/IDEA.md` | Active | Phase 2 按需读取 |
-| Phase 1 项目意图 | `DOCS/01-intent/INTENT.md` | Active | Phase 2 必读 |
-| Phase 1 项目画像 | `DOCS/01-intent/PROJECT_PROFILE.md` | Active | Phase 2 必读 |
-| Phase 2 问题定义 | `DOCS/02-explore/PROBLEM.md` | Active | Phase 2 必读 |
-| Phase 2 轻量研究 | `DOCS/02-explore/RESEARCH.md` | Active | Phase 2 必读 |
+| 上游阶段想法 | `DOCS/00-idea/IDEA.md` | Active | Phase 3 按需读取 |
+| Phase 1 项目意图 | `DOCS/01-intent/INTENT.md` | Active | Phase 3 必读 |
+| Phase 1 项目画像 | `DOCS/01-intent/PROJECT_PROFILE.md` | Active | Phase 3 必读 |
+| Phase 2 问题定义 | `DOCS/02-explore/PROBLEM.md` | Active | Phase 3 必读 |
+| Phase 2 轻量研究 | `DOCS/02-explore/RESEARCH.md` | Active | Phase 3 必读 |
+| Phase 3 轻量验证计划 | `DOCS/03-validate/VALIDATION_PLAN.md` | Draft | Phase 3 必读 |
 | 架构决策 | `SPECS/ARCHITECTURE_DECISIONS.md` | Active | 启动时必读 |
 | 设计背景 | `SPECS/PROJECT_INCUBATOR_DESIGN_SPEC.md` | Active | 修改 Framework 或设计输入时必读 |
 | Phase 规则 | `FRAMEWORK/Phase-System.md` | Active | 读取当前 Phase 章节 |
@@ -146,12 +139,12 @@ Project Incubator 本身是一个正在使用自身 Framework 孵化的项目。
 | 通用文档元数据模板 | `TEMPLATES/DOCUMENT-METADATA.template.md` | Draft | 创建权威项目文档时读取 |
 | Maker 任务启动 Prompt 模板 | `TEMPLATES/MAKER-TASK-PROMPT.template.md` | Draft | Maker 发起新任务时按需使用 |
 
-## 10. 下一会话恢复入口
+## 9. 下一会话恢复入口
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读、当前 Phase 必读或本轮按需读取的文档。
 
-恢复后的第一项工作是以 Product Researcher 身份，协助 Maker 新开任务进入轻量 Phase 3 — Validate。不得在同一任务中直接切换 Phase；Phase 切换仍需按 `AGENTS.md` 阶段切换协议检查并等待 Maker 决定。
+恢复后的第一项工作是先确认 `p2/docs-lightweight-validation` 是否已完成 Maker 手动 Git 闭环。若闭环已完成，按 `AGENTS.md` 回写任务状态；随后以 Validation Strategist 身份，读取 `DOCS/03-validate/VALIDATION_PLAN.md`，协助 Maker 继续首轮轻量自用验证，并在出现新事项时先判断应立即处理、记录后续、视为阻塞，还是请求 Maker 决定。不得以验证名义进入产品设计或开发；任何后续 Phase 切换仍需按 `AGENTS.md` 的阶段切换协议检查并等待 Maker 决定。
 
-新会话在状态恢复和只读报告阶段不创建分支；Maker 确认开始写入后，Agent 应自动创建或确认符合当前任务范围的 `p2/<type>-<topic>` 工作分支，再进行文档修改。
+新会话在状态恢复和只读报告阶段不创建分支；如需写入，Agent 应先确认符合当前任务范围的工作分支，再进行文档修改。
 
 如果新会话发现当前工作区、未推送提交或任务分支尚未闭环，必须先提醒 Maker 处理上一任务，不得直接开始新的写入任务。
