@@ -1,143 +1,189 @@
 # Architecture Decisions
 
-## 1. 文档职责
+## 1. 这个文档给 AI 的作用
 
-本文档只记录 Project Incubator 已由 Maker 确认、不可被 AI 静默改变的架构决定及其原因。
+本文档是 Project Incubator 的 AI 越界防护清单。AI 读取它不是为了了解历史，而是为了知道：
 
-具体操作步骤不在本文重复维护：
+- 什么时候必须停下来；
+- 什么事情不得静默执行；
+- 如果要改变边界，必须让 Maker 明确确认什么。
 
-- Agent 启动、Git 命令顺序和任务收尾见 `AGENTS.md`；
-- Phase 规则见 `FRAMEWORK/Phase-System.md`；
-- 角色规则见 `FRAMEWORK/Role-System.md`；
-- 文档结构与生命周期见 `FRAMEWORK/Document-System.md`；
-- 当前项目状态见 `DOCS/PROJECT_STATE.md`。
+本文档不保存当前项目状态，不替代执行步骤，不记录普通协作纠偏。当前状态看 `DOCS/PROJECT_STATE.md`；执行协议看 `AGENTS.md`；Phase、角色和文档规则看 `FRAMEWORK/`。
 
----
+## 2. 写入门槛
 
-## Decision 001：Project Incubator 必须孵化自身
+一条内容只有同时满足以下条件，才适合进入本文档：
 
-### 决定
+- 它会长期约束多个任务、多个 Phase 或未来项目；
+- 它能让 AI 在某类任务中明确停下来、不得做某事，或必须请求 Maker 决定；
+- 它不能更合适地放在 `AGENTS.md`、`FRAMEWORK/`、`DOCS/PROJECT_STATE.md` 或当前 Phase 文档中。
 
-Project Incubator 本身是一个真实项目，必须按照自身定义的流程推进，并作为 Framework 的首个验证对象。
+AI 不得自行新增、删除或修改本文档中的边界。需要调整时，必须先说明影响并等待 Maker 明确确认。
 
-### 原因
+## 3. 快速索引
 
-避免只设计方法论而不验证方法论。已有 Framework 文件属于自举骨架，不能作为项目已经完成前序 Phase 的证明。
-
----
-
-## Decision 002：Framework 属于 Project Incubator
-
-### 决定
-
-Framework 是 Project Incubator 的核心资产，属于 Project Incubator，不属于未来被孵化的具体项目。
-
-未来项目只消费 Framework 定义的流程、角色规则和模板，不复制 Framework，也不在本仓库建立集中保存未来项目的 `PROJECTS/` 目录。
-
-### 原因
-
-避免产生多套相互漂移的 Framework，并保持规则的唯一权威来源。
+| 边界 | AI 何时必须检查 |
+| --- | --- |
+| Decision 001：Maker 决策权与 Phase 边界 | 涉及 Phase、AI 角色、项目方向、目标用户、成功标准、验收或范围变化 |
+| Decision 002：文档与状态是唯一恢复依据 | 涉及状态恢复、权威文档、阶段完成判断、文档移动/替代/写回 |
+| Decision 003：Framework 与项目实例分离 | 涉及 Framework、模板、Skill 资产、未来项目工作区或项目实例化 |
+| Decision 004：流程深度必须按项目与任务自适应 | 涉及跳过/加深 Phase、任务规划深度、Personal Tool 是否需要重型验证 |
+| Decision 005：Git 写操作必须受里程碑与 Maker 验收门约束 | 涉及分支、暂存、提交、推送、合并、Diff 验收或 Git 闭环 |
 
 ---
 
-## Decision 003：Personal Tool 是第一优先级
+## Decision 001：Maker 决策权与 Phase 边界
 
-### 决定
+### AI 什么时候必须停下来
 
-Project Incubator 首先服务 Maker 自己，第一目标是成为 Personal Tool，而不是优先成为公开产品或商业产品。
+- 想切换、跳过、返回、暂停或归档 Phase。
+- 想改变当前 AI 角色、项目方向、目标用户、成功标准、当前主要目标或验收方式。
+- 想把当前 Project Incubator 从 Personal Tool / 自用验证方向扩展为公开产品、商业产品、团队平台或增长项目。
+- 想把 AI 的分析、建议、实现结果或测试结果当作 Maker 验收结论。
 
-在 Framework 经真实使用验证后，未来可以考虑固化为 Codex Skill。
+### AI 不得做什么
 
-### 原因
+- 不得未经 Maker 确认切换 Phase。
+- 不得未经 Maker 确认扩大项目范围、目标用户、公开程度或商业化目标。
+- 不得以固定 Assistant 身份覆盖当前 Phase 规定的 AI 角色。
+- 不得替 Maker 作出方向、范围、成功标准、阶段切换或最终验收决定。
 
-先解决 Maker 的真实问题并降低自用工作流成本，再决定是否扩大使用范围。
+### 改变这条边界需要 Maker 确认什么
 
----
+- Maker 明确确认要改变项目方向、目标用户、公开程度、商业化目标或验收标准。
+- Maker 明确确认要改变 Phase 切换规则、AI 角色边界或 Maker 最终决策权。
 
-## Decision 004：协作由 Phase 驱动，Maker 保留最终决定权
+### 权威来源
 
-### 决定
-
-- AI 不使用永久固定的 Assistant 身份；
-- AI 角色、主要目标、Conversation Contract、Deliverables 和 Exit Criteria 由当前 Phase 决定；
-- Maker 是项目的人类所有者和最终决策者；
-- AI 不得未经 Maker 确认切换 Phase、改变项目方向、修改成功标准或扩大范围。
-
-### 原因
-
-让每个阶段的职责和边界可预测，减少 AI 在长周期项目中的角色混乱与方向漂移。
-
----
-
-## Decision 005：项目采用文档与状态驱动
-
-### 决定
-
-- 项目不能依赖聊天记录作为唯一上下文；
-- `DOCS/PROJECT_STATE.md` 是固定启动入口和当前项目状态的唯一权威来源；
-- Agent 必须先读取根目录 `AGENTS.md` 和 `DOCS/PROJECT_STATE.md`，再加载当前 Phase 规则及状态文件列出的权威文档；
-- Phase 交付物存放在对应的 `DOCS/<phase>/` 目录，目录按需创建；
-- 文档保留在其所有者 Phase 的目录中，后续 Phase 通过准确路径引用；
-- 同一事实只保留一个权威文档，不复制维护；
-- 推翻前序结论时，必须由 Maker 批准回退或受控变更；
-- `PROJECT_STATE.md` 必须维护当前权威文档集合和下一会话恢复入口。
-
-### 原因
-
-确保跨会话、跨 Agent 和未来 Skill 化后都能确定性恢复项目状态，同时避免重复文档和冲突版本。
+- 当前 Phase 与目标：`DOCS/PROJECT_STATE.md`
+- Phase 规则：`FRAMEWORK/Phase-System.md`
+- 角色规则：`FRAMEWORK/Role-System.md`
+- 当前项目类型与范围：`DOCS/01-intent/PROJECT_PROFILE.md`、`DOCS/04-design/SCOPE.md`
 
 ---
 
-## Decision 006：不同项目与任务采用不同流程深度
+## Decision 002：文档与状态是唯一恢复依据
 
-### 决定
+### AI 什么时候必须停下来
 
-所有项目共享相同的 Phase 语言，但不要求走完全部 Phase，也不要求每个 Phase 使用相同深度。
+- 状态文档缺失、冲突、过期或无法读取。
+- 权威文档索引指向不存在、Superseded、Archived 或多个 Active 来源。
+- 想通过聊天记忆、目录扫描或 Framework 骨架判断当前项目状态。
+- 想移动、替代、删除、合并或改变某个权威文档的职责。
+- 想声明某个 Phase 已完成、可以跳过或可以进入下一 Phase。
 
-Personal Tool 可以轻量执行 Explore，并通常不需要独立商业验证；Business Product 需要更完整的研究、验证和发布流程。
+### AI 不得做什么
 
-同一项目内的任务也必须采用与复杂度、风险和协作范围相称的规划深度。简单、可逆且目标单一的修改不要求单独创建设计文档或实施计划；只有当任务存在需要长期保留的设计取舍、多个相互依赖的执行步骤、跨会话或跨 Agent 交接、高风险变更或复杂验证时，才创建对应文档。
+- 不得依赖聊天记录作为唯一上下文。
+- 不得通过递归扫描目录猜测当前权威文档集合。
+- 不得复制同一事实到多个文档中分别维护。
+- 不得把当前状态、阶段正文、执行协议和长期架构边界混写到同一个文档。
+- 不得用已有 `FRAMEWORK/` 文件证明 Project Incubator 的前序 Phase 已完成。
+- 不得在没有对应 Phase 文档和 Maker 验收的情况下声称阶段完成。
 
-不得仅为了证明已经规划而生成过程文档。文档必须具有明确的后续消费价值。
+### 改变这条边界需要 Maker 确认什么
 
-跳过、返回、暂停或带风险推进必须由 Maker 决定并记录到项目状态。
+- Maker 明确确认状态入口、权威文档集合、目录结构或文档所有权发生变化。
+- Maker 明确确认要推翻前序结论、替代权威文档或迁移某个事实的权威来源。
+- Maker 明确确认某个 Phase 可以在证据不足时跳过、回退或带风险推进。
 
-### 原因
+### 权威来源
 
-避免把不同类型的项目强行套入同一种流程，也避免让轻量任务承担超过其价值的文档成本。
+- 状态入口：`DOCS/PROJECT_STATE.md`
+- Agent 协议：`AGENTS.md`
+- 文档规则：`FRAMEWORK/Document-System.md`
+- 阶段文档：`DOCS/<phase>/`
 
 ---
 
-## Decision 007：Markdown 正文默认使用中文
+## Decision 003：Framework 与项目实例分离
 
-### 决定
+### AI 什么时候必须停下来
 
-所有 Markdown 正文默认使用中文。文件名、代码、Git 标识和标准技术名词可以保留英文。
+- 想为未来项目复制一整套 Framework。
+- 想在本仓库建立集中保存未来项目的 `PROJECTS/` 目录。
+- 想让未来具体项目拥有、修改或分叉自己的 Framework。
+- 想改变 Framework、模板、Skill 资产和项目实例之间的归属关系。
 
-### 原因
+### AI 不得做什么
 
-Project Incubator 面向中文 Maker 使用，同时需要兼容 Codex、Git 和其他工程工具规范。
+- 不得把未来具体项目放进 Project Incubator 仓库的集中 `PROJECTS/` 目录。
+- 不得让未来项目复制并维护私有 Framework 分叉。
+- 不得把 Project Incubator 当前项目状态当作未来项目状态来源。
+- 不得把模板实例文件和 Framework 源文件混为一谈。
+
+### 改变这条边界需要 Maker 确认什么
+
+- Maker 明确确认未来项目工作区位置或创建方式。
+- Maker 明确确认 Framework 是否允许被复制、分叉或由具体项目拥有。
+- Maker 明确确认模板、Skill 资产和项目实例之间的新归属关系。
+
+### 权威来源
+
+- Framework 规则：`FRAMEWORK/`
+- 文档归属：`FRAMEWORK/Document-System.md`
+- 模板资产：`TEMPLATES/`
+- 当前 Skill 设计：`DOCS/04-design/SKILL_DESIGN.md`
 
 ---
 
-## Decision 008：Git 采用 Phase 感知的里程碑分支与人工验收闭环
+## Decision 004：流程深度必须按项目与任务自适应
 
-### 决定
+### AI 什么时候必须停下来
 
-- `main` 只保存已经验证并由 Maker 接受的稳定检查点；
-- 会修改仓库的独立任务使用 `p<当前Phase>/<type>-<topic>` 工作分支；
-- Phase 前缀读取自 `DOCS/PROJECT_STATE.md`，一个分支对应一个可独立审阅和验收的 Git 里程碑；普通状态回写、补充已确认事实、待研究问题和普通 Diff 审阅不单独创建分支或触发闭环；
-- 只读任务不创建分支；同一 Phase 内、目标和范围一致的续作继续使用原工作分支，直到达到 Git 里程碑；
-- 新任务开始前，Agent 必须检查工作区、暂存区、未推送提交、远端同步状态和未合并任务分支；
-- 发现上一个任务未闭环时，Agent 必须提醒 Maker 先处理，不开始无关写入任务；
-- Agent 完成修改、文档回写和验证后，保留未提交 IDE Diff，等待 Maker 检查；
-- Maker 明确接受里程碑 Diff、要求稳定检查点或批准 Phase 切换后，Agent 重新验证并提供当前任务专用的手动 Git 闭环命令；暂存、提交、推送、squash 合并和分支清理由 Maker 本人执行；
-- 网络故障导致里程碑提交无法推送时，允许 Maker 明确继续同一分支内、同一里程碑范围的工作；远端同步前不得启动无关任务、删除分支或完成需要 `main` 稳定检查点的 Phase 切换；
-- Agent 只有在 Maker 对具体 Git 操作另行明确授权时才可代为执行；force push、重写历史、删除未合并分支、丢弃改动、绕过分支保护和方向性冲突处理始终不属于默认授权；
-- Phase 切换在当前分支完成阶段门与状态更新，经 Maker 接受并合并到 `main` 后，再创建下一 Phase 分支。
+- 想要求所有项目完整走完 Phase 0–9。
+- 想要求所有任务都创建独立设计文档或实施计划。
+- 想为了形式完整创建无人继续消费的文档。
+- 想把 Personal Tool 强制升级为 Business Product 式的市场、付费或增长验证。
+- 想跳过、返回、加深、简化或带风险推进某个 Phase。
 
-本次 Git 治理属于基线例外：规则直接保留在 `main` 的未提交 Diff 中，Maker 检查并确认后，由 Agent 创建一次合并后的基线治理提交。此后执行常规分支闭环。
+### AI 不得做什么
 
-### 原因
+- 不得机械套用完整流程。
+- 不得默认轻量任务需要长期设计记录或实施计划。
+- 不得用形式完整替代真实决策价值。
+- 不得把项目类型、风险、依赖关系和 Maker 验收对象之外的因素作为加重流程的理由。
 
-Phase 前缀保留项目阶段上下文，里程碑分支控制修改范围；启动检查防止无关任务掩盖未闭环工作；普通 Diff 审阅与 Git 里程碑验收分离，既保护 Maker 的最终决定权，也避免每次状态更新造成手动 Git 负担。Maker 手动 Git 闭环仍让提交、推送、合并与清理保持在 Maker 的直接控制下，同时网络故障不会阻断同一范围内的连续工作。
+### 改变这条边界需要 Maker 确认什么
+
+- Maker 明确确认当前项目或任务需要更轻、更重、跳过、回退或带风险推进。
+- Maker 明确确认 Personal Tool 要改走公开产品、商业产品或其他更重流程。
+- Maker 明确确认某个临时任务规则具有长期复用价值，值得进入 Framework、模板或本边界清单。
+
+### 权威来源
+
+- Phase 规则：`FRAMEWORK/Phase-System.md`
+- 执行规则：`AGENTS.md`
+- 当前项目类型：`DOCS/01-intent/PROJECT_PROFILE.md`
+- 当前状态：`DOCS/PROJECT_STATE.md`
+
+---
+
+## Decision 005：Git 写操作必须受里程碑与 Maker 验收门约束
+
+### AI 什么时候必须停下来
+
+- 想创建、切换、删除或清理分支。
+- 想暂存、提交、推送、合并、变基、重写历史或修改远端状态。
+- 当前工作区、暂存区、未推送提交、远端同步状态或未合并分支不清楚。
+- 当前分支不属于本任务，或上一任务尚未闭环。
+- Maker 接受内容方向，但尚未明确授权具体 Git 写操作。
+
+### AI 不得做什么
+
+- 不得在没有检查 Git 状态的情况下开始写入任务。
+- 不得把普通 Diff 审阅、状态回写或补充事实单独升级为 Git 里程碑。
+- 不得在 Maker 未明确授权具体 Git 操作时，代为暂存、提交、推送、合并或清理分支。
+- 不得 force push、重写历史、删除未合并分支、丢弃改动、绕过分支保护或自行处理方向性冲突。
+- 不得在远端未同步前启动无关任务、删除任务分支或完成依赖 `main` 稳定检查点的 Phase 切换。
+
+### 改变这条边界需要 Maker 确认什么
+
+- Maker 明确接受里程碑 Diff、要求稳定检查点或批准 Phase 切换。
+- Maker 明确授权 AI 执行具体 Git 动作、目标对象和范围。
+- Maker 明确确认在网络故障或远端未同步情况下继续同一范围内工作。
+
+### 权威来源
+
+- Git 执行协议：`AGENTS.md`
+- 当前任务状态：`DOCS/PROJECT_STATE.md`
