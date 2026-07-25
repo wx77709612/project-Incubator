@@ -13,7 +13,7 @@
 | 消费 Phase | Phase 0–9，启动时必读 |
 | 更新条件 | 状态、Phase、角色、文档路径、决定、阻塞项或下一步发生变化 |
 | 依赖文档 | `AGENTS.md`、`SPECS/ARCHITECTURE_DECISIONS.md`、当前 Phase 规则与交付物 |
-| 最后更新 | 2026-07-24 |
+| 最后更新 | 2026-07-25 |
 
 ## 1. 基本状态
 
@@ -22,15 +22,15 @@
 | 项目名称 | Project Incubator |
 | Maker | 当前项目的人类所有者，即正在与 AI 协作的用户 |
 | 项目状态 | Active |
-| 当前 Phase | Phase 5 — Planning |
-| 当前 AI 角色 | Delivery Planner（交付规划者） |
-| 当前主要目标 | 将 Phase 4 已接受的 Project Incubator Skill 1.0 完整设计拆解为范围明确、可独立执行、可独立验证的里程碑、任务包、验收标准和验证步骤，避免把完整 Skill 一次性交给 AI Builder。 |
-| 当前阶段交付物 | Active：`DOCS/05-planning/ROADMAP.md`、`DOCS/05-planning/MILESTONES.md`、`DOCS/05-planning/VERIFICATION_PLAN.md`、首批 `DOCS/05-planning/TICKETS/`；上游 Active：Phase 4 十份设计文档、`SPECS/ARCHITECTURE_DECISIONS.md`、`DOCS/03-validate/VALIDATION_PLAN.md`、`DOCS/02-explore/PROBLEM.md`、`DOCS/02-explore/RESEARCH.md` |
-| 当前任务状态 | Accepted（Maker 已确认 Phase 5 首批 Planning 文档内容无问题；等待阶段门决定与 Git 里程碑闭环） |
+| 当前 Phase | Phase 6 — Build |
+| 当前 AI 角色 | Engineering Lead（工程负责人） |
+| 当前主要目标 | 完成 R3 Builder 返回与审阅闭环的 Maker Review：R1、R2 与 R3 references 已形成；R3-02 已形成 Builder return and review reference，等待 Maker 审阅。 |
+| 当前阶段交付物 | Draft：`SKILL/references/main-runtime-chain.md`、`SKILL/references/task-type-and-writeback.md`、`SKILL/references/hard-gate-matrix.md`、`SKILL/references/gate-response-and-authorization.md`、`SKILL/references/builder-handoff-checklist.md`、`SKILL/references/builder-return-and-review.md`；上游 Active：Phase 5 首批 Planning 文档、Phase 4 十份设计文档、`SPECS/ARCHITECTURE_DECISIONS.md` |
+| 当前任务状态 | Ready for Maker Review（R3-02 Builder return and review Skill reference 已形成并完成 S7、验证失败、Diff 等待审阅和状态回写卫生场景检查；当前 Diff 尚未提交、推送或合并） |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 决定是否批准 Phase 5 — Planning 退出并进入 Phase 6 — Build；若批准，先完成当前工作分支的 Git 里程碑闭环，再从稳定 `main` 开始后续 Build 任务。 |
-| 最近更新时间 | 2026-07-24 |
+| 下一项决定 | Maker 审阅 `SKILL/references/builder-return-and-review.md` 与本轮状态回写 Diff，决定 R3-02 是否接受、是否需要修改，或是否结束当前 R1-R3 首批 Build reference 里程碑并准备人工 Git 闭环。 |
+| 最近更新时间 | 2026-07-25 |
 
 ## 2. 当前阶段说明
 
@@ -42,23 +42,27 @@ Phase 3 仅验证自用价值，不接触外部用户，不进行市场、付费
 
 Phase 4 已完成 Project Incubator Skill 1.0 的完整流程设计。Maker 已接受 Phase 4 十份设计交付物，并接受 `SPECS/ARCHITECTURE_DECISIONS.md` 从过程型 Decision 收敛为 AI 越界防护清单。Maker 已批准进入 Phase 5 — Planning。
 
-Phase 5 的工作不是实现 Skill，而是把已接受的完整 Skill 1.0 设计拆解成多个范围明确、可独立执行、可独立验证的任务包。Planning 应优先定义里程碑、任务边界、验收标准、验证步骤和 AI Builder 执行约束。
+Phase 5 的首批 Planning 交付物已经完成并经 Maker 接受，Git 里程碑闭环已同步到 `main` / `origin/main`。项目已进入 Phase 6 — Build。
+
+Phase 6 的工作不是重新设计 Skill，也不是一次性实现完整 Skill 1.0，而是严格按 Phase 5 已接受的 Ticket 逐步构建真实成果。当前已形成六份 Draft Skill references：`SKILL/references/main-runtime-chain.md` 定义 Skill 1.0 主运行链路并补入上下文完整性检查，`SKILL/references/task-type-and-writeback.md` 定义任务类型判定、读取粒度、上下文恢复任务和写回触发规则，`SKILL/references/hard-gate-matrix.md` 定义硬性门槛矩阵并补入上下文完整性门槛，`SKILL/references/gate-response-and-authorization.md` 定义门槛触发后的回应结构、Maker 明确授权字段和最小恢复胶囊，`SKILL/references/builder-handoff-checklist.md` 定义 AI Builder 启动前的字段完整性、交接门槛和拒绝交接流程，`SKILL/references/builder-return-and-review.md` 定义 Builder 完成后的报告、Collaborator 回看、Maker Diff 审阅和状态回写判断。
 
 ## 3. 当前 AI 协作契约
 
-当前 AI 应以 Delivery Planner 身份工作：
+当前 AI 应以 Engineering Lead 身份工作：
 
-- 基于 Phase 4 已接受设计，拆分 Project Incubator Skill 1.0 的里程碑、任务包和首批可执行 Ticket；
-- 为每个任务明确目标、非目标、允许与禁止范围、输入输出、依赖、验收标准、验证步骤和完成后需要更新的文档；
-- 识别任务之间的依赖关系、风险和阻塞项；
-- 帮助 Maker 确认首个里程碑是否有真实价值，以及哪些任务可以推迟。
+- 按 Phase 5 已接受 Ticket 准备执行上下文，监督 AI Builder 不越过任务边界；
+- 检查当前 Draft Skill references 是否符合对应 Ticket、Phase 4 设计和 Phase 5 验证计划；
+- 如 Maker 要求修改，在当前工作分支和对应 Ticket 边界内继续；
+- 如 Maker 接受 R3-02，再按项目协议判断 R1-R3 首批 Build reference 里程碑是否可进入 Maker 手工 Git 闭环准备；
+- 保留 Diff 供 Maker 审阅，并按需更新状态入口。
 
 当前 AI 不应：
 
-- 直接进入开发、代码实现或 Skill 固化；
+- 重新定义项目方向、Phase 目标、成功标准或 Maker 决策权；
 - 将完整 Skill 一次性交给 AI Builder；
+- 在首个 Build 任务中编写最终 `SKILL.md`、实现脚本或创建模板文件，除非 Ticket 边界经 Maker 明确调整；
 - 添加未获 Maker 确认的新功能、公开发布目标、商业化目标或团队协作范围；
-- 生成没有验收标准、验证步骤或明确后续消费价值的任务文档。
+- 执行未授权 Git 闭环或跳过 Maker Diff 审阅。
 
 ## 4. 已完成内容（当前基线）
 
@@ -72,7 +76,9 @@ Phase 5 的工作不是实现 Skill，而是把已接受的完整 Skill 1.0 设�
 - Phase 3 — Validate 已完成轻量退出判断，`DOCS/03-validate/VALIDATION_PLAN.md` 为 Active；`DOCS/03-validate/VALIDATION_RESULTS.md` 暂缓至 Phase 7 后回收补齐；
 - Phase 4 — Design 的十份交付物已获 Maker 接受并转为 Active：`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/SCOPE.md`、`DOCS/04-design/DESIGN.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/AGENT_PROTOCOL_DESIGN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/04-design/PROJECT_STATE_DESIGN.md`、`DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md`、`DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md`、`DOCS/04-design/TECHNICAL_DESIGN.md`。其中 Agent 协议、交互设计和技术设计已纳入高风险结果导向门禁机制；对应 Git 闭环已完成并同步到 `main` / `origin/main` 的稳定检查点。
 - `SPECS/ARCHITECTURE_DECISIONS.md` 已获 Maker 接受并从 8 条过程型 Decision 收敛为 5 条 AI 越界防护边界：Maker 决策权与 Phase 边界、文档与状态恢复依据、Framework 与项目实例分离、流程深度自适应、Git 写操作与 Maker 验收门。
-- Maker 已批准从 Phase 4 — Design 进入 Phase 5 — Planning。
+- Phase 5 — Planning 的首批交付物已获 Maker 接受并转为 Active：`DOCS/05-planning/ROADMAP.md`、`DOCS/05-planning/MILESTONES.md`、`DOCS/05-planning/VERIFICATION_PLAN.md` 与 6 个 R1-R3 Ticket。对应 Git 闭环已完成并同步到 `main` / `origin/main` 的稳定检查点。
+- Maker 已批准从 Phase 5 — Planning 进入 Phase 6 — Build。
+- Phase 6 已形成六份 Draft Skill references：`SKILL/references/main-runtime-chain.md` 覆盖启动或恢复、读取本地协议与状态入口、定位 Phase / 角色 / 主目标 / 权威文档集合、上下文完整性检查、协作契约、任务类型判断、Phase 内协作、新事项分类、硬性门槛、文档写回、Maker 审阅、状态入口收敛和下一轮恢复；`SKILL/references/task-type-and-writeback.md` 覆盖任务类型判定、读取粒度、上下文恢复任务、写回触发条件、状态入口收敛和最小恢复胶囊；`SKILL/references/hard-gate-matrix.md` 覆盖 Phase、Git、权威文档、范围、Builder、未闭环任务、上下文完整性、纠偏沉淀和 Architecture Decision 候选写回门槛；`SKILL/references/gate-response-and-authorization.md` 覆盖门槛触发后的标准回应结构、明确授权字段、不足授权示例、安全替代动作、执行前复核和最小恢复胶囊回应；`SKILL/references/builder-handoff-checklist.md` 覆盖 AI Builder 启动前检查清单、可执行边界格式、拒绝交接回应和 R3-01 验证场景；`SKILL/references/builder-return-and-review.md` 覆盖 Builder 返回报告、Collaborator 回看清单、Maker 审阅入口、状态回写判断和 R3-02 验证场景。
 
 ### 4.2 当前有效治理基线
 
@@ -82,7 +88,7 @@ Phase 5 的工作不是实现 Skill，而是把已接受的完整 Skill 1.0 设�
 - Maker 任务 Prompt 生成必须先读取 `TEMPLATES/MAKER-TASK-PROMPT.template.md`，Prompt 只承载本次任务特有新增内容，不搬运项目状态；
 - Maker Git 闭环完成回写优先于下一任务 Prompt、Phase 切换或无关新任务；
 - 项目与任务采用自适应规划深度，简单、可逆、目标单一的任务不强制创建独立设计文档或实施计划；
-- `SKILL/` 当前仅为未来实现预留说明，不是现阶段启动依赖。
+- `SKILL/` 当前开始承载未来 Skill 1.0 的 Draft reference，但仍不是已实现、已安装或已发布的可执行 Skill。
 
 ### 4.3 当前项目理解基线
 
@@ -112,30 +118,31 @@ Phase 5 的工作不是实现 Skill，而是把已接受的完整 Skill 1.0 设�
 - 空 `CHANGELOG.md` 应在什么阶段启用；
 - 空 `.agents/` 目录应保留、定义用途还是移除。
 - `DOCS/03-validate/VALIDATION_RESULTS.md` 在 Phase 7 后如何收束补齐，以及应记录到什么细度。
-- Phase 5 首批 Planning 交付物已获 Maker 接受并转为 Active：`ROADMAP.md` / `MILESTONES.md` 已定义 R1「主运行链路串联」、R2「硬性门槛矩阵」、R3「Builder 交接与验证闭环」三个进入 Build 前的核心里程碑，并将 R4「最小场景验证支撑」定位为验证 R1-R3 的方法；`VERIFICATION_PLAN.md` 与首批 R1-R3 Tickets 已定义进入 Build 前的验证口径和任务边界。
+- R3-02 的 Draft 产物是否经 Maker 接受，以及 R1-R3 首批 Build reference 里程碑是否可以准备 Maker 手工 Git 闭环。
 
 主要项目类型、第一目标用户、边界、非目标、成功标准和推荐流程路径已经在 Phase 1 中确认；其余事项应在适当的后续 Phase 中逐步确认，不在当前阶段一次性解决。
 
 ## 6. 当前阻塞项
 
-当前没有执行层面阻塞。Phase 5 首批 Planning 交付物已获 Maker 接受。下一步需要 Maker 决定是否批准 Phase 5 退出并进入 Phase 6；若批准，应先完成当前工作分支的 Git 里程碑闭环。
+当前没有设计或阶段层面的阻塞。R3-02 已进入 Maker Diff 审阅门；在 Maker 审阅前，不启动无关新写入任务，不提交、不推送、不合并。
 
 ## 7. 当前 Exit Criteria 状态
 
-Phase 5 — Planning 的 Exit Criteria 尚未满足：
+Phase 6 — Build 的 Exit Criteria 尚未满足：
 
 | Exit Criteria | 当前状态 | 证据 |
 | --- | --- | --- |
-| 已有明确的首个里程碑 | 满足，待 Maker 阶段决定 | `DOCS/05-planning/MILESTONES.md` 已定义 R1「主运行链路串联」、R2「硬性门槛矩阵」与 R3「Builder 交接与验证闭环」为进入 Build 前的核心里程碑 |
-| 首批任务可以独立执行 | 满足，待 Maker 阶段决定 | `DOCS/05-planning/TICKETS/` 已创建 6 个 R1-R3 Ticket |
-| 每个任务具备验收标准与验证步骤 | 满足，待 Maker 阶段决定 | `DOCS/05-planning/VERIFICATION_PLAN.md` 与首批 Ticket 已包含验收标准和验证步骤 |
-| AI Builder 的执行约束已明确 | 满足，待 Maker 阶段决定 | R3 Ticket 已定义 Builder 交接前检查和返回验收闭环 |
+| 当前里程碑成果可运行、可查看或可体验 | 部分满足 | `SKILL/references/main-runtime-chain.md`、`SKILL/references/task-type-and-writeback.md`、`SKILL/references/hard-gate-matrix.md`、`SKILL/references/gate-response-and-authorization.md`、`SKILL/references/builder-handoff-checklist.md` 与 `SKILL/references/builder-return-and-review.md` 可查看，等待 Maker 审阅 R3-02 |
+| 验收条件已通过 | 部分满足 | R1-01 已检查 S1、S2、S5、S8、S9 映射与非实现边界；R1-02 已检查 S2、S5、文档写入完成、上下文恢复场景与非实现边界；R2-01 已检查 S2、S3、S4、S6、S8、上下文完整性、纠偏沉淀场景与非实现边界；R2-02 已检查 S2、“帮我合并”、“进入下一阶段”、“把这个写进架构决策”、上下文过载场景与非实现边界；R3-01 已检查 S6、缺少验证步骤、范围扩大和可执行 Ticket 场景与非实现边界；R3-02 已检查 S7、验证失败、Diff 等待审阅和状态回写卫生场景与非实现边界；等待 Maker 验收 R3-02 |
+| Maker 已完成必要的手工验证 | 未开始 | 待 Build 产物形成后由 Maker 验收 |
+| 项目状态文档已更新 | 部分满足 | 本轮已回写 R1-01 / R1-02 / R2-01 / R2-02 / R3-01 / R3-02 Draft 产物路径、任务状态和下一步，等待 Maker 审阅 |
+| 未解决问题已明确记录 | 部分满足 | 当前未解决问题为 R3-02 是否经 Maker 接受或需要修改 |
 
-Phase 4 — Design 的 Exit Criteria 已由 Maker 接受，作为 Phase 5 的上游输入继续读取。
+Phase 5 — Planning 的 Exit Criteria 已满足并由 Maker 接受，作为 Phase 6 的上游输入继续读取。
 
 ## 8. 下一步
 
-下一步以 Delivery Planner 身份向 Maker 汇报 Phase 5 阶段门检查结果。Maker 若批准进入 Phase 6 — Build，应先完成当前工作分支 `p5/docs-planning-foundation` 的 Git 里程碑闭环；闭环完成并回到稳定 `main` 后，再创建 Phase 6 的首个 Build 工作分支。
+下一步由 Maker 在 IDE Diff 中审阅 `SKILL/references/builder-return-and-review.md` 与 `DOCS/PROJECT_STATE.md`。如果需要修改，AI 在当前工作分支继续 R3-02；如果接受，后续再按项目协议判断 R1-R3 首批 Build reference 里程碑是否可以进入 Maker 手工 Git 闭环准备。
 
 ## 9. 当前权威文档集合
 
@@ -145,32 +152,38 @@ Phase 4 — Design 的 Exit Criteria 已由 Maker 接受，作为 Phase 5 的上
 | Agent 启动协议 | `AGENTS.md` | Active | 启动时必读 |
 | 当前项目状态 | `DOCS/PROJECT_STATE.md` | Active | 启动时必读 |
 | 上游阶段想法 | `DOCS/00-idea/IDEA.md` | Active | Phase 4 按需读取 |
-| Phase 1 项目意图 | `DOCS/01-intent/INTENT.md` | Active | Phase 5 必读 |
-| Phase 1 项目画像 | `DOCS/01-intent/PROJECT_PROFILE.md` | Active | Phase 5 必读 |
-| Phase 2 问题定义 | `DOCS/02-explore/PROBLEM.md` | Active | Phase 5 必读 |
-| Phase 2 轻量研究 | `DOCS/02-explore/RESEARCH.md` | Active | Phase 5 必读 |
-| Phase 3 轻量验证计划 | `DOCS/03-validate/VALIDATION_PLAN.md` | Active | Phase 5 必读 |
-| Phase 4 范围设计 | `DOCS/04-design/SCOPE.md` | Active | Phase 5 必读 |
-| Phase 4 流程设计 | `DOCS/04-design/DESIGN.md` | Active | Phase 5 必读 |
-| Phase 4 协作交互设计 | `DOCS/04-design/INTERACTION_DESIGN.md` | Active | Phase 5 必读 |
-| Phase 4 Agent 运行协议设计 | `DOCS/04-design/AGENT_PROTOCOL_DESIGN.md` | Active | Phase 5 必读 |
-| Phase 4 文档写回设计 | `DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md` | Active | Phase 5 必读 |
-| Phase 4 Skill 形态设计 | `DOCS/04-design/SKILL_DESIGN.md` | Active | Phase 5 必读 |
-| Phase 4 项目状态入口设计 | `DOCS/04-design/PROJECT_STATE_DESIGN.md` | Active | Phase 5 必读 |
-| Phase 4 技术方案设计 | `DOCS/04-design/TECHNICAL_DESIGN.md` | Active | Phase 5 必读 |
-| Phase 4 架构决策文档设计 | `DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md` | Active | Phase 5 按需读取 |
-| Phase 4 模板沉淀机制设计 | `DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md` | Active | Phase 5 必读 |
-| Phase 5 路线图 | `DOCS/05-planning/ROADMAP.md` | Active | Phase 5 必读 |
-| Phase 5 里程碑 | `DOCS/05-planning/MILESTONES.md` | Active | Phase 5 必读 |
-| Phase 5 验证计划 | `DOCS/05-planning/VERIFICATION_PLAN.md` | Active | Phase 5 必读 |
-| Phase 5 任务包 | `DOCS/05-planning/TICKETS/` | Active | Phase 5 按需读取 |
+| Phase 1 项目意图 | `DOCS/01-intent/INTENT.md` | Active | Phase 6 按需读取 |
+| Phase 1 项目画像 | `DOCS/01-intent/PROJECT_PROFILE.md` | Active | Phase 6 按需读取 |
+| Phase 2 问题定义 | `DOCS/02-explore/PROBLEM.md` | Active | Phase 6 按需读取 |
+| Phase 2 轻量研究 | `DOCS/02-explore/RESEARCH.md` | Active | Phase 6 按需读取 |
+| Phase 3 轻量验证计划 | `DOCS/03-validate/VALIDATION_PLAN.md` | Active | Phase 6 按需读取 |
+| Phase 4 范围设计 | `DOCS/04-design/SCOPE.md` | Active | Phase 6 按需读取 |
+| Phase 4 流程设计 | `DOCS/04-design/DESIGN.md` | Active | Phase 6 必读 |
+| Phase 4 协作交互设计 | `DOCS/04-design/INTERACTION_DESIGN.md` | Active | Phase 6 必读 |
+| Phase 4 Agent 运行协议设计 | `DOCS/04-design/AGENT_PROTOCOL_DESIGN.md` | Active | Phase 6 必读 |
+| Phase 4 文档写回设计 | `DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md` | Active | Phase 6 必读 |
+| Phase 4 Skill 形态设计 | `DOCS/04-design/SKILL_DESIGN.md` | Active | Phase 6 必读 |
+| Phase 4 项目状态入口设计 | `DOCS/04-design/PROJECT_STATE_DESIGN.md` | Active | Phase 6 按需读取 |
+| Phase 4 技术方案设计 | `DOCS/04-design/TECHNICAL_DESIGN.md` | Active | Phase 6 必读 |
+| Phase 4 架构决策文档设计 | `DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md` | Active | Phase 6 按需读取 |
+| Phase 4 模板沉淀机制设计 | `DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md` | Active | Phase 6 按需读取 |
+| Phase 5 路线图 | `DOCS/05-planning/ROADMAP.md` | Active | Phase 6 必读 |
+| Phase 5 里程碑 | `DOCS/05-planning/MILESTONES.md` | Active | Phase 6 必读 |
+| Phase 5 验证计划 | `DOCS/05-planning/VERIFICATION_PLAN.md` | Active | Phase 6 必读 |
+| Phase 5 任务包 | `DOCS/05-planning/TICKETS/` | Active | Phase 6 按需读取；首个任务读取 `TICKET-R1-01-main-runtime-chain.md` |
 | 架构决策 | `SPECS/ARCHITECTURE_DECISIONS.md` | Active | 启动时必读 |
 | 设计背景 | `SPECS/PROJECT_INCUBATOR_DESIGN_SPEC.md` | Active | 修改 Framework 或设计输入时必读 |
 | Phase 规则 | `FRAMEWORK/Phase-System.md` | Active | 读取当前 Phase 章节 |
 | 角色规则 | `FRAMEWORK/Role-System.md` | Active | 读取当前角色章节 |
 | 文档规则 | `FRAMEWORK/Document-System.md` | Active | 创建、移动或更新文档时必读 |
-| Skill 规范 | `FRAMEWORK/Codex-Skill-Specification.md` | Draft | 讨论 Skill 化时必读 |
-| Skill 目录状态 | `SKILL/README.md` | Active | 准备 Skill 实现前读取 |
+| Skill 规范 | `FRAMEWORK/Codex-Skill-Specification.md` | Draft | Phase 6 准备 Skill 产物时必读 |
+| Skill 目录状态 | `SKILL/README.md` | Active | Phase 6 准备 Skill 产物时必读 |
+| Skill 主运行链路 reference | `SKILL/references/main-runtime-chain.md` | Draft | R1-01 审阅与后续 R1 / R2 / R3 Ticket 按需读取 |
+| Skill 任务类型与写回 reference | `SKILL/references/task-type-and-writeback.md` | Draft | R1-02 审阅与后续 R2 / R3 Ticket 按需读取 |
+| Skill 硬性门槛矩阵 reference | `SKILL/references/hard-gate-matrix.md` | Draft | R2-01 审阅与后续 R2 / R3 Ticket 按需读取 |
+| Skill 门槛回应与授权 reference | `SKILL/references/gate-response-and-authorization.md` | Draft | R2-02 审阅与后续 R3 Ticket 按需读取 |
+| Skill Builder 交接前检查 reference | `SKILL/references/builder-handoff-checklist.md` | Draft | R3-01 审阅与后续 R3 Ticket 按需读取 |
+| Skill Builder 返回与审阅 reference | `SKILL/references/builder-return-and-review.md` | Draft | R3-02 审阅与后续 Skill 实现任务按需读取 |
 | 通用文档元数据模板 | `TEMPLATES/DOCUMENT-METADATA.template.md` | Draft | 创建权威项目文档时读取 |
 | Maker 任务启动 Prompt 模板 | `TEMPLATES/MAKER-TASK-PROMPT.template.md` | Draft | Maker 发起新任务时按需使用 |
 
@@ -178,7 +191,7 @@ Phase 4 — Design 的 Exit Criteria 已由 Maker 接受，作为 Phase 5 的上
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读、当前 Phase 必读或本轮按需读取的文档。
 
-恢复后的第一项工作是以 Delivery Planner 身份汇报 Phase 5 阶段门检查结果，并等待 Maker 决定是否批准进入 Phase 6 — Build。不得直接进入开发或 Skill 固化；若 Maker 批准进入 Phase 6，应先完成当前工作分支 `p5/docs-planning-foundation` 的 Git 里程碑闭环，再从稳定 `main` 创建后续 Build 工作分支。`DOCS/03-validate/VALIDATION_RESULTS.md` 保留为 Phase 7 后的回收事项。
+恢复后的第一项工作是以 Engineering Lead 身份继续 R3-02 的 Maker Review：检查 `SKILL/references/builder-return-and-review.md` 与 `DOCS/PROJECT_STATE.md` 的 Diff，等待 Maker 接受或提出修改意见。不得重新设计 Phase 5，不得一次性实现完整 Skill 1.0，也不得在 R3-02 中启动 Builder、编写最终 `SKILL.md`、实现脚本、修改 Architecture Decisions 或模板文件，除非 Maker 明确调整 Ticket 边界。若新会话由上下文完整性门槛触发，必须重新读取权威文件，不得依赖旧聊天压缩摘要判断 Phase、任务范围、Git / Phase / 架构授权或门槛是否解除。`DOCS/03-validate/VALIDATION_RESULTS.md` 保留为 Phase 7 后的回收事项。
 
 新会话在状态恢复和只读报告阶段不创建分支；如需写入，Agent 应先确认符合当前任务范围的工作分支，再进行文档修改。
 
