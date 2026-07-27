@@ -22,14 +22,14 @@
 | 项目名称 | Project Incubator |
 | Maker | 当前项目的人类所有者，即正在与 AI 协作的用户 |
 | 项目状态 | Active |
-| 当前 Phase | Phase 5 — Planning（基于 gate router 设计继续拆解） |
-| 当前 AI 角色 | Delivery Planner / Engineering Lead（交付规划与工程拆解） |
-| 当前主要目标 | 基于已接受的 `DOCS/04-design/GATE_EXECUTION_DESIGN.md` gate router 版本，重拆 Project Incubator Skill 1.0 的 R2 结构化 gate 执行机制与 R3 Builder 交接闭环，使后续 Build 任务具备明确输入、输出、阻断规则和验证样例。 |
-| 当前阶段交付物 | Phase 4 设计输入：`DOCS/04-design/GATE_EXECUTION_DESIGN.md` 已转为 Active；当前 Phase 5 需继续拆解：`DOCS/05-planning/ROADMAP.md`、`DOCS/05-planning/MILESTONES.md`、`DOCS/05-planning/VERIFICATION_PLAN.md` 与 R2 / R3 Ticket；P6 可改进 Skill Draft 基线：`p6/skill-minimal-entry` 分支上的 `SKILL/SKILL.md`、`SKILL/references/`、`SKILL/assets/templates/` 等承载物，其主流程可复用，但 gate 执行机制必须升级。 |
-| 当前任务状态 | Ready for Maker Review（Maker 已确认按当前 gate router 版本继续后续流程；本轮已把 Phase 5 Planning 从“待修订标记”推进为当前可执行拆解基线。Maker 审阅前不提交、不推送、不合并。） |
+| 当前 Phase | Phase 6 — Build（结构化 gate 增量实现） |
+| 当前 AI 角色 | Engineering Lead（组织执行、约束范围、检查实现与验证） |
+| 当前主要目标 | 基于 `p6/skill-minimal-entry` 的有效主流程和 `DOCS/04-design/GATE_EXECUTION_DESIGN.md` / Phase 5 R2-R3 拆解，增量实现 Project Incubator Skill 1.0 的结构化 gate 执行承载，使关键 gate 具备可验证、非黑即白的命中 / 阻断结果。 |
+| 当前阶段交付物 | P6 可改进 Skill Draft 基线：`SKILL/SKILL.md`、`SKILL/references/`、`SKILL/assets/templates/`；新增设计 / Planning 输入：`DOCS/04-design/GATE_EXECUTION_DESIGN.md`、`DOCS/05-planning/ROADMAP.md`、`DOCS/05-planning/MILESTONES.md`、`DOCS/05-planning/VERIFICATION_PLAN.md` 与 R2 / R3 Ticket；当前 Build 应新增或修改结构化 gate 配置、gate case、必要检查器和 runtime reference 接入点。 |
+| 当前任务状态 | Working（已从 `p6/skill-minimal-entry` 新建 `p6/skill-structured-gates`，并引入结构化 gate 设计 / Planning checkpoint；下一步进入 Build 前先确认首个实现切片。） |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 审阅 Phase 5 拆解 Diff，并确认：R2 是否已正确拆成 gate router / gate schema / gate registry / gate case；R3 是否正确消费 `GATE_BUILDER_HANDOFF`；当前 Planning 是否足以进入下一轮 Build 任务。 |
+| 下一项决定 | Maker 确认首个 Build 切片：优先实现 gate registry / config 与 gate case，还是先接入最小 runtime router；本轮不得一次性完成安装、发布或完整自动化。 |
 | 最近更新时间 | 2026-07-27 |
 
 ## 2. 当前阶段说明
@@ -46,23 +46,25 @@ Phase 5 的首批 Planning 交付物已经完成并经 Maker 接受，Git 里程
 
 Phase 6 的第一轮 Skill Draft 构建暴露出关键设计缺口：当前 Skill Draft 的主运行链路、入口分流、项目接入和文档写回方向有效，但其中的自然语言 gate references 只能描述门槛和流程，不能像代码 `if / else` 一样强制保证每一个关键门槛百分之百命中。Maker 已明确确认，Skill 1.0 必须让门槛命中 / 未命中具备非黑即白结果；因此当前 Phase 6 Build Draft 应视为可改进基线，而不是最终可验收版本。
 
-项目已完成 Phase 4 — Design 的受控修订输入：新增 `DOCS/04-design/GATE_EXECUTION_DESIGN.md`，并将相关 Phase 4 设计文档挂接到结构化 gate 执行机制。Maker 已确认按当前 gate router 版本继续后续流程；因此当前工作回到 Phase 5 — Planning，将 R2 结构化 gate 执行机制与 R3 Builder 交接闭环重拆为可执行、可验证、可交接的 Build 任务。当前 `p6/skill-minimal-entry` 分支保留为 P6 可改进 Skill Draft 基线；下一轮 Build 应在保留其有效主流程的前提下增量加入结构化 gate 执行承载。
+项目已完成 Phase 4 — Design 的受控修订输入：新增 `DOCS/04-design/GATE_EXECUTION_DESIGN.md`，并将相关 Phase 4 设计文档挂接到结构化 gate 执行机制。Maker 已确认按当前 gate router 版本继续后续流程；Phase 5 R2 / R3 已重拆为 gate router、gate schema、gate registry / config、gate case、必要检查器判断和 Builder gate 消费方式。
+
+当前已从 `p6/skill-minimal-entry` 新建 `p6/skill-structured-gates`，并引入 `p4/docs-gate-execution-design` 的结构化 gate 设计 / Planning checkpoint。当前 Build 应保留 P6 Skill Draft 的有效主流程，并增量加入结构化 gate 执行承载。
 
 ## 3. 当前 AI 协作契约
 
-当前 AI 应以 Delivery Planner / Engineering Lead 身份工作：
+当前 AI 应以 Engineering Lead 身份工作：
 
-- 基于 `DOCS/04-design/GATE_EXECUTION_DESIGN.md` 的 gate router 版本继续 Phase 5 拆解；
-- 将 R2 从自然语言硬性门槛矩阵重拆为 gate router、gate schema、gate registry / config、gate case 和必要检查器判断；
-- 将 R3 Builder 交接与返回复核改为消费结构化 gate 输出，而不是独立自然语言清单；
-- 明确后续 Build 应在 P6 Skill Draft 有效主流程上增量实现当前 Planning 拆出的结构化 gate 承载；
-- 保留当前 `p6/skill-minimal-entry` 作为可改进 Skill Draft 基线；是否直接续作该分支或另起 P6 gate 分支，应由 Maker 在 checkpoint 后确认。
+- 以 `p6/skill-structured-gates` 为当前 Build 分支；
+- 保留 P6 Skill Draft 的有效主流程、入口分流、项目接入和文档写回方向；
+- 根据 `GATE_EXECUTION_DESIGN.md` 与 R2 / R3 Ticket 增量实现结构化 gate 执行承载；
+- 先选择最小可验证 Build 切片，再修改 Skill runtime references、配置、case 或检查器；
+- 完成每个切片后运行相称验证，并回到 Collaborator 视角交给 Maker 审阅。
 
 当前 AI 不应：
 
 - 把当前自然语言 gate references 视为 Skill 1.0 最终可验收的 gate 承载；
-- 直接在当前 `p6/skill-minimal-entry` 分支上修改 Phase 4 / Phase 5 设计内容；
-- 未经当前 Planning 拆解与 Maker 审阅，直接实现 gate 脚本、安装流程、发布流程或完整自动化；
+- 推翻 P6 Skill Draft 的有效主流程；
+- 在一个切片内同时实现安装、发布或完整自动化；
 - 改变 Maker 决策权、项目类型、公开发布或商业化边界；
 - 删除当前 P6 Skill Draft 基线分支或执行未授权远端操作。
 
@@ -133,31 +135,31 @@ Phase 6 的第一轮 Skill Draft 构建暴露出关键设计缺口：当前 Skil
 - `DOCS/03-validate/VALIDATION_RESULTS.md` 在 Phase 7 后如何收束补齐，以及应记录到什么细度。
 - Phase 5 当前拆解是否已经足以支撑后续 Build：R2 是否正确拆成 gate router、gate schema、gate registry / config、gate case 和必要检查器判断；R3 是否正确消费 `GATE_BUILDER_HANDOFF` 与 Builder 返回后的候选 gate；
 - gate 机制作为 token 节流机制的验证样例是否充分：是否覆盖短字段路由、跳过无关 gate、命中阻断后停止后续语义扩展和执行消耗；
-- 当前 Phase 6 Draft Skill 资产中哪些主流程内容直接复用、哪些 gate reference 内容需要改写为结构化配置 / 检查器，应在下一轮 Build 任务开始前基于 Phase 5 Ticket 决定。
+- 当前 Phase 6 Build 的首个实现切片：优先实现 `SKILL/gates/` 结构化配置与 gate case，还是先实现最小 router / checker，并由 runtime reference 调用。
 
 主要项目类型、第一目标用户、边界、非目标、成功标准和推荐流程路径已经在 Phase 1 中确认；其余事项应在适当的后续 Phase 中逐步确认，不在当前阶段一次性解决。
 
 ## 6. 当前阻塞项
 
-当前阻塞已从设计缺口转为 Maker 审阅门：`DOCS/04-design/GATE_EXECUTION_DESIGN.md` 已作为 Active 设计输入，Phase 5 文档与 R2 / R3 Ticket 已按 gate router 版本重拆。Maker 审阅并确认 Phase 5 拆解 Diff 前，不进入下一轮 Build；`p6/skill-minimal-entry` 继续保留为可改进 Skill Draft 基线，不删除、不推送、不合并。
+当前无设计层面阻塞。当前 Build 尚未开始实现；首个切片边界需在写入 Skill 配置、case、checker 或 runtime reference 前确认。临时 `p5/docs-structured-gate-checkpoint` 分支和 stash 仅为前序 Git 修正过程遗留，不作为当前 Build 输入。
 
 ## 7. 当前 Exit Criteria 状态
 
-Phase 6 — Build 的 Exit Criteria 不满足；当前 Phase 5 — Planning 正在根据 gate router 设计重拆后续 Build 任务：
+Phase 6 — Build 的 Exit Criteria 尚未满足；当前进入结构化 gate 增量实现任务：
 
 | Exit Criteria | 当前状态 | 证据 |
 | --- | --- | --- |
-| 当前里程碑成果可运行、可查看或可体验 | 部分满足 | 当前 Skill Draft 主流程可查看并可作为后续 Build 基线，但 gate 执行机制尚不能保证百分之百命中 |
-| 验收条件已通过 | 不满足 | 已接受的自然语言 reference 验证只证明可描述流程和门槛，不能证明 gate 具有非黑即白命中 / 未命中结果 |
-| Maker 已完成必要的手工验证 | 需改进 | Maker 已确认当前主流程没有问题，但门槛机制必须升级为结构化 gate |
-| 项目状态文档已更新 | 待 Maker 审阅 | 当前状态入口已记录 Phase 4 gate 设计输入、Phase 5 拆解方向、P6 可改进 Draft 基线处理方式和下一步 Maker 审阅入口 |
-| 未解决问题已明确记录 | 待 Maker 审阅 | 当前未解决问题已收敛为 Phase 5 拆解是否充分、gate token 节流验证是否充分、Phase 6 Draft 资产后续取舍 |
+| 当前里程碑成果可运行、可查看或可体验 | 部分满足 | 当前 Skill Draft 主流程可查看并可作为 Build 基线；结构化 gate 执行承载尚未实现 |
+| 验收条件已通过 | 不满足 | 需要新增 gate registry / config、gate case、必要 checker 或 runtime 接入，并验证关键 gate 输出枚举与阻断规则 |
+| Maker 已完成必要的手工验证 | 未开始 | 待结构化 gate Build 切片形成后由 Maker 审阅 Diff 与验证结果 |
+| 项目状态文档已更新 | Working | 当前状态入口已记录进入 `p6/skill-structured-gates`、P6 Draft 可改进基线和下一步 Build 切片 |
+| 未解决问题已明确记录 | Working | 当前未解决问题为首个 Build 切片边界、检查器承载深度和 gate case 覆盖范围 |
 
-Phase 5 — Planning 的既有 Exit Criteria 曾被 Maker 接受，但因 Skill gate 验收目标升级，当前需要重新检查 Phase 5 Planning 是否仍充分，并由 Maker 决定是否进入下一轮 Build。
+Phase 5 — Planning 的 gate router 修订已作为当前 Build 输入；若实现中发现 Ticket 不足，应回到 Phase 5 文档补拆，不得在 Build 中自由补全关键规则。
 
 ## 8. 下一步
 
-下一步是 Maker 在 IDE Diff 中审阅本轮 Phase 5 拆解修订。审阅重点是：R2 是否已拆成 gate router / gate schema / gate registry / gate case；gate 输出枚举与阻断规则是否足够非黑即白；router 是否能避免全量执行无关 gate 并减少 token 消耗；是否接受结构化 gate 配置与部分脚本 / 工具检查器作为后续承载；R3 Builder 交接与返回复核是否正确消费结构化 gate 输出。Maker 审阅前不提交、不推送、不合并。
+下一步是确认并执行首个 Phase 6 Build 切片。推荐先实现最小结构化 gate 承载：`SKILL/gates/` 配置、gate case fixtures 和可选最小检查器设计接入；暂不实现安装、发布或完整自动化。任何代码 / 配置写入前必须保持范围小、验收标准明确，并验证关键 gate 的输入、输出枚举和阻断规则。
 
 ## 9. 当前权威文档集合
 
@@ -166,27 +168,27 @@ Phase 5 — Planning 的既有 Exit Criteria 曾被 Maker 接受，但因 Skill 
 | 项目入口 | `README.md` | Active | Maker 初次进入时读取 |
 | Agent 启动协议 | `AGENTS.md` | Active | 启动时必读 |
 | 当前项目状态 | `DOCS/PROJECT_STATE.md` | Active | 启动时必读 |
-| 上游阶段想法 | `DOCS/00-idea/IDEA.md` | Active | Phase 5 按需读取 |
-| Phase 1 项目意图 | `DOCS/01-intent/INTENT.md` | Active | Phase 5 按需读取 |
-| Phase 1 项目画像 | `DOCS/01-intent/PROJECT_PROFILE.md` | Active | Phase 5 按需读取 |
-| Phase 2 问题定义 | `DOCS/02-explore/PROBLEM.md` | Active | Phase 5 按需读取 |
-| Phase 2 轻量研究 | `DOCS/02-explore/RESEARCH.md` | Active | Phase 5 按需读取 |
-| Phase 3 轻量验证计划 | `DOCS/03-validate/VALIDATION_PLAN.md` | Active | Phase 5 按需读取 |
-| Phase 4 范围设计 | `DOCS/04-design/SCOPE.md` | Active | 当前 Phase 5 gate 拆解按需读取 |
-| Phase 4 流程设计 | `DOCS/04-design/DESIGN.md` | Active | 当前 Phase 5 gate 拆解按需读取 |
-| Phase 4 协作交互设计 | `DOCS/04-design/INTERACTION_DESIGN.md` | Active | 当前 Phase 5 gate 拆解必读 |
-| Phase 4 Agent 运行协议设计 | `DOCS/04-design/AGENT_PROTOCOL_DESIGN.md` | Active | 当前 Phase 5 gate 拆解必读 |
-| Phase 4 文档写回设计 | `DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md` | Active | 当前 Phase 5 gate 拆解按需读取 |
-| Phase 4 Skill 形态设计 | `DOCS/04-design/SKILL_DESIGN.md` | Active | 当前 Phase 5 gate 拆解必读 |
-| Phase 4 项目状态入口设计 | `DOCS/04-design/PROJECT_STATE_DESIGN.md` | Active | 当前 Phase 5 gate 拆解按需读取 |
-| Phase 4 技术方案设计 | `DOCS/04-design/TECHNICAL_DESIGN.md` | Active | 当前 Phase 5 gate 拆解必读 |
-| Phase 4 结构化 gate 执行设计 | `DOCS/04-design/GATE_EXECUTION_DESIGN.md` | Active | 当前 Phase 5 gate router / schema / case 拆解与后续 Phase 6 gate 实现前必读 |
-| Phase 4 架构决策文档设计 | `DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md` | Active | 当前 Phase 5 gate 拆解按需读取 |
-| Phase 4 模板沉淀机制设计 | `DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md` | Active | 当前 Phase 5 gate 拆解按需读取 |
-| Phase 5 路线图 | `DOCS/05-planning/ROADMAP.md` | Active | 当前 Phase 5 gate 拆解必读 |
-| Phase 5 里程碑 | `DOCS/05-planning/MILESTONES.md` | Active | 当前 Phase 5 gate 拆解必读 |
-| Phase 5 验证计划 | `DOCS/05-planning/VERIFICATION_PLAN.md` | Active | 当前 Phase 5 gate case 拆解必读 |
-| Phase 5 任务包 | `DOCS/05-planning/TICKETS/` | Active | 当前 Phase 5 R2 / R3 Ticket 拆解必读 |
+| 上游阶段想法 | `DOCS/00-idea/IDEA.md` | Active | Phase 6 按需读取 |
+| Phase 1 项目意图 | `DOCS/01-intent/INTENT.md` | Active | Phase 6 按需读取 |
+| Phase 1 项目画像 | `DOCS/01-intent/PROJECT_PROFILE.md` | Active | Phase 6 按需读取 |
+| Phase 2 问题定义 | `DOCS/02-explore/PROBLEM.md` | Active | Phase 6 按需读取 |
+| Phase 2 轻量研究 | `DOCS/02-explore/RESEARCH.md` | Active | Phase 6 按需读取 |
+| Phase 3 轻量验证计划 | `DOCS/03-validate/VALIDATION_PLAN.md` | Active | Phase 6 按需读取 |
+| Phase 4 范围设计 | `DOCS/04-design/SCOPE.md` | Active | 当前 Phase 6 gate Build 按需读取 |
+| Phase 4 流程设计 | `DOCS/04-design/DESIGN.md` | Active | 当前 Phase 6 gate Build 按需读取 |
+| Phase 4 协作交互设计 | `DOCS/04-design/INTERACTION_DESIGN.md` | Active | 当前 Phase 6 gate Build 必读 |
+| Phase 4 Agent 运行协议设计 | `DOCS/04-design/AGENT_PROTOCOL_DESIGN.md` | Active | 当前 Phase 6 gate Build 必读 |
+| Phase 4 文档写回设计 | `DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md` | Active | 当前 Phase 6 gate Build 按需读取 |
+| Phase 4 Skill 形态设计 | `DOCS/04-design/SKILL_DESIGN.md` | Active | 当前 Phase 6 gate Build 必读 |
+| Phase 4 项目状态入口设计 | `DOCS/04-design/PROJECT_STATE_DESIGN.md` | Active | 当前 Phase 6 gate Build 按需读取 |
+| Phase 4 技术方案设计 | `DOCS/04-design/TECHNICAL_DESIGN.md` | Active | 当前 Phase 6 gate Build 必读 |
+| Phase 4 结构化 gate 执行设计 | `DOCS/04-design/GATE_EXECUTION_DESIGN.md` | Active | 当前 Phase 6 gate router / schema / case 实现必读 |
+| Phase 4 架构决策文档设计 | `DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md` | Active | 当前 Phase 6 gate Build 按需读取 |
+| Phase 4 模板沉淀机制设计 | `DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md` | Active | 当前 Phase 6 gate Build 按需读取 |
+| Phase 5 路线图 | `DOCS/05-planning/ROADMAP.md` | Active | 当前 Phase 6 gate Build 必读 |
+| Phase 5 里程碑 | `DOCS/05-planning/MILESTONES.md` | Active | 当前 Phase 6 gate Build 必读 |
+| Phase 5 验证计划 | `DOCS/05-planning/VERIFICATION_PLAN.md` | Active | 当前 Phase 6 gate case 实现必读 |
+| Phase 5 任务包 | `DOCS/05-planning/TICKETS/` | Active | 当前 Phase 6 R2 / R3 gate Build 必读 |
 | 架构决策 | `SPECS/ARCHITECTURE_DECISIONS.md` | Active | 启动时必读 |
 | 设计背景 | `SPECS/PROJECT_INCUBATOR_DESIGN_SPEC.md` | Active | 修改 Framework 或设计输入时必读 |
 | Phase 规则 | `FRAMEWORK/Phase-System.md` | Active | 读取当前 Phase 章节 |
@@ -212,8 +214,8 @@ Phase 5 — Planning 的既有 Exit Criteria 曾被 Maker 接受，但因 Skill 
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读、当前 Phase 必读或本轮按需读取的文档。
 
-恢复后的第一项工作是以 Delivery Planner / Engineering Lead 身份继续 Phase 5 拆解审阅：检查当前 checkpoint 分支上的 Diff，重点审阅 `DOCS/05-planning/ROADMAP.md`、`DOCS/05-planning/MILESTONES.md`、`DOCS/05-planning/VERIFICATION_PLAN.md` 与 R2 / R3 Ticket 是否已经按 `DOCS/04-design/GATE_EXECUTION_DESIGN.md` 的 gate router 版本重拆，并确认 `DOCS/PROJECT_STATE.md` 回写是否一致。`p6/skill-minimal-entry` 作为 P6 可改进 Skill Draft 基线保留；后续 Build 可以基于其有效主流程增量接入结构化 gate，但不得把自然语言 gate references 当成最终验收承载。若新会话由上下文完整性门槛触发，必须重新读取权威文件，不得依赖旧聊天压缩摘要判断 Phase、任务范围、Git / Phase / 架构授权或门槛是否解除。`DOCS/03-validate/VALIDATION_RESULTS.md` 保留为 Phase 7 后的回收事项。
+恢复后的第一项工作是以 Engineering Lead 身份继续 `p6/skill-structured-gates` 分支上的 Phase 6 Build：基于 P6 Skill Draft 的有效主流程，按 `DOCS/04-design/GATE_EXECUTION_DESIGN.md` 与 R2 / R3 Ticket 选择首个结构化 gate 实现切片。不得把自然语言 gate references 当成最终验收承载，不得一次性实现安装、发布或完整自动化。若新会话由上下文完整性门槛触发，必须重新读取权威文件，不得依赖旧聊天压缩摘要判断 Phase、任务范围、Git / Phase / 架构授权或门槛是否解除。`DOCS/03-validate/VALIDATION_RESULTS.md` 保留为 Phase 7 后的回收事项。
 
 新会话在状态恢复和只读报告阶段不创建分支；如需写入，Agent 应先确认符合当前任务范围的工作分支，再进行文档修改。
 
-如果新会话发现当前工作区仍在 `p6/skill-minimal-entry`，应先确认当前任务是继续 P6 gate Build 还是回到 Phase 5 checkpoint 审阅；不得把 Phase 5 拆解修订和 Phase 6 实现改动混在同一个无边界 Diff 中。若发现未提交 Diff、未推送提交或任务分支状态与本状态入口不一致，必须先报告 Maker 决定。
+如果新会话发现当前工作区仍在 `p6/skill-minimal-entry`，应先切到或重建 `p6/skill-structured-gates` 的当前 Build 分支；不得把 Phase 5 拆解修订和 Phase 6 实现改动混在同一个无边界 Diff 中。若发现未提交 Diff、未推送提交或任务分支状态与本状态入口不一致，必须先报告 Maker 决定。
