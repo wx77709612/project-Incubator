@@ -9,11 +9,11 @@
 | 所属项目 | Project Incubator |
 | 所有者 Phase | Phase 4 — Design |
 | 文档状态 | Active |
-| 权威范围 | Project Incubator Skill 1.0 的完整范围、非目标、Phase 4 设计深度与设计文档组合规则、进入 Phase 5 的边界 |
+| 权威范围 | Project Incubator Skill 1.0 的完整范围、非目标、Phase 4 设计深度与设计文档组合规则、结构化 gate 执行机制范围和进入 Phase 5 的边界 |
 | 消费 Phase | Phase 4–9，按需读取 |
 | 更新条件 | Maker 调整 Skill 1.0 范围、非目标、设计深度、设计文档组合、规划边界或 Phase 5 输入要求 |
 | 依赖文档 | `DOCS/01-intent/INTENT.md`、`DOCS/01-intent/PROJECT_PROFILE.md`、`DOCS/02-explore/PROBLEM.md`、`DOCS/02-explore/RESEARCH.md`、`DOCS/03-validate/VALIDATION_PLAN.md`、`DOCS/PROJECT_STATE.md` |
-| 最后更新 | 2026-07-23 |
+| 最后更新 | 2026-07-27 |
 
 ## 1. 文档职责
 
@@ -22,6 +22,8 @@
 Phase 4 — Design 负责把项目设计到足以规划和执行的程度。它可以包含产品设计、流程设计、交互设计、内容结构设计、技术方案设计、系统架构设计、Skill 形态设计等，具体包含哪些取决于项目类型。
 
 本文档不执行代码实现、内容制作、资产生成、Skill 安装发布或任务拆解。它可以定义实现方案设计、技术方向、系统边界、组件职责、数据或文档流、验收方式；Phase 5 — Planning 再将这些已确认设计拆解为任务，Phase 6 — Build 再执行具体实现。
+
+2026-07-27 受控设计修订：Skill 1.0 的范围现在明确包含结构化 gate 执行机制。该机制不等同于完整自动化或发布安装能力；它的 Phase 4 范围是设计 gate schema、低成本 gate router、输入字段、输出枚举、阻断条件、候选 gate 执行优先级、Agent 可继续动作、失败处理和验证方式，并判断哪些 gate 需要后续脚本 / 工具检查器承载。
 
 ## 2. 当前目标产物
 
@@ -73,6 +75,7 @@ Project Incubator Skill 1.0 应覆盖以下能力范围：
 - 分叉任务管理：出现新问题、新想法或上下文漂移时，先判断立即处理、记录后续、视为阻塞，还是请求 Maker 决定；
 - Git 安全与验收：执行前检查分支、工作区、远端同步和未闭环任务，完成后保留 Diff 给 Maker 审阅；
 - Builder 交接：在 Planning 和 Build 阶段把任务拆为范围明确、可执行、可验证的工作单元；
+- 结构化 gate 执行：把关键硬性门槛定义为可判定、可验证、非黑即白的命中 / 未命中协议；
 - 阶段回写：阶段事实、文档路径、阻塞项、下一步和恢复入口变化时，更新对应权威文档；
 - 多项目类型适配：支持 Personal Tool、App、内容作品、工作流等不同目标产物采用不同设计深度和交付物组合。
 
@@ -103,6 +106,7 @@ Skill 1.0 的非目标不应维护为一次次纠偏后的单一禁止事项清�
 - `DOCS/04-design/PROJECT_STATE_DESIGN.md`：定义 `PROJECT_STATE.md` 的职责、结构、字段、模板关系、更新条件和写后检查；
 - `DOCS/04-design/SKILL_DESIGN.md`：定义未来 Codex Skill 形态下的职责、触发、输入输出、权限边界和执行约束；
 - `DOCS/04-design/TECHNICAL_DESIGN.md`：定义 Skill 1.0 的技术方向、系统边界、资产分工、运行时读取与写入策略、Git 和工具权限边界；
+- `DOCS/04-design/GATE_EXECUTION_DESIGN.md`：定义 Skill 1.0 的结构化 gate schema、低成本 router、输入字段、输出枚举、阻断条件、候选 gate 执行优先级、失败处理、验证方式和脚本 / 工具检查器规划依据；
 - `DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md`：定义 `ARCHITECTURE_DECISIONS.md` 的职责、结构、写入门槛和读取方式；
 - `DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md`：定义运行入口、状态入口和阶段交付物如何沉淀为生产模板。
 
@@ -119,6 +123,7 @@ Phase 4 完成后，Phase 5 应基于 Skill 1.0 的完整流程拆解任务，�
 - 端到端流程的 Phase、角色、文档、状态和阶段门关系；
 - 不同项目类型在 Phase 4 设计深度上的适配规则；
 - 当前 Skill 项目的协作交互设计、Agent 运行协议设计与技术方案设计；
+- 关键硬性门槛的结构化 gate 执行协议，而不是仅依赖自然语言门禁描述；
 - 文档写回卫生、状态入口收敛和边界规则收敛；
 - `AGENTS.md` 与 `PROJECT_STATE.md` 的生产模板关系；
 - Architecture Decision 的用途、结构、写入门槛和定向读取方式；
@@ -137,4 +142,5 @@ Phase 4 完成后，Phase 5 应基于 Skill 1.0 的完整流程拆解任务，�
 | Architecture Decision 文档设计归属 | `ARCHITECTURE_DECISION_DESIGN.md` |
 | Architecture Decision 写回行为 | `DOCUMENT_WRITEBACK_DESIGN.md` |
 | 定向读取保障 | `TECHNICAL_DESIGN.md` |
+| 结构化 gate 执行机制 | `GATE_EXECUTION_DESIGN.md` |
 | 模板沉淀机制 | `TEMPLATE_DEPOSITION_DESIGN.md` |

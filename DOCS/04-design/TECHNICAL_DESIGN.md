@@ -9,11 +9,11 @@
 | 所属项目 | Project Incubator |
 | 所有者 Phase | Phase 4 — Design |
 | 文档状态 | Active |
-| 权威范围 | Project Incubator Skill 1.0 的技术方向、系统边界、资产分工、运行时读取与写入策略、工具权限和进入 Phase 5 的技术拆解输入 |
+| 权威范围 | Project Incubator Skill 1.0 的技术方向、系统边界、资产分工、运行时读取与写入策略、结构化 gate 配置、工具检查器边界、工具权限和进入 Phase 5 的技术拆解输入 |
 | 消费 Phase | Phase 4–9，按需读取 |
 | 更新条件 | Maker 调整 Skill 技术方向、系统边界、资产分工、工具权限、Git 边界或技术拆解输入 |
-| 依赖文档 | `DOCS/04-design/SCOPE.md`、`DOCS/04-design/DESIGN.md`、`DOCS/04-design/SKILL_DESIGN.md`、`FRAMEWORK/Codex-Skill-Specification.md`、`DOCS/PROJECT_STATE.md` |
-| 最后更新 | 2026-07-23 |
+| 依赖文档 | `DOCS/04-design/SCOPE.md`、`DOCS/04-design/DESIGN.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/GATE_EXECUTION_DESIGN.md`、`FRAMEWORK/Codex-Skill-Specification.md`、`DOCS/PROJECT_STATE.md` |
+| 最后更新 | 2026-07-27 |
 
 ## 1. 文档职责
 
@@ -34,6 +34,8 @@ Skill 1.0 的技术设计目标是把当前手动可运行的 Project Incubator 
 - 能在写入前执行安全检查；
 - 能保留 Maker 的 Diff 审阅和 Git 决策权；
 - 能在高风险动作前执行门禁检查；
+- 能用低成本 gate router 跳过无关 gate，避免门槛机制本身增加 token 消耗；
+- 能让关键 gate 产生结构化、可验证、非黑即白的输出枚举；
 - 能支持不同项目类型选择不同 Design 文档组合。
 
 ## 3. 系统边界
@@ -47,9 +49,12 @@ Project Incubator Skill 1.0 由以下边界组成：
 - 项目文档层：每个项目自己的 `DOCS/<phase>/` 阶段交付物；
 - 执行协议层：项目根目录 `AGENTS.md`；
 - 可选脚本层：未来用于校验、生成、同步或检查文档的脚本；
+- 结构化 gate 层：未来用于定义 gate id、输入字段、输出枚举、阻断规则、验证样例和检查器映射的配置；
 - Git 边界层：分支、Diff、提交、推送和合并规则。
 
 Skill 不应把所有能力都做成脚本。对话规则、文档模板和状态入口仍是核心资产；脚本只在能降低重复劳动或减少错误时引入。
+
+但关键硬性门槛也不能只靠自然语言 reference。Skill 1.0 至少需要结构化 gate 配置；对于 Git、未闭环工作、权威文档索引、Builder 交接字段和承载类型等可机器检查门槛，Phase 5 应规划脚本 / 工具检查器或等价的结构化验证方式。
 
 ## 4. 资产分工
 
@@ -65,7 +70,8 @@ Skill 1.0 的资产分工如下：
 | `AGENTS.md` | 提供具体项目内 Agent 启动、Git 和收尾协议 |
 | `DOCS/PROJECT_STATE.md` | 提供具体项目状态恢复入口 |
 | 写回规则资产 | 定义状态写回、文档写回、写后检查和高权威文档候选写回规则；未来应进入 Framework 文档规则或 Skill references |
-| 高风险动作门禁资产 | 定义 Git、Phase、权威文档、范围扩大和破坏性操作的执行前检查；未来应进入 Agent 协议、Skill references 或脚本化检查 |
+| 高风险动作门禁资产 | 定义 Git、Phase、权威文档、范围扩大和破坏性操作的执行前检查；自然语言部分进入 Agent 协议或 Skill references |
+| 结构化 gate 配置 | 定义关键 gate 的稳定 id、router 触发域、输入字段、输出枚举、阻断规则、安全替代动作和验证样例 |
 | 可选脚本 | 执行结构检查、模板生成、状态一致性检查或 Git 只读检查 |
 
 Phase 5 需要判断哪些资产直接复用，哪些需要重写为 Skill 资产，哪些只保留为项目内治理规则。
@@ -151,6 +157,8 @@ Skill 写入文件前必须判断：
 
 Skill 1.0 不应只依赖 Agent 自觉遵守高风险边界。Phase 5 应拆解门禁检查任务，使高风险动作在执行前至少经过清单校验，必要时由脚本辅助。
 
+2026-07-27 修订：关键门禁必须从清单校验升级为结构化 gate 判定。Phase 5 应先设计低成本 gate router 与 gate registry / config，再决定哪些 gate 需要脚本 / 工具检查器。自然语言 reference 只能解释 gate 结果和回应方式，不得独自作为关键 gate 的最终验收承载。
+
 门禁检查应覆盖：
 
 - 动作是否会改变 Git 暂存区、提交历史、分支或远端；
@@ -167,6 +175,15 @@ Git Guard 是 Phase 5 的候选任务。它可以先以检查清单形式实现�
 
 高风险动作门禁在 Phase 5 至少应形成可验证任务：给定若干 Maker 指令和当前项目状态样例，检查结果应能判断是否触发门禁、默认安全处理方式是什么、是否允许 AI 执行、执行前应停止在哪个风险点。
 
+修订后的验证任务还必须断言：
+
+- 使用了哪个 gate id；
+- router 是否只选出相关候选 gate，并跳过无关 gate；
+- 输入字段是否完整；
+- 输出枚举是否为 `MISS`、`HIT_BLOCK`、`HIT_NEEDS_AUTH`、`HIT_SAFE_ALTERNATIVE`、`INPUT_INCOMPLETE` 或 `CONFIG_INVALID`；
+- 输出是否阻断；
+- Agent 只允许哪些下一步动作。
+
 ## 7. 工具与脚本策略
 
 Skill 1.0 可以逐步引入脚本，但脚本不是第一原则。
@@ -175,6 +192,8 @@ Skill 1.0 可以逐步引入脚本，但脚本不是第一原则。
 
 - 检查必读文档是否存在；
 - 检查 `PROJECT_STATE.md` 权威文档索引是否指向真实文件；
+- 检查 gate 配置是否包含必需字段、合法输出枚举和阻断规则；
+- 检查给定 gate case 是否得到预期输出；
 - 生成带元数据的阶段文档草案；
 - 检查 Draft / Active / Superseded / Archived 状态一致性；
 - 执行只读 Git 健康检查；
@@ -210,6 +229,8 @@ Skill 可以执行只读 Git 检查，并在获得授权后进行符合项目规
 Phase 5 可以基于本文档拆解以下技术任务类别：
 
 - Skill 资产结构设计与创建；
+- 低成本 gate router、结构化 gate 配置与 gate case 验证；
+- gate 检查器或等价工具设计；
 - Framework 文档向 Skill 指令的迁移；
 - 模板资产整理；
 - 状态恢复流程实现；
@@ -217,7 +238,7 @@ Phase 5 可以基于本文档拆解以下技术任务类别：
 - 新任务 Prompt 生成流程；
 - 分叉分类辅助流程；
 - Git 只读检查辅助；
-- 高风险动作门禁检查；
+- 高风险动作门禁检查与 gate 输出枚举断言；
 - 文档状态一致性检查；
 - 模拟项目验证。
 

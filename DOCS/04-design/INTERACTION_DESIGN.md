@@ -9,11 +9,11 @@
 | 所属项目 | Project Incubator |
 | 所有者 Phase | Phase 4 — Design |
 | 文档状态 | Active |
-| 权威范围 | Project Incubator Skill 1.0 中 Maker 与 AI 的协作交互、确认节点、分叉处理、高风险动作门禁交互、阶段切换与 Builder 交接对话边界 |
+| 权威范围 | Project Incubator Skill 1.0 中 Maker 与 AI 的协作交互、确认节点、分叉处理、高风险动作门禁交互、结构化 gate 输出呈现、阶段切换与 Builder 交接对话边界 |
 | 消费 Phase | Phase 4–9，按需读取 |
 | 更新条件 | Maker 调整协作方式、确认节点、交互边界、分叉处理方式、高风险动作门禁交互、阶段切换方式或 Builder 交接方式 |
-| 依赖文档 | `DOCS/04-design/SCOPE.md`、`DOCS/04-design/DESIGN.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
-| 最后更新 | 2026-07-23 |
+| 依赖文档 | `DOCS/04-design/SCOPE.md`、`DOCS/04-design/DESIGN.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/04-design/GATE_EXECUTION_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
+| 最后更新 | 2026-07-27 |
 
 ## 1. 文档职责
 
@@ -95,9 +95,12 @@ AI 应避免使用笼统的“加入待处理”。如果需要记录后续，�
 
 当 Maker 的指令可能导致高风险结果时，AI 应按结果类型触发门禁，而不是按某个具体词句触发。
 
+结构化 gate 修订后，门禁交互不再只表达“我识别到风险”。关键 gate 触发时，AI 应能说明 gate id、输出枚举、阻断原因和允许的下一步。面向 Maker 的回应应保持简短；内部判定必须先由低成本 router 选出候选 gate，再由候选 gate 基于结构化输入和封闭输出完成判定。
+
 AI 的回应必须包含：
 
 - 识别到的风险结果；
+- 命中的 gate id 与输出枚举；
 - 默认不会直接执行的边界；
 - 可供 Maker 选择的安全处理方式；
 - 如果需要 AI 执行，必须由 Maker 明确授权的具体动作和范围。
@@ -105,7 +108,7 @@ AI 的回应必须包含：
 门禁交互应采用以下结构：
 
 ```text
-我识别到这会影响 [风险结果]。
+我识别到这会影响 [风险结果]，命中 [gate id]，当前结果是 [输出枚举]。
 按当前协作规则，我默认不直接执行该动作。
 我可以先提供 [手动步骤 / 方案 / 只读检查结果]。
 如果你希望我代为执行，请明确授权 [具体动作、范围、目标]。
@@ -114,6 +117,8 @@ AI 的回应必须包含：
 门禁不应依赖 Maker 的固定表达。只要结果涉及 Git 写操作、Phase 切换、权威文档状态变更、范围扩大、架构边界修改、模板实例化或破坏性操作，就必须先停下来说明。
 
 AI 不应把 Maker 对交付物的接受、对方向的确认、对下一步的口语化推动，解释为可以自动执行高风险动作。此类表达只能触发门禁判断；是否执行仍取决于明确授权和执行前检查。
+
+如果 gate 输出为 `INPUT_INCOMPLETE` 或 `CONFIG_INVALID`，AI 不得用自然语言猜测补足；必须报告缺失输入或配置缺陷，并停止受限动作。
 
 ## 8. 文档审阅交互
 

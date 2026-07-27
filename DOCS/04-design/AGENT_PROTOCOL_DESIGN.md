@@ -9,11 +9,11 @@
 | 所属项目 | Project Incubator |
 | 所有者 Phase | Phase 4 — Design |
 | 文档状态 | Active |
-| 权威范围 | `AGENTS.md` 的职责、结构、模板关系、启动协议、读取边界、执行边界、高风险动作门禁、更新门槛与检查方式 |
+| 权威范围 | `AGENTS.md` 的职责、结构、模板关系、启动协议、读取边界、执行边界、高风险动作门禁、结构化 gate 调用边界、更新门槛与检查方式 |
 | 消费 Phase | Phase 4–9，按需读取 |
 | 更新条件 | Maker 调整 Agent 启动、恢复、执行、写回、Git 协议、高风险动作门禁、模板关系或与 Skill / Framework / 状态入口的边界 |
-| 依赖文档 | `AGENTS.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/PROJECT_STATE_DESIGN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
-| 最后更新 | 2026-07-23 |
+| 依赖文档 | `AGENTS.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/PROJECT_STATE_DESIGN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md`、`DOCS/04-design/GATE_EXECUTION_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
+| 最后更新 | 2026-07-27 |
 
 ## 1. 文档职责
 
@@ -22,6 +22,8 @@
 `AGENTS.md` 是每个被孵化项目的本地 Agent 运行协议。它负责规定 Agent 进入该项目后如何启动、恢复状态、读取权威文档、建立协作契约、执行修改、处理 Git、写回状态和结束会话。
 
 本文档不直接替代当前仓库的 `AGENTS.md`，也不在 Phase 4 直接生成最终模板文件。最终生产模板应在 Phase 5 拆解并在 Phase 6 实现。
+
+结构化 gate 修订：`AGENTS.md` 可以要求 Agent 在受限动作前执行低成本 gate router，并对命中的候选 gate 执行判定；但不应把全部 gate schema、验证样例和检查器逻辑写成长篇自然语言规则。关键 gate 的结构化设计归属 `DOCS/04-design/GATE_EXECUTION_DESIGN.md`；生产模板应只保留本地协议、调用时机、默认阻断原则和目标项目特有边界。
 
 ## 2. 定位
 
@@ -65,6 +67,7 @@
 | 会话结束与回写 | 规定状态更新、Diff 审阅门和结束前检查 |
 | Git 治理 | 规定分支、验收、手动闭环和危险操作边界 |
 | 高风险动作门禁 | 规定哪些结果必须先暂停、说明风险、请求明确授权或改为人工执行 |
+| 结构化 gate 调用 | 规定哪些本地动作必须先进入低成本 gate router，哪些候选 gate 需要判定，gate 阻断后 Agent 只能执行哪些安全替代动作 |
 
 不同项目可以根据项目类型轻量化某些段落，但不得删除启动、状态恢复、Maker 决策权、写回、Git 安全和阶段切换的核心协议。
 
@@ -85,6 +88,13 @@ Agent 进入项目时必须先读取本地 `AGENTS.md`，再按该文件指向�
 ## 6. 高风险动作门禁
 
 Agent 不应按 Maker 的具体措辞判断是否可以执行高风险动作，而应按该动作可能造成的结果判断是否触发门禁。
+
+高风险动作门禁在 Skill 1.0 中分为两层：
+
+- 自然语言交互层：说明风险、默认边界、安全替代动作和 Maker 授权字段；
+- 结构化 gate 层：按 `GATE_EXECUTION_DESIGN.md` 先执行低成本 router，筛出候选 gate 后填充输入字段，输出封闭枚举，并根据阻断规则决定是否允许继续。
+
+关键门槛不得只停留在自然语言交互层。只要动作涉及关键 gate 集合，Agent 必须先得到 `MISS` 或仅限安全替代动作的 gate 输出，才能继续受限动作。
 
 只要本轮行动可能造成以下结果之一，就必须进入门禁流程：
 
@@ -205,6 +215,7 @@ Phase 5 应判断哪些规则保留在项目实例文件中，哪些移动到 Sk
 - 是否复制了 Framework 或 Skill reference 的长正文；
 - 是否新增了单次纠偏规则；
 - 是否遗漏高风险动作门禁；
+- 是否把结构化 gate schema 错误塞进本地运行协议，或遗漏 gate 调用时机；
 - 是否改变了 Maker 决策权或 Git 权限；
 - 是否同步影响 `PROJECT_STATE.md`、模板设计或 Skill 实现承载设计；
 - 新项目是否能通过实例化后的 `AGENTS.md` 和 `PROJECT_STATE.md` 独立恢复。
@@ -218,5 +229,6 @@ Phase 5 可以基于本文档拆解以下任务：
 - 定义新项目实例化流程；
 - 拆分 `AGENTS.md` 中应保留在项目本地的内容和应进入 Skill references 的内容；
 - 设计高风险动作门禁检查清单；
+- 设计结构化 gate 调用清单，并与 `GATE_EXECUTION_DESIGN.md` 的 gate router、gate id、输出枚举和阻断规则对齐；
 - 设计 Agent 协议一致性检查清单；
 - 设计模板实例化后的最小恢复验证。

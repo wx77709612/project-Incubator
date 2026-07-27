@@ -9,17 +9,19 @@
 | 所属项目 | Project Incubator |
 | 所有者 Phase | Phase 4 — Design |
 | 文档状态 | Active |
-| 权威范围 | Project Incubator Skill 1.0 的目标形态、总交互过程、设计方法、设计资产架构、设计文档使用流程、触发场景、输入输出、阶段适配、权限边界与 Builder 交接 |
+| 权威范围 | Project Incubator Skill 1.0 的目标形态、总交互过程、设计方法、设计资产架构、设计文档使用流程、触发场景、输入输出、阶段适配、权限边界、结构化 gate 执行机制与 Builder 交接 |
 | 消费 Phase | Phase 4–9，按需读取 |
 | 更新条件 | Maker 调整 Skill 目标形态、总交互过程、设计方法、设计资产架构、设计文档使用流程、触发方式、权限边界、阶段适配或 Builder 交接方式 |
-| 依赖文档 | `DOCS/04-design/SCOPE.md`、`DOCS/04-design/DESIGN.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/AGENT_PROTOCOL_DESIGN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/04-design/PROJECT_STATE_DESIGN.md`、`DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md`、`DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md`、`DOCS/04-design/TECHNICAL_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
-| 最后更新 | 2026-07-23 |
+| 依赖文档 | `DOCS/04-design/SCOPE.md`、`DOCS/04-design/DESIGN.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/AGENT_PROTOCOL_DESIGN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/04-design/PROJECT_STATE_DESIGN.md`、`DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md`、`DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md`、`DOCS/04-design/TECHNICAL_DESIGN.md`、`DOCS/04-design/GATE_EXECUTION_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
+| 最后更新 | 2026-07-27 |
 
 ## 1. 文档职责
 
 本文档是 Phase 4 设计交付物的总入口。它定义 Project Incubator 未来固化为 Codex Skill 1.0 时，应如何帮助 Maker 孵化项目，以及哪些支撑设计文档分别解决哪些问题。
 
 本文档不定义最终 `SKILL.md` 正文、脚本实现、目录结构、安装方式或发布机制。这些内容属于后续 Phase 5 — Planning 与 Phase 6 — Build 的任务。本文档负责保证后续拆解前，Skill 的协作过程和设计资产架构已经清楚。
+
+2026-07-27 受控设计修订：原 Phase 4 设计中的高风险动作门禁和硬性门槛原则仍有效，但自然语言协议不足以满足 Maker 对“关键门槛必须百分之百命中”的验收目标。Skill 1.0 必须新增结构化 gate 执行机制，权威设计见 `DOCS/04-design/GATE_EXECUTION_DESIGN.md`。当前 P6 Skill Draft 的主流程可作为后续 Build 基线复用，但其中自然语言 gate references 不得作为最终 gate 验收承载。
 
 ## 2. Skill 定位
 
@@ -93,6 +95,7 @@ Project Incubator Skill 在 Phase 4 中采用 **使用过程导向的设计资�
 | `DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md` | 架构边界文档结构 | 设计低频高权威边界文档的结构、门槛和读取方式 |
 | `DOCS/04-design/TEMPLATE_DEPOSITION_DESIGN.md` | 模板沉淀机制 | 说明阶段交付物何时从项目文档沉淀为模板 |
 | `DOCS/04-design/TECHNICAL_DESIGN.md` | Skill 实现承载设计 | 说明未来 Skill 化时的资源组织、定向读取和工具边界 |
+| `DOCS/04-design/GATE_EXECUTION_DESIGN.md` | 结构化 gate 执行机制 | 定义关键 gate 的 schema、低成本 router、输入、输出枚举、阻断条件、候选 gate 执行优先级、失败处理和验证方式 |
 
 Skill 1.0 的结构设计对象限于运行时关键资产。运行时关键资产指高频读写、高权威、跨阶段，并会影响状态恢复、阶段推进或执行安全的资产。
 
@@ -119,6 +122,7 @@ Skill 不应把所有 Phase 4 设计文档一次性全文读入上下文后自�
 | Agent 如何启动、恢复、执行、回写和处理 Git | `AGENT_PROTOCOL_DESIGN.md` | 是否仍是项目本地运行协议 |
 | 范围、非目标、进入 Phase 5 边界 | `SCOPE.md` | 是否避免扩大项目类型或提前实现 |
 | 文档何时写、写到哪里、写后怎么检查 | `DOCUMENT_WRITEBACK_DESIGN.md` | 是否没有纠偏留痕或流水化 |
+| 关键硬性门槛如何百分之百命中 | `GATE_EXECUTION_DESIGN.md` | 是否具备结构化输入、封闭输出枚举和阻断规则 |
 | `PROJECT_STATE.md` 结构和字段 | `PROJECT_STATE_DESIGN.md` | 是否仍是轻量状态入口 |
 | `ARCHITECTURE_DECISIONS.md` 结构和门槛 | `ARCHITECTURE_DECISION_DESIGN.md` | 是否只承载长期架构边界 |
 | 阶段交付物何时沉淀为模板 | `TEMPLATE_DEPOSITION_DESIGN.md` | 是否来自真实使用和 Maker 接受 |
@@ -239,4 +243,5 @@ Phase 5 至少应能从 Phase 4 设计中获得：
 - 高频权威文档的结构设计；
 - 文档写回、状态收敛和模板沉淀规则；
 - 实现承载设计、定向读取和工具边界；
+- 结构化 gate 执行协议、关键 gate 集合、低成本 gate router、输入字段、输出枚举、阻断条件、失败处理和验证样例；
 - Builder 交接条件和验收方式。

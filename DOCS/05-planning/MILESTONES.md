@@ -9,11 +9,11 @@
 | 所属项目 | Project Incubator |
 | 所有者 Phase | Phase 5 - Planning |
 | 文档状态 | Active |
-| 权威范围 | Project Incubator Skill 1.0 的机制型核心里程碑、核心链路、硬性门槛、Builder 交接闭环、验证支撑和首批 Ticket 边界 |
+| 权威范围 | Project Incubator Skill 1.0 的机制型核心里程碑、核心链路、结构化 gate 执行机制、Builder 交接闭环、验证支撑和首批 Ticket 边界 |
 | 消费 Phase | Phase 5-9，按需读取 |
-| 更新条件 | Maker 调整核心机制、硬性门槛、Builder 交接、验证方式或首批 Ticket 边界 |
-| 依赖文档 | `DOCS/05-planning/ROADMAP.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/DESIGN.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/AGENT_PROTOCOL_DESIGN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/04-design/TECHNICAL_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
-| 最后更新 | 2026-07-24 |
+| 更新条件 | Maker 调整核心机制、关键 gate 集合、gate schema、Builder 交接、验证方式或首批 Ticket 边界 |
+| 依赖文档 | `DOCS/05-planning/ROADMAP.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/DESIGN.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/AGENT_PROTOCOL_DESIGN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/04-design/TECHNICAL_DESIGN.md`、`DOCS/04-design/GATE_EXECUTION_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
+| 最后更新 | 2026-07-27 |
 
 ## 1. 文档职责
 
@@ -21,12 +21,14 @@
 
 本文档不授权 Build，不实现 Skill，不创建最终模板或脚本。它负责把 Maker 已确认的方向拆成可规划、可验证、可继续拆 Ticket 的机制单元。
 
+2026-07-27 当前规划依据：Maker 已确认按 gate router 版本继续后续流程。R2 当前规划为结构化 gate 执行机制，覆盖低成本 gate router、gate schema、关键 gate registry / config、输入字段、封闭输出枚举、阻断规则、安全替代动作、验证样例和脚本 / 工具检查器承载判断。
+
 ## 2. 里程碑总览
 
 | 里程碑 | 名称 | 状态 | 核心问题 |
 | --- | --- | --- | --- |
 | R1 | 主运行链路串联 | Draft | Skill 如何把启动、恢复、协作、分叉、写回、审阅和下一轮恢复串成一条稳定流程 |
-| R2 | 硬性门槛矩阵 | Draft | 哪些动作必须停，触发后默认不做什么，Maker 必须确认什么 |
+| R2 | 结构化 gate 执行机制 | Draft | 哪些关键 gate 必须百分之百命中；router 如何跳过无关 gate；每个候选 gate 的输入字段、输出枚举、阻断条件、执行优先级和验证样例是什么 |
 | R3 | Builder 交接与验证闭环 | Draft | 什么任务可以交给 Builder，Builder 完成后如何回到 Collaborator 与 Maker 验收 |
 | R4 | 最小场景验证支撑 | Draft | 用哪些真实或模拟协作场景验证 R1-R3 足以支撑后续 Builder 构建 |
 
@@ -75,31 +77,35 @@ R1 完成后，应能进入以下 Ticket 拆解：
 
 R1 的验收应证明：给定一个项目状态和 Maker 本轮指令，AI 能判断本轮应进入哪类协作流程，并说明下一步应读什么、写什么、不处理什么、何时停下来。
 
-## 4. R2 - 硬性门槛矩阵
+## 4. R2 - 结构化 gate 执行机制
 
 ### 4.1 目标
 
-R2 的目标是把 Phase 4 已设计的门禁交互和技术门禁，规划成 Skill 1.0 的硬性门槛矩阵。
+R2 的目标是把 Phase 4 已设计的门禁交互和技术门禁，升级规划成 Skill 1.0 的结构化 gate 执行机制。
 
-硬性门槛应覆盖：
+R2 必须覆盖：
 
-- Phase 切换；
-- Git 写操作；
-- 权威文档状态或职责变更；
-- 范围、项目类型、商业化或公开程度扩大；
-- Builder 交接前信息不足；
-- 未闭环任务或 Git 状态异常；
-- Architecture Decision 候选写回。
+- 关键 gate 集合；
+- 低成本 gate router；
+- gate schema；
+- gate registry / config 的承载方式；
+- gate 判定输入字段；
+- `MISS`、`HIT_BLOCK`、`HIT_NEEDS_AUTH`、`HIT_SAFE_ALTERNATIVE`、`INPUT_INCOMPLETE`、`CONFIG_INVALID` 等封闭输出枚举；
+- 每个输出是否阻断；
+- 阻断后的 Agent 可继续动作；
+- 脚本 / 工具检查器是否必要；
+- gate case 验证样例。
 
 ### 4.2 非目标
 
-R2 不直接脚本化所有检查，不替 Maker 作决定，也不把所有普通提醒升级为门槛。
+R2 不直接实现完整脚本、不替 Maker 作决定，也不把所有普通提醒升级为门槛。但 R2 必须判断哪些关键 gate 需要脚本 / 工具检查器承载；不能把脚本化继续推迟为完全可选的后续实现细节。
 
 ### 4.3 输入
 
 - `DOCS/04-design/INTERACTION_DESIGN.md` 的高风险动作门禁交互；
 - `DOCS/04-design/AGENT_PROTOCOL_DESIGN.md` 的高风险动作门禁；
 - `DOCS/04-design/TECHNICAL_DESIGN.md` 的高风险动作门禁实现；
+- `DOCS/04-design/GATE_EXECUTION_DESIGN.md` 的结构化 gate schema、关键 gate 集合和验证方式；
 - `SPECS/ARCHITECTURE_DECISIONS.md` 的 AI 越界防护边界；
 - 当前项目 Git 与 Diff 验收规则。
 
@@ -107,16 +113,20 @@ R2 不直接脚本化所有检查，不替 Maker 作决定，也不把所有普�
 
 R2 完成后，应能进入以下 Ticket 拆解：
 
-- 硬性门槛矩阵；
-- 门槛触发判定样例；
+- gate router、gate schema 与 gate registry / config；
+- 关键 gate 集合；
+- gate 输入字段与数据来源；
+- gate 输出枚举与阻断规则；
+- gate case fixtures；
 - 门槛触发后的标准回应格式；
 - Maker 明确授权字段；
 - 默认安全处理方式清单；
-- 不应升级为硬性门槛的普通提醒清单。
+- 不应升级为关键 gate 的普通提醒清单；
+- 脚本 / 工具检查器设计判断。
 
 ### 4.5 验收方向
 
-R2 的验收应证明：给定若干 Maker 指令和项目状态，AI 能判断是否触发门槛、触发哪类门槛、默认应暂停在哪一步，以及 Maker 必须确认什么才能继续。
+R2 的验收应证明：给定若干 Maker 指令、项目状态、目标动作和必要上下文，router 能只选出相关候选 gate，候选 gate 能输出封闭枚举，明确是否阻断、允许哪些下一步动作，以及 Maker 必须确认什么才能继续。
 
 ## 5. R3 - Builder 交接与验证闭环
 
@@ -202,8 +212,8 @@ R4 的验收应证明：R1-R3 不是抽象口号，而能在具体指令和状�
 首批 Ticket 应优先围绕 R1、R2 和 R3，而不是模板文件完整性：
 
 1. 定义 Skill 主运行链路和任务类型判定；
-2. 定义硬性门槛矩阵和触发规则；
-3. 定义门槛触发后的标准回应格式；
+2. 定义低成本 gate router、gate schema、关键 gate 集合和 gate registry / config；
+3. 定义 gate 输出枚举、阻断规则和门槛触发后的标准回应格式；
 4. 定义 Builder 交接前最小检查清单；
 5. 定义 Builder 完成后回到 Collaborator 验收的闭环；
 6. 在 `VERIFICATION_PLAN.md` 中定义最小场景验证支撑。
@@ -220,5 +230,6 @@ R4 的验收应证明：R1-R3 不是抽象口号，而能在具体指令和状�
 
 - R1-R3 是 Phase 5 进入 Build 前必须优先完成的机制型核心里程碑；
 - R1、R2 与 R3 是首批 Ticket 的主要对象；
+- R2 Ticket 当前按结构化 gate 执行机制继续拆解，R3 Ticket 必须消费 `GATE_BUILDER_HANDOFF`；
 - 模板与脚本推迟到核心机制规划之后；
 - R4 作为 `VERIFICATION_PLAN.md` 中验证 R1-R3 的支撑，而不是同级建设里程碑。

@@ -9,17 +9,19 @@
 | 所属项目 | Project Incubator |
 | 所有者 Phase | Phase 5 - Planning |
 | 文档状态 | Active |
-| 权威范围 | Project Incubator Skill 1.0 在进入 Build 前，对 R1 主运行链路、R2 硬性门槛矩阵、R3 Builder 交接闭环的验证目标、验证场景、通过标准和失败回退方式 |
+| 权威范围 | Project Incubator Skill 1.0 在进入 Build 前，对 R1 主运行链路、R2 结构化 gate 执行机制、R3 Builder 交接闭环的验证目标、gate case、通过标准和失败回退方式 |
 | 消费 Phase | Phase 5-9，按需读取 |
-| 更新条件 | Maker 调整 R1-R3 验证目标、验证场景、通过标准、失败回退方式或 Builder 进入条件 |
-| 依赖文档 | `DOCS/05-planning/ROADMAP.md`、`DOCS/05-planning/MILESTONES.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/AGENT_PROTOCOL_DESIGN.md`、`DOCS/04-design/TECHNICAL_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
-| 最后更新 | 2026-07-24 |
+| 更新条件 | Maker 调整 R1-R3 验证目标、关键 gate 集合、gate case、通过标准、失败回退方式或 Builder 进入条件 |
+| 依赖文档 | `DOCS/05-planning/ROADMAP.md`、`DOCS/05-planning/MILESTONES.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/AGENT_PROTOCOL_DESIGN.md`、`DOCS/04-design/TECHNICAL_DESIGN.md`、`DOCS/04-design/GATE_EXECUTION_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
+| 最后更新 | 2026-07-27 |
 
 ## 1. 文档职责
 
 本文档定义 Project Incubator Skill 1.0 在进入 Build 前，如何验证 Phase 5 优先规划的 R1-R3 机制是否足够清楚。
 
 本文档不执行 Build，不实现 Skill，不运行自动测试，也不替 Maker 完成验收。它为后续 Ticket 和 Build 阶段提供验证口径：Builder 只有在任务具备可验证边界时，才可以开始执行。
+
+2026-07-27 当前验证口径：S1-S8 自然语言场景不足以验证“关键门槛百分之百命中”。当前 Phase 5 将这些场景升级为 gate case：每个 case 必须明确 router 输出、gate id、输入字段、预期输出枚举、是否阻断、允许下一步动作和失败回退。
 
 ## 2. 验证目标
 
@@ -28,7 +30,7 @@ Phase 5 当前只验证三类核心机制：
 | 机制 | 验证目标 |
 | --- | --- |
 | R1 主运行链路串联 | AI 能从项目状态恢复进入正确协作流程，并在结束时留下下一轮可恢复入口 |
-| R2 硬性门槛矩阵 | AI 能识别高风险结果，默认暂停，并说明 Maker 必须确认什么 |
+| R2 结构化 gate 执行机制 | router 能跳过无关 gate；关键 gate 能基于结构化输入输出封闭枚举，明确是否阻断，并说明 Maker 必须确认什么 |
 | R3 Builder 交接闭环 | AI 只有在 Ticket 具备完整边界、验收标准和验证步骤时，才允许交给 Builder |
 
 R4 不作为独立建设里程碑；R4 是本文档中的最小场景验证支撑。
@@ -39,7 +41,7 @@ R4 不作为独立建设里程碑；R4 是本文档中的最小场景验证支�
 
 - Skill 安装、发布或版本分发；
 - 最终 `SKILL.md` 正文；
-- 脚本化检查工具；
+- 完整脚本化检查工具；
 - 全部阶段模板完整性；
 - 外部用户价值；
 - 商业化或公开发布路径；
@@ -47,13 +49,18 @@ R4 不作为独立建设里程碑；R4 是本文档中的最小场景验证支�
 
 ## 4. 验证方式
 
-验证方式采用最小场景验证：给定一个项目状态、一条 Maker 指令或一个任务文档，检查 AI 应进入什么流程、触发什么门槛、输出什么边界，以及是否可以交给 Builder。
+验证方式采用最小 gate case 验证：给定一个项目状态、一条 Maker 指令、一个目标动作或一个任务文档，先检查 router 是否只选出相关候选 gate，再检查候选 gate 应输出什么枚举、是否阻断、允许哪些安全替代动作，以及是否可以交给 Builder。
 
 每个场景都必须包含：
 
 - 输入状态；
 - Maker 指令或任务内容；
 - 应验证的机制；
+- gate id；
+- router 选出的候选 gate 与跳过 gate；
+- 预期输出枚举；
+- 是否阻断；
+- 允许的下一步动作；
 - 预期 AI 行为；
 - 通过标准；
 - 失败时回退到哪个规划文档或 Ticket 修正。
@@ -70,6 +77,24 @@ R4 不作为独立建设里程碑；R4 是本文档中的最小场景验证支�
 | S6 Ticket 不完整 | Ticket 缺少验收标准或验证步骤 | R3 | AI 拒绝交给 Builder，回到 Planning 补齐 | Builder 不接收开放式任务 | 回到 R3 Ticket 补交接门槛 |
 | S7 Builder 完成后 | Builder 报告修改完成 | R3 | Collaborator 检查结果、验证证据、Diff 范围和状态回写需求 | 不直接宣布项目完成 | 回到 R3 Ticket 补验收闭环 |
 | S8 权威文档冲突 | 状态索引指向不存在或冲突文件 | R1 / R2 | AI 停止阶段推进并报告冲突 | 不自行选择方便版本 | 回到 R1/R2 Ticket 补冲突门槛 |
+
+## 5.1 Gate case 升级要求
+
+S1-S8 的 gate case 必须补齐以下字段：
+
+| 字段 | 说明 |
+| --- | --- |
+| `case_id` | 稳定验证样例 id |
+| `gate_id` | 命中的关键 gate，例如 `GATE_GIT_WRITE` |
+| `router.applicable_gates` | router 选出的候选 gate |
+| `router.skipped_gates` | router 明确跳过的无关 gate 与短理由 |
+| `input` | Maker 指令、目标动作、项目状态、Git 状态、Ticket 字段或承载类型 |
+| `expected.output` | `MISS`、`HIT_BLOCK`、`HIT_NEEDS_AUTH`、`HIT_SAFE_ALTERNATIVE`、`INPUT_INCOMPLETE` 或 `CONFIG_INVALID` |
+| `expected.blocks` | `true` 或 `false` |
+| `expected.allowed_next_actions` | Agent 允许继续的安全动作 |
+| `failure_fallback` | 失败时回到哪个 Ticket 或设计文档 |
+
+如果某个场景无法填出 router 输出、gate id 和输出枚举，该场景不能作为关键 gate 验证用例，只能作为自然语言协作回归样例。
 
 ## 6. Ticket 验证要求
 
@@ -91,9 +116,9 @@ R4 不作为独立建设里程碑；R4 是本文档中的最小场景验证支�
 R1-R3 可以进入 Build 前，至少需要满足：
 
 - R1 能说明完整主运行链路，并覆盖启动、恢复、协作、分叉、写回、审阅和下一轮恢复；
-- R2 能列出硬性门槛矩阵，并为每类门槛定义触发结果、默认动作和 Maker 确认要求；
+- R2 能定义低成本 gate router、结构化 gate schema、关键 gate 集合、输出枚举、阻断规则、验证样例和脚本 / 工具检查器承载判断；
 - R3 能定义 Builder 交接前检查、Builder 完成后报告和 Collaborator 回看验收；
-- 本文档的 S1-S8 场景都能映射到对应机制和后续 Ticket；
+- 本文档的 S1-S8 场景都能升级或映射到 gate case，并明确 router 输出、gate id、预期输出、阻断结果和允许动作；
 - 首批 Ticket 都具备可独立执行和可独立验证的边界。
 
 ## 8. 失败处理
@@ -101,7 +126,7 @@ R1-R3 可以进入 Build 前，至少需要满足：
 如果验证失败：
 
 - R1 失败：回到主运行链路 Ticket，补充任务类型判定、状态写回或恢复入口；
-- R2 失败：回到硬性门槛 Ticket，补充触发规则、默认安全动作或 Maker 授权字段；
+- R2 失败：回到结构化 gate Ticket，补充 gate router、gate schema、输入字段、输出枚举、阻断规则、默认安全动作或 Maker 授权字段；
 - R3 失败：回到 Builder 交接 Ticket，补齐 Ticket 必备字段、验收标准或回看流程；
 - 场景不足：补充最小验证场景，但不得扩展为大型模拟项目；
 - 发现新范围：按分叉治理分类，必要时请求 Maker 决定，不直接加入当前首批 Build 范围。

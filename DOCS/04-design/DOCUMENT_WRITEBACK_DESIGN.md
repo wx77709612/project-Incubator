@@ -9,11 +9,11 @@
 | 所属项目 | Project Incubator |
 | 所有者 Phase | Phase 4 — Design |
 | 文档状态 | Active |
-| 权威范围 | Project Incubator Skill 1.0 的文档写回卫生、纠偏处理、状态入口收敛、边界规则收敛和高权威文档候选写回 |
+| 权威范围 | Project Incubator Skill 1.0 的文档写回卫生、纠偏处理、状态入口收敛、边界规则收敛、高权威文档候选写回和写回前 gate 判定边界 |
 | 消费 Phase | Phase 4–9，按需读取 |
 | 更新条件 | Maker 调整文档写回规则、纠偏处理方式、状态入口约束、边界规则收敛方式或高权威文档写回流程 |
-| 依赖文档 | `DOCS/04-design/SCOPE.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
-| 最后更新 | 2026-07-23 |
+| 依赖文档 | `DOCS/04-design/SCOPE.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/ARCHITECTURE_DECISION_DESIGN.md`、`DOCS/04-design/GATE_EXECUTION_DESIGN.md`、`DOCS/PROJECT_STATE.md` |
+| 最后更新 | 2026-07-27 |
 
 ## 1. 文档职责
 
@@ -26,6 +26,7 @@
 Skill 写回文档时应遵守以下原则：
 
 - 先判断权威归属，再写入；
+- 写入前先判断产物承载类型，并在必要时执行权威来源、承载类型、纠偏沉淀或架构决策 gate；
 - 只写对后续恢复、决策、执行、验证或复盘有明确价值的内容；
 - 不把聊天过程写成项目事实；
 - 不把 AI 推断写成 Maker 确认；
@@ -131,6 +132,7 @@ Phase 5 可以基于本文档拆解以下任务：
 - 设计文档权威范围检查清单；
 - 设计 Architecture Decision 候选写回流程；
 - 设计文档纠偏处理流程；
+- 设计写回前 gate 判定流程，并与 `GATE_EXECUTION_DESIGN.md` 的输出枚举和阻断规则对齐；
 - 设计状态入口基线收敛校验；
 - 评估是否需要脚本辅助检查文档状态和权威索引。
 

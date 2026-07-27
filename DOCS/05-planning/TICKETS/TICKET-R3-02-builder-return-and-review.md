@@ -9,15 +9,17 @@
 | 所属项目 | Project Incubator |
 | 所有者 Phase | Phase 5 - Planning |
 | 文档状态 | Active |
-| 权威范围 | Builder 完成任务后返回 Collaborator 视角、报告结果、验证证据、Diff 范围和 Maker 审阅入口的任务边界 |
+| 权威范围 | Builder 完成任务后返回 Collaborator 视角、报告结果、验证证据、Diff 范围、Maker 审阅入口，以及返回后触发 Git、权威文档、状态入口和验收 gate 的任务边界 |
 | 消费 Phase | Phase 5-6，按需读取 |
-| 更新条件 | Maker 调整 Builder 完成后报告方式、验证证据、Collaborator 回看、Diff 审阅或状态回写规则 |
-| 依赖文档 | `DOCS/05-planning/ROADMAP.md`、`DOCS/05-planning/MILESTONES.md`、`DOCS/05-planning/VERIFICATION_PLAN.md`、`FRAMEWORK/Role-System.md`、`FRAMEWORK/Phase-System.md`、`DOCS/04-design/INTERACTION_DESIGN.md` |
-| 最后更新 | 2026-07-24 |
+| 更新条件 | Maker 调整 Builder 完成后报告方式、验证证据、Collaborator 回看、Diff 审阅、状态回写规则或返回后 gate 判定 |
+| 依赖文档 | `DOCS/05-planning/ROADMAP.md`、`DOCS/05-planning/MILESTONES.md`、`DOCS/05-planning/VERIFICATION_PLAN.md`、`FRAMEWORK/Role-System.md`、`FRAMEWORK/Phase-System.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/GATE_EXECUTION_DESIGN.md` |
+| 最后更新 | 2026-07-27 |
 
 ## 1. 背景
 
 Builder 完成任务不等于项目完成。Skill 需要定义 Builder 完成后如何返回 Collaborator 视角，由 Collaborator 检查结果是否符合 Ticket、设计边界和 Maker 验收要求。
+
+2026-07-27 设计修订：Builder 返回后不能只靠自然语言清单判断是否可验收。若返回结果会改变 Git、权威文档、状态入口、Phase、验收状态或任务闭环，必须先由 gate router 选出对应候选 gate，再进入结构化 gate 判定；无关 gate 不展开。
 
 ## 2. 目标
 
@@ -37,6 +39,7 @@ Builder 完成任务不等于项目完成。Skill 需要定义 Builder 完成后
 - 定义 Collaborator 回看清单；
 - 定义 Maker Diff 审阅入口；
 - 定义状态回写触发条件。
+- 定义 Builder 返回后应检查哪些 gate。
 
 ## 5. 禁止范围
 
@@ -50,6 +53,7 @@ Builder 完成任务不等于项目完成。Skill 需要定义 Builder 完成后
 - `FRAMEWORK/Role-System.md`
 - `FRAMEWORK/Phase-System.md`
 - `DOCS/04-design/INTERACTION_DESIGN.md`
+- `DOCS/04-design/GATE_EXECUTION_DESIGN.md`
 - `DOCS/05-planning/VERIFICATION_PLAN.md`
 
 ## 7. 输出
@@ -62,6 +66,7 @@ Builder 完成任务不等于项目完成。Skill 需要定义 Builder 完成后
 - Diff 范围；
 - Collaborator 回看：是否符合 Ticket、设计文档和 Phase 目标；
 - Maker 审阅提示；
+- 返回后 gate 检查：是否触发 `GATE_GIT_WRITE`、`GATE_AUTHORITY_SOURCE`、`GATE_PHASE_TRANSITION`、`GATE_UNCLOSED_WORK` 或 `GATE_BUILDER_HANDOFF` 的复核；
 - 是否需要更新 `PROJECT_STATE.md`。
 
 ## 8. 验收标准
@@ -69,6 +74,7 @@ Builder 完成任务不等于项目完成。Skill 需要定义 Builder 完成后
 - Builder 完成后必须返回 Collaborator 视角；
 - Maker 审阅前不得视为完成；
 - 覆盖 `VERIFICATION_PLAN.md` 的 S7；
+- Builder 返回后若触发 Git、权威文档、Phase 或状态入口变化，必须输出对应 gate 结果；
 - 状态回写只记录影响恢复、阻塞、下一步或权威路径的变化；
 - Git 闭环仍受 Maker 手动验收门约束。
 
@@ -76,8 +82,9 @@ Builder 完成任务不等于项目完成。Skill 需要定义 Builder 完成后
 
 1. 用 S7 Builder 完成后场景检查是否回到 Collaborator；
 2. 构造一个验证失败场景，检查是否报告失败并保持任务未完成；
-3. 构造一个 Diff 等待审阅场景，检查是否不自动提交；
-4. 检查状态回写是否没有流水账化。
+3. 构造一个 Diff 等待审阅场景，检查 `GATE_GIT_WRITE` 是否阻止自动提交；
+4. 构造一个状态入口更新场景，检查 `GATE_AUTHORITY_SOURCE` 是否要求目标文档和权威范围明确；
+5. 检查状态回写是否没有流水账化。
 
 ## 10. 完成后更新
 
