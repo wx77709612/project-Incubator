@@ -1,25 +1,20 @@
 # Main Runtime Chain Reference
 
-> Project Incubator Skill 1.0 的主运行链路 reference
+用于 Project Incubator Skill 从启动、恢复或接入进入 Phase 内协作，并在收尾时形成下一轮可恢复入口。
 
-## 文档状态
+读取时机：当 `SKILL.md` 判定本轮需要恢复主链路、检查启动到收尾的完整流程、处理状态收敛或判断下一轮恢复入口时读取。
 
-| 字段 | 当前值 |
-| --- | --- |
-| 所属项目 | Project Incubator |
-| 所有者 Phase | Phase 6 - Build |
-| 文档状态 | Draft |
-| 权威范围 | Project Incubator Skill 1.0 主运行链路的运行时步骤、输入、输出、继续条件、停止条件和首批验证场景映射 |
-| 消费 Phase | Phase 6-9，后续 Skill 实现任务按需读取 |
-| 更新条件 | Maker 调整 R1 主运行链路、启动恢复顺序、上下文完整性检查、任务类型判定、分叉分类、文档写回、Maker 审阅或下一轮恢复入口 |
-| 依赖文档 | `DOCS/05-planning/TICKETS/TICKET-R1-01-main-runtime-chain.md`、`DOCS/05-planning/ROADMAP.md`、`DOCS/05-planning/MILESTONES.md`、`DOCS/05-planning/VERIFICATION_PLAN.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`DOCS/04-design/AGENT_PROTOCOL_DESIGN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/04-design/TECHNICAL_DESIGN.md`、`AGENTS.md`、`DOCS/PROJECT_STATE.md` |
-| 最后更新 | 2026-07-25 |
+相关 Skill 资产：
+
+- `references/project-intake-and-initialization.md`
+- `references/task-type-and-writeback.md`
+- `references/hard-gate-matrix.md`
 
 ## 1. 文档职责
 
 本文档承载 R1-01 的 Build 输出：把 Project Incubator Skill 1.0 从启动或恢复，到下一轮可恢复入口形成的主运行链路写成可消费的 Skill reference。
 
-本文档不是最终 `SKILL.md`，不定义 Codex Skill 的触发元数据，不创建脚本，不创建模板，也不授权 Git 写操作或 Build 自动化。后续任务可以把本文档作为 Skill 入口正文、任务类型判定、硬性门槛矩阵、Builder 交接闭环和脚本辅助检查的输入。
+本文档最初承载 R1-01 主运行链路，不授权 Git 写操作或 Build 自动化。后续 Skill 1.0 实现已在本文档上补入新项目启动、既有项目接入、生产启动模板和目录创建的路由关系；具体接入流程与模板实例化规则由 Skill 资产路径 `references/project-intake-and-initialization.md` 和 `assets/templates/` 承载。
 
 ## 2. 主运行链路总览
 
@@ -27,7 +22,8 @@ Skill 1.0 的主运行链路按以下顺序执行：
 
 ```text
 启动或恢复
-→ 读取本地协议与状态入口
+→ 判断新项目、既有项目接入或已接入项目恢复
+→ 读取本地协议与状态入口，或进入初始化 / 接入流程
 → 定位 Phase、角色、主目标和权威文档集合
 → 上下文完整性检查
 → 建立本轮协作契约
@@ -57,36 +53,43 @@ Skill 1.0 的主运行链路按以下顺序执行：
 - Maker 本轮指令；
 - 当前工作目录；
 - 项目根目录候选；
-- 项目根目录中的 `AGENTS.md`。
+- 当前工作区中的 `AGENTS.md` 与 `DOCS/PROJECT_STATE.md` 候选；
+- Skill 资产路径 `references/project-intake-and-initialization.md`。
 
 **输出**
 
 - 已确认的项目根目录；
 - 本轮是恢复现有项目、新项目初始化、只读咨询、任务执行还是 Git 闭环回写的初步判断；
-- 需要继续读取的本地协议和状态入口。
+- 需要继续读取的本地协议和状态入口；或
+- 需要进入的新项目启动 / 既有项目接入流程。
 
 **继续条件**
 
-- 找到项目根目录；
-- 能读取项目根目录的 `AGENTS.md`；
-- Maker 指令没有要求跳过本地启动协议。
+- 能判断目标项目是新项目、既有非 Project Incubator 项目、已接入项目，或 Project Incubator 自身维护；
+- 已接入项目能读取目标项目的 `AGENTS.md`；
+- 未接入项目能读取接入流程 reference，且 Maker 指令没有要求跳过接入确认。
 
 **停止条件**
 
-- 找不到项目根目录；
-- `AGENTS.md` 缺失、不可读取或与 Maker 指令冲突；
-- Maker 要求改变项目根目录、跳过启动协议或直接进入未授权写入。
+- 找不到目标项目或 Maker 未确认目标工作区；
+- 已接入项目的 `AGENTS.md` 缺失、不可读取或与 Maker 指令冲突；
+- 未接入项目需要创建或覆盖文件，但 Maker 未确认目标路径、接入范围和写入权限；
+- Maker 要求改变项目根目录、跳过启动 / 接入协议或直接进入未授权写入。
 
-### 3.2 读取本地协议与状态入口
+### 3.2 读取本地协议与状态入口，或进入初始化 / 接入流程
 
 **输入**
 
-- `AGENTS.md`；
-- `DOCS/PROJECT_STATE.md`；
-- `SPECS/ARCHITECTURE_DECISIONS.md`。
+- 目标项目路径 `AGENTS.md`；
+- 目标项目路径 `DOCS/PROJECT_STATE.md`；
+- `SPECS/ARCHITECTURE_DECISIONS.md`；
+- Skill 资产路径 `references/project-intake-and-initialization.md`；
+- Skill 资产路径 `assets/templates/AGENTS.template.md`；
+- Skill 资产路径 `assets/templates/PROJECT_STATE.template.md`。
 
 **输出**
 
+- 当前入口类型；
 - 当前项目名称与 Maker；
 - 当前项目状态；
 - 当前 Phase；
@@ -96,17 +99,21 @@ Skill 1.0 的主运行链路按以下顺序执行：
 - 当前阻塞项；
 - Exit Criteria 状态；
 - 下一项 Maker 决策；
-- 下一轮恢复入口。
+- 下一轮恢复入口；
+- 未接入项目的最小缺口、候选 Phase、拟创建目录和需要 Maker 确认的写入范围。
 
 **继续条件**
 
-- `DOCS/PROJECT_STATE.md` 存在且内部不冲突；
-- 状态入口能说明当前 Phase、AI 角色、主目标和权威文档集合；
-- 架构边界文档可读取，且没有发现阻止当前任务继续的硬冲突。
+- 已接入项目的 `DOCS/PROJECT_STATE.md` 存在且内部不冲突；
+- 已接入项目的状态入口能说明当前 Phase、AI 角色、主目标和权威文档集合；
+- 未接入项目已经完成只读盘点或新项目最小信息收集；
+- 创建 `AGENTS.md`、`DOCS/PROJECT_STATE.md` 或 Phase 目录前，Maker 已确认目标路径和写入范围；
+- 架构边界或接入流程文档可读取，且没有发现阻止当前任务继续的硬冲突。
 
 **停止条件**
 
-- `DOCS/PROJECT_STATE.md` 缺失、不可读、内部冲突或指向不存在的权威文档；
+- 已接入项目的 `DOCS/PROJECT_STATE.md` 缺失、不可读、内部冲突或指向不存在的权威文档；
+- 未接入项目缺少写入授权，或目标路径存在同名文件且 Maker 未确认处理方式；
 - 出现多个 Active 权威来源且状态入口无法判定；
 - 当前状态显示上一任务未闭环，而 Maker 没有确认本轮属于同一续作；
 - Maker 指令要求覆盖现有 Phase、角色、范围、Git 规则或权威文档职责。
@@ -247,7 +254,7 @@ Skill 1.0 的主运行链路按以下顺序执行：
 
 - Maker 只说“继续”，但上下文无法判断是继续写作、接受 Diff、授权 Git、切换 Phase 还是启动新任务；
 - 任务文档缺少目标、非目标、范围、验收标准或验证步骤；
-- 当前任务要求一次性实现完整 Skill 1.0 或超出当前 Ticket；
+- 当前任务要求超出已确认实现范围，或把未验证的完整 Skill 1.0 行为一次性交给 AI 自由发挥；
 - 任务类型会触发硬性门槛但 Maker 尚未明确授权。
 
 ### 3.6 Phase 内协作或 Builder 执行
@@ -594,14 +601,13 @@ Skill 1.0 的主运行链路按以下顺序执行：
 - 覆盖状态入口收敛；
 - 覆盖下一轮恢复。
 
-本文档保留以下边界：
+本文档原 R1-01 产物本身保留以下边界：
 
-- 不编写最终 `SKILL.md`；
 - 不实现脚本；
-- 不创建模板文件；
-- 不修改 `FRAMEWORK/` 或 `AGENTS.md`；
-- 不授权默认 Git 写操作；
-- 不一次性实现完整 Skill 1.0。
+- 不修改当前仓库根目录 `AGENTS.md`；
+- 不授权默认 Git 写操作。
+
+后续 Skill 1.0 实现任务可以在 Maker 授权的范围内创建 `SKILL.md`、Skill references、Skill assets 模板和接入流程承载物；这些新增承载物不代表 AI 可以跳过 Maker 对目标项目写入位置、接入范围和模板实例化结果的确认。
 
 ## 6. 后续消费关系
 

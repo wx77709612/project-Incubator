@@ -1,19 +1,14 @@
 # Builder Handoff Checklist Reference
 
-> Project Incubator Skill 1.0 的 Builder 交接前检查 reference
+用于 Project Incubator Skill 在启动 AI Builder 前检查任务边界是否完整、可执行、可验证，并决定是否拒绝交接。
 
-## 文档状态
+读取时机：当本轮准备把任务交给 AI Builder，或需要检查 Ticket / 等价任务边界是否具备目标、非目标、范围、验收标准和验证步骤时读取。
 
-| 字段 | 当前值 |
-| --- | --- |
-| 所属项目 | Project Incubator |
-| 所有者 Phase | Phase 6 - Build |
-| 文档状态 | Draft |
-| 权威范围 | Project Incubator Skill 1.0 在启动 AI Builder 前必须检查的任务字段、交接门槛、允许与禁止范围、拒绝交接流程和验证场景 |
-| 消费 Phase | Phase 6-9，后续 R3 与 Skill 实现任务按需读取 |
-| 更新条件 | Maker 调整 Builder 交接条件、Ticket 必备字段、拒绝交接流程、验证步骤或 R3 任务边界 |
-| 依赖文档 | `DOCS/05-planning/TICKETS/TICKET-R3-01-builder-handoff-checklist.md`、`DOCS/05-planning/VERIFICATION_PLAN.md`、`FRAMEWORK/Role-System.md`、`FRAMEWORK/Phase-System.md`、`DOCS/04-design/SKILL_DESIGN.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`SKILL/references/task-type-and-writeback.md`、`SKILL/references/hard-gate-matrix.md`、`SKILL/references/gate-response-and-authorization.md` |
-| 最后更新 | 2026-07-25 |
+相关 Skill 资产：
+
+- `references/task-type-and-writeback.md`
+- `references/hard-gate-matrix.md`
+- `references/gate-response-and-authorization.md`
 
 ## 1. 文档职责
 
@@ -25,7 +20,7 @@
 
 Builder 只能执行范围明确、可验证、不会重新定义项目方向的任务。
 
-当任务缺少目标、非目标、输入、输出、依赖、允许范围、禁止范围、验收标准、验证步骤、风险或完成后更新项时，AI Collaborator 必须拒绝交给 Builder，并说明缺口应回到哪里补齐。
+当任务缺少目标、非目标、输入、输出、产物承载类型、依赖、允许范围、禁止范围、验收标准、验证步骤、风险或完成后更新项时，AI Collaborator 必须拒绝交给 Builder，并说明缺口应回到哪里补齐。
 
 Maker 的“继续”“可以”“交给 Builder 做”只能触发交接检查，不能绕过字段完整性、范围门槛、Git 门槛或 Maker 验收门。
 
@@ -38,6 +33,8 @@ Maker 的“继续”“可以”“交给 Builder 做”只能触发交接检�
 | 非目标 | 本轮明确不做什么 | 拒绝交接，防止范围扩张 |
 | 输入 | Builder 必须读取或使用哪些文档、文件、素材或状态 | 补齐精确路径或等价输入 |
 | 输出 | Builder 完成后应产生什么文件、文档、代码、资产或报告 | 补齐输出物和承载位置 |
+| 产物承载类型 | 输出属于项目 Phase 文档、项目状态入口、Skill runtime reference、Skill asset / template、目标项目实例文件、代码 / 脚本 / 配置还是 Prompt 正文 | 缺失则触发承载类型错位门槛，拒绝交接 |
+| 路径域与适用写法 | 输出路径相对目标项目根目录、Skill 根目录还是当前 Project Incubator 仓库；应使用哪一类格式规则 | 缺失则触发承载类型错位门槛，拒绝交接 |
 | 依赖 | 任务依赖哪些上游设计、规则、Ticket 或验证计划 | 补齐依赖或说明无依赖 |
 | 允许修改范围 | Builder 可以修改哪些文件、目录或文档段落 | 未明确则不允许写入 |
 | 禁止修改范围 | Builder 不得修改哪些项目方向、Phase、规则、文档或 Git 状态 | 未明确则拒绝交接 |
@@ -54,7 +51,7 @@ AI Collaborator 准备交给 Builder 前按以下顺序判断：
 2. 确认任务属于当前 `DOCS/PROJECT_STATE.md` 指向的主目标或 Maker 明确授权的同一里程碑范围。
 3. 读取当前 Ticket 或等价执行文档。
 4. 对照 Builder 启动前检查清单逐项检查字段。
-5. 判断是否触发硬性门槛：Builder 交接、范围、Git、Phase、权威文档、未闭环任务或上下文完整性门槛。
+5. 判断是否触发硬性门槛：Builder 交接、范围、Git、Phase、权威文档、未闭环任务、上下文完整性或承载类型错位门槛。
 6. 字段完整且未触发阻断门槛时，输出 Builder 可执行边界。
 7. 字段不完整或门槛未解除时，拒绝交接并说明缺口、风险和回退位置。
 
@@ -68,6 +65,8 @@ Builder 任务边界：
 - 非目标：
 - 输入：
 - 输出：
+- 产物承载类型：
+- 路径域与适用写法：
 - 依赖：
 - 允许修改范围：
 - 禁止修改范围：
@@ -103,6 +102,7 @@ Builder 任务边界：
 | 要求 Git 闭环 | Builder 会改变历史或远端 | 触发 Git 门槛，不授权执行 |
 | 当前 Diff 未闭环且任务无关 | 会混入无关修改 | 触发未闭环任务门槛 |
 | 上下文不可靠 | AI 无法确认当前任务边界 | 触发上下文完整性门槛 |
+| 产物承载类型不明 | Builder 无法判断应使用项目文档、Skill reference、模板、代码、配置或 Prompt 的哪一种规则 | 触发承载类型错位门槛，拒绝交接 |
 
 ## 8. 验证场景映射
 
@@ -133,6 +133,19 @@ Builder 任务边界：
 - 拒绝 Builder 交接；
 - 回到 Planning 补验证步骤。
 
+### 缺少产物承载类型的 Ticket
+
+**输入场景**
+
+- Ticket 有目标、输出路径或输出名称；
+- 但没有说明输出属于项目 Phase 文档、项目状态入口、Skill runtime reference、Skill asset / template、目标项目实例文件、代码 / 脚本 / 配置还是 Prompt 正文。
+
+**预期行为**
+
+- AI 判断字段不完整并触发承载类型错位门槛；
+- 拒绝 Builder 交接；
+- 要求补齐产物承载类型、路径域、适用写法和禁止套用的规则。
+
 ### 范围扩大 Ticket
 
 **输入场景**
@@ -150,8 +163,9 @@ Builder 任务边界：
 **输入场景**
 
 - Ticket 包含完整字段；
+- 输出产物承载类型、路径域和适用写法已明确；
 - 当前 Phase 允许执行；
-- 未触发 Git、Phase、范围、权威文档、未闭环任务或上下文完整性门槛。
+- 未触发 Git、Phase、范围、权威文档、未闭环任务、上下文完整性或承载类型错位门槛。
 
 **预期行为**
 
@@ -168,8 +182,9 @@ Builder 任务边界：
 - 定义 Builder 启动前检查；
 - 定义缺失字段时的拒绝交接流程；
 - 定义允许修改和禁止修改范围；
+- 定义产物承载类型、路径域与适用写法要求；
 - 定义验证步骤要求；
-- 覆盖 S6、缺少验证步骤、范围扩大和可执行 Ticket 场景；
+- 覆盖 S6、缺少验证步骤、缺少产物承载类型、范围扩大和可执行 Ticket 场景；
 - 不执行 Build；
 - 不创建代码；
 - 不把完整 Skill 一次性交给 Builder；

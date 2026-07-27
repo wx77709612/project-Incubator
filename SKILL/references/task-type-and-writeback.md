@@ -1,19 +1,14 @@
 # Task Type And Writeback Reference
 
-> Project Incubator Skill 1.0 的任务类型判定与写回规则 reference
+用于 Project Incubator Skill 判断本轮任务类型、读取粒度、写回触发条件、状态入口收敛和下一轮恢复入口。
 
-## 文档状态
+读取时机：当本轮涉及任务分类、文档写回、状态收敛、上下文恢复、Maker 任务 Prompt 或 Builder 返回后的写回判断时读取。
 
-| 字段 | 当前值 |
-| --- | --- |
-| 所属项目 | Project Incubator |
-| 所有者 Phase | Phase 6 - Build |
-| 文档状态 | Draft |
-| 权威范围 | Project Incubator Skill 1.0 的任务类型判定、读取粒度、上下文恢复任务、写回触发条件、状态入口收敛和下一轮恢复入口检查 |
-| 消费 Phase | Phase 6-9，后续 R1 / R2 / R3 与 Skill 实现任务按需读取 |
-| 更新条件 | Maker 调整任务类型、读取粒度、上下文恢复任务、写回触发条件、状态入口收敛规则、恢复入口要求或 R1 主运行链路 |
-| 依赖文档 | `DOCS/05-planning/TICKETS/TICKET-R1-02-task-type-and-writeback.md`、`SKILL/references/main-runtime-chain.md`、`DOCS/05-planning/VERIFICATION_PLAN.md`、`DOCS/04-design/DOCUMENT_WRITEBACK_DESIGN.md`、`DOCS/04-design/PROJECT_STATE_DESIGN.md`、`FRAMEWORK/Document-System.md`、`DOCS/PROJECT_STATE.md` |
-| 最后更新 | 2026-07-25 |
+相关 Skill 资产：
+
+- `references/main-runtime-chain.md`
+- `references/hard-gate-matrix.md`
+- `references/gate-response-and-authorization.md`
 
 ## 1. 文档职责
 
@@ -62,6 +57,22 @@ Maker 通常只需要提供本轮指令和关键决策。项目文件内容应�
 - 读取粒度不足：补读相关章节或全文，并说明原因；
 - 文档状态无效：不自行选择方便版本；
 - 当前任务不需要：不读取，不把按需文档提升为默认必读。
+
+### 2.4 产物承载类型判定
+
+写入任何产物前，先判定产物承载类型，再套用对应写法。承载类型优先于“这是 Markdown / 文档”这类表层格式。
+
+常见承载类型包括：
+
+- 项目 Phase 文档：按 `DOCS/<phase>/` 文档规则写入，可以使用项目文档元数据；
+- 项目状态入口：按 `DOCS/PROJECT_STATE.md` 状态入口规则写入；
+- Skill runtime reference：按运行时 reference 规则写入，保留用途、读取时机和相关 Skill 资产，不套项目文档状态表；
+- Skill asset / template：按资产或模板实例化规则写入，保留占位字段、路径域和必要删除说明；只有会实例化为目标项目 `DOCS/` 权威文档的模板才使用项目文档元数据；
+- 目标项目实例文件：按目标项目本地协议写入；
+- 代码 / 脚本 / 配置：按对应技术格式写入，不套 Markdown 文档规则；
+- Prompt 正文：只承载任务 delta，不搬运项目状态、Git 历史或权威文档集合。
+
+如果无法判定承载类型，或准备把一种承载物的格式规则套到另一种承载物上，触发 `hard-gate-matrix.md` 的承载类型错位门槛。
 
 ## 3. 任务类型判定表
 
@@ -148,8 +159,15 @@ Prompt 正文不得包含：
 
 写回位置按权威归属选择：
 
-| 变化类型 | 默认写回位置 |
+| 承载类型或变化类型 | 默认写回位置 |
 | --- | --- |
+| 项目 Phase 文档 | 对应 `DOCS/<phase>/` 文档 |
+| 项目状态入口 | `DOCS/PROJECT_STATE.md` |
+| Skill runtime reference | Skill 资产路径 `references/` 中对应 reference |
+| Skill asset / template | Skill 资产路径 `assets/` 中对应模板或资产 |
+| 目标项目实例文件 | 目标项目路径中的对应文件 |
+| 代码 / 脚本 / 配置 | 被授权的技术文件路径 |
+| Prompt 正文 | 默认只输出在对话中；不得写入项目状态 |
 | 当前项目状态、主目标、任务状态、阻塞项、下一步、恢复入口 | `DOCS/PROJECT_STATE.md` |
 | 阶段内设计、规划、验证或执行结论 | 对应 Phase 文档或当前 Ticket |
 | Skill 运行规则细节 | `SKILL/references/` 中对应 reference |

@@ -13,7 +13,7 @@
 | 消费 Phase | Phase 0–9，启动时必读 |
 | 更新条件 | 状态、Phase、角色、文档路径、决定、阻塞项或下一步发生变化 |
 | 依赖文档 | `AGENTS.md`、`SPECS/ARCHITECTURE_DECISIONS.md`、当前 Phase 规则与交付物 |
-| 最后更新 | 2026-07-25 |
+| 最后更新 | 2026-07-26 |
 
 ## 1. 基本状态
 
@@ -22,15 +22,15 @@
 | 项目名称 | Project Incubator |
 | Maker | 当前项目的人类所有者，即正在与 AI 协作的用户 |
 | 项目状态 | Active |
-| 当前 Phase | Phase 6 — Build |
-| 当前 AI 角色 | Engineering Lead（工程负责人） |
-| 当前主要目标 | 完成 R1-R3 Git 闭环后的状态回写，并修正 Maker 任务 Prompt 生成卫生规则，确保下一任务 Prompt 正文只承载任务 delta、不搬运项目状态。 |
-| 当前阶段交付物 | Draft：`SKILL/references/main-runtime-chain.md`、`SKILL/references/task-type-and-writeback.md`、`SKILL/references/hard-gate-matrix.md`、`SKILL/references/gate-response-and-authorization.md`、`SKILL/references/builder-handoff-checklist.md`、`SKILL/references/builder-return-and-review.md`；上游 Active：Phase 5 首批 Planning 文档、Phase 4 十份设计文档、`SPECS/ARCHITECTURE_DECISIONS.md` |
-| 当前任务状态 | Ready for Maker Review（R1-R3 首批 Build reference 里程碑已由 Maker 完成手工 Git 闭环；当前 Diff 为闭环状态回写与 Maker 任务 Prompt 生成卫生规则修正） |
+| 当前 Phase | Phase 4 — Design（受控回退修订） |
+| 当前 AI 角色 | System Architect / Technical Architect（系统与技术方案设计） |
+| 当前主要目标 | 受控修订 Project Incubator Skill 1.0 的门槛机制设计：将关键门槛从自然语言约束升级为可结构化判定、可验证、非黑即白命中 / 未命中的 gate 执行协议。 |
+| 当前阶段交付物 | 需修订：Phase 4 Skill 设计、交互设计、Agent 协议设计、文档写回设计、技术方案设计中与硬性门槛执行方式相关的内容；待后续修订：Phase 5 Planning 文档与 Ticket；失败检查点 Draft：当前 `p6/skill-minimal-entry` 分支上的 `SKILL/SKILL.md`、`SKILL/references/`、`SKILL/assets/templates/` 等自然语言 Skill Draft 承载物。 |
+| 当前任务状态 | Blocked / Design Revision Required（当前 Phase 6 Build Draft 不通过：自然语言 Skill reference 只能约束 Agent，不能保证每个门槛百分之百命中；Maker 已确认 Skill 1.0 的验收目标必须包含结构化 gate 机制，使门槛命中 / 未命中具有非黑即白结果。当前 `p6/skill-minimal-entry` 分支将提交为失败检查点并保留分支，不删除、不推送、不合并。） |
 | 稳定分支 | `main` |
 | 工作分支规则 | `p<当前Phase>/<type>-<topic>`；实际分支由 Git 状态确认 |
-| 下一项决定 | Maker 审阅当前 Prompt 生成卫生规则修正 Diff；接受后再启动 Phase 6 下一项 Build 任务，决定是否产出最小 `SKILL.md` 入口正文或等价 Skill 1.0 最小承载物。 |
-| 最近更新时间 | 2026-07-25 |
+| 下一项决定 | 在新的 Phase 4 受控设计修订任务中，确认 Skill 1.0 的结构化 gate 执行协议、gate schema、入口判定、阻断条件、验证方式，以及哪些 Phase 5 Planning / Phase 6 Build 产物需要随之修订。 |
+| 最近更新时间 | 2026-07-27 |
 
 ## 2. 当前阶段说明
 
@@ -44,25 +44,27 @@ Phase 4 已完成 Project Incubator Skill 1.0 的完整流程设计。Maker 已�
 
 Phase 5 的首批 Planning 交付物已经完成并经 Maker 接受，Git 里程碑闭环已同步到 `main` / `origin/main`。项目已进入 Phase 6 — Build。
 
-Phase 6 的工作不是重新设计 Skill，也不是一次性实现完整 Skill 1.0，而是严格按 Phase 5 已接受的 Ticket 逐步构建真实成果。R1-R3 首批 Build reference 里程碑已完成并合并到 `main` / `origin/main`。当前已形成六份 Draft Skill references：`SKILL/references/main-runtime-chain.md` 定义 Skill 1.0 主运行链路并补入上下文完整性检查，`SKILL/references/task-type-and-writeback.md` 定义任务类型判定、读取粒度、上下文恢复任务、写回触发规则和 Maker 任务 Prompt 生成卫生检查，`SKILL/references/hard-gate-matrix.md` 定义硬性门槛矩阵并补入上下文完整性门槛，`SKILL/references/gate-response-and-authorization.md` 定义门槛触发后的回应结构、Maker 明确授权字段、Prompt 搬运门槛和最小恢复胶囊，`SKILL/references/builder-handoff-checklist.md` 定义 AI Builder 启动前的字段完整性、交接门槛和拒绝交接流程，`SKILL/references/builder-return-and-review.md` 定义 Builder 完成后的报告、Collaborator 回看、Maker Diff 审阅和状态回写判断。
+Phase 6 的第一轮 Skill Draft 构建暴露出关键设计缺口：当前自然语言 Skill references 可以定义门槛和流程，但不能像代码 `if / else` 一样强制保证每一个门槛百分之百命中。Maker 已明确确认，Skill 1.0 必须让门槛命中 / 未命中具备非黑即白结果；因此当前 Phase 6 Build Draft 不通过，不再作为 Skill 1.0 最小可消费承载物验收。
+
+项目受控回退到 Phase 4 — Design，下一步不是继续修补当前 Skill 文案，而是修订 Skill 1.0 的门槛机制设计：明确结构化 gate 执行协议、gate schema、gate 判定输入输出、阻断条件、验证方式，以及后续 Phase 5 Planning 与 Phase 6 Build 应如何重新拆解和实现。当前 `p6/skill-minimal-entry` 分支保留失败检查点提交，作为后续设计修订和重新实现时的反例与参考；该分支不删除、不推送、不合并。
 
 ## 3. 当前 AI 协作契约
 
-当前 AI 应以 Engineering Lead 身份工作：
+当前 AI 应以 System Architect / Technical Architect 身份工作：
 
-- 按 Phase 5 已接受 Ticket 准备执行上下文，监督 AI Builder 不越过任务边界；
-- 检查当前 Draft Skill references 是否符合对应 Ticket、Phase 4 设计和 Phase 5 验证计划；
-- 如 Maker 要求修改，在当前工作分支和对应 Ticket 边界内继续；
-- 修正 Maker 任务 Prompt 生成卫生规则，防止可复制 Prompt 正文搬运项目状态、Git 历史或权威文档集合；
-- 保留 Diff 供 Maker 审阅，并按需更新状态入口。
+- 回到 Phase 4 设计视角，重新定义 Skill 1.0 的硬性门槛执行机制；
+- 区分自然语言协作协议、结构化 gate schema、脚本 / 工具检查器和后续 Build 产物的职责；
+- 明确哪些现有 Phase 4 设计结论仍有效，哪些因“门槛必须百分之百命中”而需要受控修订；
+- 为 Phase 5 重新规划 gate 机制 Ticket 提供设计输入；
+- 保留当前 `p6/skill-minimal-entry` 失败检查点作为参考，不在该分支继续扩展设计修订。
 
 当前 AI 不应：
 
-- 重新定义项目方向、Phase 目标、成功标准或 Maker 决策权；
-- 将完整 Skill 一次性交给 AI Builder；
-- 在首个 Build 任务中编写最终 `SKILL.md`、实现脚本或创建模板文件，除非 Ticket 边界经 Maker 明确调整；
-- 添加未获 Maker 确认的新功能、公开发布目标、商业化目标或团队协作范围；
-- 执行未授权 Git 闭环或跳过 Maker Diff 审阅。
+- 继续把当前自然语言 Skill Draft 视为可验收的最小承载物；
+- 直接在当前 `p6/skill-minimal-entry` 分支上修改 Phase 4 / Phase 5 设计内容；
+- 未经设计修订和 Planning 重拆，直接实现 gate 脚本、安装流程、发布流程或完整自动化；
+- 改变 Maker 决策权、项目类型、公开发布或商业化边界；
+- 删除当前失败检查点分支或执行未授权远端操作。
 
 ## 4. 已完成内容（当前基线）
 
@@ -80,7 +82,16 @@ Phase 6 的工作不是重新设计 Skill，也不是一次性实现完整 Skill
 - Maker 已批准从 Phase 5 — Planning 进入 Phase 6 — Build。
 - Phase 6 已形成六份 Draft Skill references：`SKILL/references/main-runtime-chain.md` 覆盖启动或恢复、读取本地协议与状态入口、定位 Phase / 角色 / 主目标 / 权威文档集合、上下文完整性检查、协作契约、任务类型判断、Phase 内协作、新事项分类、硬性门槛、文档写回、Maker 审阅、状态入口收敛和下一轮恢复；`SKILL/references/task-type-and-writeback.md` 覆盖任务类型判定、读取粒度、上下文恢复任务、写回触发条件、状态入口收敛和最小恢复胶囊；`SKILL/references/hard-gate-matrix.md` 覆盖 Phase、Git、权威文档、范围、Builder、未闭环任务、上下文完整性、纠偏沉淀和 Architecture Decision 候选写回门槛；`SKILL/references/gate-response-and-authorization.md` 覆盖门槛触发后的标准回应结构、明确授权字段、不足授权示例、安全替代动作、执行前复核和最小恢复胶囊回应；`SKILL/references/builder-handoff-checklist.md` 覆盖 AI Builder 启动前检查清单、可执行边界格式、拒绝交接回应和 R3-01 验证场景；`SKILL/references/builder-return-and-review.md` 覆盖 Builder 返回报告、Collaborator 回看清单、Maker 审阅入口、状态回写判断和 R3-02 验证场景。
 - R1-R3 首批 Build reference 里程碑已获 Maker 接受，并由 Maker 完成手工 Git 闭环；稳定检查点为 `5006792 skill: add phase 6 r1-r3 runtime references`，已同步到 `main` / `origin/main`。
-- R1-R3 闭环后的续作已补充 Maker 任务 Prompt 生成卫生规则草案：`SKILL/references/task-type-and-writeback.md` 定义 Prompt 外说明 / Prompt 正文拆分、正文白名单 / 黑名单和失败重写流程；`SKILL/references/gate-response-and-authorization.md` 定义 Prompt 搬运门槛、授权不足示例和验证场景。
+- R1-R3 闭环后的续作已补充 Maker 任务 Prompt 生成卫生规则：`SKILL/references/task-type-and-writeback.md` 定义 Prompt 外说明 / Prompt 正文拆分、正文白名单 / 黑名单和失败重写流程；`SKILL/references/gate-response-and-authorization.md` 定义 Prompt 搬运门槛、授权不足示例和验证场景。对应 Git 闭环已完成并同步到 `main` / `origin/main` 的稳定检查点。
+- 当前已新增 Draft Skill 入口 `SKILL/SKILL.md`，负责自然语言触发描述、入口判断、启动分支、渐进路由和引用既有 references；其正文已按本地 `AGENTS.md` 的默认中文规则修正。入口已收敛为按目标项目状态选择四类入口：新想法或新项目孵化、既有非 Project Incubator 项目接入、已接入项目恢复或续作、Project Incubator 自身维护。
+- 当前已新增 `SKILL/references/project-intake-and-initialization.md`，定义新项目启动、既有非 Project Incubator 项目接入、已接入项目恢复的入口判定、模板实例化、目录创建和停止条件。
+- 当前已新增 Draft 生产启动模板 `SKILL/assets/templates/AGENTS.template.md`、`SKILL/assets/templates/PROJECT_STATE.template.md` 与 `SKILL/assets/templates/DOCUMENT-METADATA.template.md`，用于未来目标项目在 Maker 授权后生成本地 Agent 协议、状态入口和 `DOCS/<phase>/` 权威项目文档元数据；模板使用占位字段，不复制当前 Project Incubator 的状态事实。
+- 当前已在 `SKILL/SKILL.md`、`SKILL/references/project-intake-and-initialization.md` 与 `SKILL/references/main-runtime-chain.md` 中澄清三类路径域：目标项目路径、Skill 资产路径、当前 Project Incubator 仓库路径；`SKILL/references/` 已去除项目文档式“文档状态”表或轻量元数据块，统一改为运行时 Skill reference 头部，并明确不实例化为目标项目文件；Maker 已认可 `SKILL/assets/templates/` 作为生产启动模板承载目录。会实例化到目标项目 `DOCS/` 下的模板必须保留或生成 `## 文档状态` 元数据表；不会实例化为目标项目 `DOCS/` 权威文档的 Skill 资产不得误套该结构。
+- 当前已补入产物承载类型判定与承载类型错位门槛：写入前先判断产物属于项目 Phase 文档、项目状态入口、Skill runtime reference、Skill asset / template、目标项目实例文件、代码 / 脚本 / 配置或 Prompt 正文，再选择路径域和适用写法；不得把当前项目 Phase 文档结构、文档状态表或状态入口规则套到 Skill runtime reference、不会实例化为目标项目 `DOCS/` 权威文档的 Skill asset / template、代码、配置或 Prompt 正文。该规则已进入任务类型判定、硬性门槛矩阵、门槛回应授权、Builder 交接前检查和 Builder 返回复核。
+- 当前已定点修正 `SKILL/references/main-runtime-chain.md` 与 `SKILL/references/hard-gate-matrix.md`，使主运行链路和门槛矩阵承认未接入项目应走初始化 / 接入流程，而不是读取不存在的本地协议。
+- 当前已在 `SKILL/references/hard-gate-matrix.md` 与 `SKILL/references/gate-response-and-authorization.md` 中补入本地协议与输出约束硬性门槛，要求写入回复、Markdown 正文、Skill 入口、reference、模板、项目文档或其他交付物前，先确认本地协议中的语言、格式、内容承载、读写范围和工具边界。
+- 当前已补入质疑回应与非迎合门槛：当 Maker 对方案、解释、规则或 Skill 设计提出质疑时，AI 必须先从“合理时如何改”和“不合理时为什么不改”两面判断，再决定是否修改；不得为了迎合质疑直接改写协作方式、门槛或长期规则。
+- Maker 已在 2026-07-27 明确确认：Skill 1.0 的门槛机制不能只依赖自然语言描述；每一个关键门槛必须具备结构化、可验证、非黑即白的命中 / 未命中结果。当前 `p6/skill-minimal-entry` 分支上的自然语言 Skill Draft 因无法保证门槛百分之百命中，被标记为失败检查点；项目受控回退到 Phase 4 — Design 修订门槛执行机制。
 
 ### 4.2 当前有效治理基线
 
@@ -90,7 +101,7 @@ Phase 6 的工作不是重新设计 Skill，也不是一次性实现完整 Skill
 - Maker 任务 Prompt 生成必须先读取 `TEMPLATES/MAKER-TASK-PROMPT.template.md`，Prompt 正文只承载本次任务特有新增内容，不搬运项目状态、已完成历史、权威文档集合或 Git 信息；
 - Maker Git 闭环完成回写优先于下一任务 Prompt、Phase 切换或无关新任务；
 - 项目与任务采用自适应规划深度，简单、可逆、目标单一的任务不强制创建独立设计文档或实施计划；
-- `SKILL/` 当前开始承载未来 Skill 1.0 的 Draft reference，但仍不是已实现、已安装或已发布的可执行 Skill。
+- `SKILL/` 当前保留失败检查点 Draft 入口、Draft references 和 Draft templates；这些文件可作为后续设计修订与重新实现的参考，但不再视为 Skill 1.0 当前可验收的最小承载物。
 
 ### 4.3 当前项目理解基线
 
@@ -110,41 +121,42 @@ Phase 6 的工作不是重新设计 Skill，也不是一次性实现完整 Skill
 ## 5. 当前未确认事项
 
 - token、时间和维护成本的具体阈值；
-- 已有项目的接入流程、阶段推断依据、确认机制和文档补全规则；
+- 已有项目接入流程的后续真实项目验证、阶段推断准确性、文档补全深度和模板实例化体验；
 - 自动识别阶段、生成草案和更新状态文档的具体权限分级；
 - Project Incubator 的具体实现形态；
 - 状态模型的完整字段、状态枚举与版本规则；
 - 未来具体项目工作区的位置与创建方式；
 - Framework 如何版本化、验证和批准变更；
-- 未来 Codex Skill 的触发方式、权限、安装和发布机制；
+- 未来 Codex Skill 的权限、安装和发布机制；
 - 空 `CHANGELOG.md` 应在什么阶段启用；
 - 空 `.agents/` 目录应保留、定义用途还是移除。
 - `DOCS/03-validate/VALIDATION_RESULTS.md` 在 Phase 7 后如何收束补齐，以及应记录到什么细度。
-- 下一项 Skill 1.0 最小实现承载任务的精确边界，包括是否创建最终 `SKILL.md` 入口正文、是否仅引用现有 references、以及是否仍禁止脚本和模板实现。
+- 结构化 gate 执行协议应如何设计：gate schema、输入字段、输出枚举、阻断条件、执行顺序、Agent 可否继续、验证方式以及是否需要脚本 / 工具检查器；
+- 当前 Phase 4 哪些设计文档需要修订，Phase 5 哪些 Planning 文档与 Ticket 需要重拆，当前 Phase 6 Draft Skill 资产哪些可复用、哪些应废弃或改写。
 
 主要项目类型、第一目标用户、边界、非目标、成功标准和推荐流程路径已经在 Phase 1 中确认；其余事项应在适当的后续 Phase 中逐步确认，不在当前阶段一次性解决。
 
 ## 6. 当前阻塞项
 
-当前没有设计或阶段层面的阻塞。当前工作分支 `p6/skill-prompt-hygiene` 保留闭环状态回写与 Prompt 生成卫生规则修正 Diff，等待 Maker 审阅；在该 Diff 被接受并完成闭环前，不启动无关新任务。
+当前存在设计层面阻塞：自然语言 Skill references 不能保证每一个门槛百分之百命中，不满足 Maker 对 Skill 1.0 的 gate 验收目标。当前工作分支 `p6/skill-minimal-entry` 保留失败检查点提交，不删除、不推送、不合并；后续应从稳定基线创建新的 Phase 4 设计修订分支。
 
 ## 7. 当前 Exit Criteria 状态
 
-Phase 6 — Build 的 Exit Criteria 尚未满足：
+Phase 6 — Build 的 Exit Criteria 不满足；项目已受控回退到 Phase 4 — Design 修订门槛执行机制：
 
 | Exit Criteria | 当前状态 | 证据 |
 | --- | --- | --- |
-| 当前里程碑成果可运行、可查看或可体验 | 部分满足 | R1-R3 六份 Draft Skill references 可查看，并已合并到 `main` / `origin/main` |
-| 验收条件已通过 | 部分满足 | R1-01 已检查 S1、S2、S5、S8、S9 映射与非实现边界；R1-02 已检查 S2、S5、文档写入完成、上下文恢复场景与非实现边界；R2-01 已检查 S2、S3、S4、S6、S8、上下文完整性、纠偏沉淀场景与非实现边界；R2-02 已检查 S2、“帮我合并”、“进入下一阶段”、“把这个写进架构决策”、上下文过载场景与非实现边界；R3-01 已检查 S6、缺少验证步骤、范围扩大和可执行 Ticket 场景与非实现边界；R3-02 已检查 S7、验证失败、Diff 等待审阅和状态回写卫生场景与非实现边界；Maker 已接受该里程碑 Diff 并完成 Git 闭环 |
-| Maker 已完成必要的手工验证 | 未开始 | 待 Build 产物形成后由 Maker 验收 |
-| 项目状态文档已更新 | 部分满足 | R1-R3 里程碑闭环事实与 Prompt 生成卫生规则修正状态已回写到状态入口；当前 Diff 尚未提交 |
-| 未解决问题已明确记录 | 部分满足 | 当前未解决问题为下一项最小 Skill 实现承载任务的精确边界 |
+| 当前里程碑成果可运行、可查看或可体验 | 不满足 | 当前自然语言 Skill Draft 可查看，但不能保证 gate 百分之百命中，不满足当前验收目标 |
+| 验收条件已通过 | 不满足 | 已接受的自然语言 reference 验证只证明可描述流程和门槛，不能证明 gate 具有非黑即白命中 / 未命中结果 |
+| Maker 已完成必要的手工验证 | 已判定失败 | Maker 已确认当前机制目标必须升级为结构化 gate，当前 Build Draft 不通过 |
+| 项目状态文档已更新 | 满足当前回退需要 | 当前状态入口已记录失败原因、受控回退到 Phase 4、失败检查点分支处理方式和下一步设计修订入口 |
+| 未解决问题已明确记录 | 满足当前回退需要 | 当前未解决问题为结构化 gate 执行协议设计、Phase 4 设计修订范围、Phase 5 Planning 重拆范围和 Phase 6 Draft 资产后续取舍 |
 
-Phase 5 — Planning 的 Exit Criteria 已满足并由 Maker 接受，作为 Phase 6 的上游输入继续读取。
+Phase 5 — Planning 的既有 Exit Criteria 曾被 Maker 接受，但因 Skill gate 验收目标升级，后续需要在 Phase 4 设计修订后重新检查 Phase 5 Planning 是否仍充分。
 
 ## 8. 下一步
 
-下一步由 Maker 审阅当前 Diff。若接受，则先完成本次小修正的 Git 闭环；闭环后再启动 Phase 6 的下一项 Build 任务：产出 Project Incubator Skill 1.0 的最小 `SKILL.md` 入口正文或等价最小承载物；不得重新设计 Phase 5，不得实现脚本或模板，除非 Maker 明确调整任务边界。
+下一步应在新的 Phase 4 受控设计修订任务中，修订 Skill 1.0 的门槛执行机制设计。该任务应从稳定基线创建新的设计分支，不在当前 `p6/skill-minimal-entry` 分支继续修改；当前分支只保留失败检查点，不删除、不推送、不合并。修订重点是：每个关键 gate 的结构化输入、输出枚举、命中 / 未命中判定、阻断后续流程的条件、Agent 可继续动作、验证方式，以及后续 Phase 5 / Phase 6 产物如何重新拆解。
 
 ## 9. 当前权威文档集合
 
@@ -180,12 +192,17 @@ Phase 5 — Planning 的 Exit Criteria 已满足并由 Maker 接受，作为 Pha
 | 文档规则 | `FRAMEWORK/Document-System.md` | Active | 创建、移动或更新文档时必读 |
 | Skill 规范 | `FRAMEWORK/Codex-Skill-Specification.md` | Draft | Phase 6 准备 Skill 产物时必读 |
 | Skill 目录状态 | `SKILL/README.md` | Active | Phase 6 准备 Skill 产物时必读 |
+| Skill 入口正文 | `SKILL/SKILL.md` | Draft | 当前 Skill 入口、启动分支和路由审阅必读 |
 | Skill 主运行链路 reference | `SKILL/references/main-runtime-chain.md` | Draft | R1-01 审阅与后续 R1 / R2 / R3 Ticket 按需读取 |
+| Skill 项目接入与初始化 reference | `SKILL/references/project-intake-and-initialization.md` | Draft | 新项目启动、既有非 Project Incubator 项目接入、目录创建或模板实例化任务必读 |
 | Skill 任务类型与写回 reference | `SKILL/references/task-type-and-writeback.md` | Draft | R1-02 审阅与后续 R2 / R3 Ticket 按需读取 |
-| Skill 硬性门槛矩阵 reference | `SKILL/references/hard-gate-matrix.md` | Draft | R2-01 审阅与后续 R2 / R3 Ticket 按需读取 |
-| Skill 门槛回应与授权 reference | `SKILL/references/gate-response-and-authorization.md` | Draft | R2-02 审阅与后续 R3 Ticket 按需读取 |
+| Skill 硬性门槛矩阵 reference | `SKILL/references/hard-gate-matrix.md` | Draft | 当前本地协议输出约束门槛审阅与后续 R2 / R3 Ticket 按需读取 |
+| Skill 门槛回应与授权 reference | `SKILL/references/gate-response-and-authorization.md` | Draft | 当前本地协议冲突回应审阅与后续 R3 Ticket 按需读取 |
 | Skill Builder 交接前检查 reference | `SKILL/references/builder-handoff-checklist.md` | Draft | R3-01 审阅与后续 R3 Ticket 按需读取 |
 | Skill Builder 返回与审阅 reference | `SKILL/references/builder-return-and-review.md` | Draft | R3-02 审阅与后续 Skill 实现任务按需读取 |
+| Skill Agent 运行协议生产模板 | `SKILL/assets/templates/AGENTS.template.md` | Draft | 新项目启动或既有项目接入时按 Maker 授权实例化 |
+| Skill 项目状态入口生产模板 | `SKILL/assets/templates/PROJECT_STATE.template.md` | Draft | 新项目启动、既有项目接入或状态入口修复时按 Maker 授权实例化 |
+| Skill 项目文档元数据生产模板 | `SKILL/assets/templates/DOCUMENT-METADATA.template.md` | Draft | 目标项目 `DOCS/<phase>/` 权威文档创建或修复时按 Maker 授权实例化 |
 | 通用文档元数据模板 | `TEMPLATES/DOCUMENT-METADATA.template.md` | Draft | 创建权威项目文档时读取 |
 | Maker 任务启动 Prompt 模板 | `TEMPLATES/MAKER-TASK-PROMPT.template.md` | Draft | Maker 发起新任务时按需使用 |
 
@@ -193,8 +210,8 @@ Phase 5 — Planning 的 Exit Criteria 已满足并由 Maker 接受，作为 Pha
 
 下一会话必须从 `AGENTS.md` 开始，随后读取本文件，再读取上表中标记为启动时必读、当前 Phase 必读或本轮按需读取的文档。
 
-恢复后的第一项工作是以 Engineering Lead 身份审阅或继续当前 `p6/skill-prompt-hygiene` 分支上的 Prompt 生成卫生规则修正 Diff。该 Diff 被 Maker 接受并闭环后，才从干净且同步的 `main` 启动 Phase 6 下一项 Build 任务，确认最小 `SKILL.md` 入口正文或等价最小承载物的任务边界。不得重新设计 Phase 5，不得一次性实现完整 Skill 1.0，不得实现脚本、模板或修改 Architecture Decisions，除非 Maker 明确调整任务边界。若新会话由上下文完整性门槛触发，必须重新读取权威文件，不得依赖旧聊天压缩摘要判断 Phase、任务范围、Git / Phase / 架构授权或门槛是否解除。`DOCS/03-validate/VALIDATION_RESULTS.md` 保留为 Phase 7 后的回收事项。
+恢复后的第一项工作是以 System Architect / Technical Architect 身份启动 Phase 4 受控设计修订：重新设计 Project Incubator Skill 1.0 的结构化 gate 执行协议，使每个关键门槛具备非黑即白的命中 / 未命中结果。新任务应从稳定基线创建新的 Phase 4 设计修订分支；不得在当前 `p6/skill-minimal-entry` 失败检查点分支继续扩展设计修改。当前 `p6/skill-minimal-entry` 分支只作为失败 Build Draft 参考，不删除、不推送、不合并。若新会话由上下文完整性门槛触发，必须重新读取权威文件，不得依赖旧聊天压缩摘要判断 Phase、任务范围、Git / Phase / 架构授权或门槛是否解除。`DOCS/03-validate/VALIDATION_RESULTS.md` 保留为 Phase 7 后的回收事项。
 
 新会话在状态恢复和只读报告阶段不创建分支；如需写入，Agent 应先确认符合当前任务范围的工作分支，再进行文档修改。
 
-如果新会话发现当前工作区、未推送提交或任务分支尚未闭环，必须先提醒 Maker 处理上一任务，不得直接开始新的写入任务。
+如果新会话发现当前工作区仍在 `p6/skill-minimal-entry` 且失败检查点已经提交，应先切回稳定基线并创建新的 Phase 4 设计修订分支；不得把 Phase 4 设计修订混入当前失败检查点分支。若发现未提交 Diff、未推送提交或任务分支状态与本状态入口不一致，必须先报告 Maker 决定。

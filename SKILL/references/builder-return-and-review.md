@@ -1,19 +1,14 @@
 # Builder Return And Review Reference
 
-> Project Incubator Skill 1.0 的 Builder 返回与审阅闭环 reference
+用于 Project Incubator Skill 在 AI Builder 完成、失败或暂停后，回到 AI Collaborator 视角检查结果、验证证据、Diff 范围、Maker 审阅入口和状态写回需求。
 
-## 文档状态
+读取时机：当 Builder 返回结果、报告失败、请求暂停，或 Maker 需要审阅 Builder 产物时读取。
 
-| 字段 | 当前值 |
-| --- | --- |
-| 所属项目 | Project Incubator |
-| 所有者 Phase | Phase 6 - Build |
-| 文档状态 | Draft |
-| 权威范围 | Project Incubator Skill 1.0 在 AI Builder 完成、失败或暂停后，返回 AI Collaborator 视角进行结果报告、验证证据检查、Diff 范围核对、Maker 审阅入口和状态回写判断的规则 |
-| 消费 Phase | Phase 6-9，后续 R3 与 Skill 实现任务按需读取 |
-| 更新条件 | Maker 调整 Builder 完成后报告方式、验证证据要求、Collaborator 回看清单、Diff 审阅入口、状态回写触发条件或 R3 任务边界 |
-| 依赖文档 | `DOCS/05-planning/TICKETS/TICKET-R3-02-builder-return-and-review.md`、`DOCS/05-planning/VERIFICATION_PLAN.md`、`FRAMEWORK/Role-System.md`、`FRAMEWORK/Phase-System.md`、`DOCS/04-design/INTERACTION_DESIGN.md`、`SKILL/references/builder-handoff-checklist.md`、`SKILL/references/task-type-and-writeback.md`、`SKILL/references/gate-response-and-authorization.md` |
-| 最后更新 | 2026-07-25 |
+相关 Skill 资产：
+
+- `references/builder-handoff-checklist.md`
+- `references/task-type-and-writeback.md`
+- `references/gate-response-and-authorization.md`
 
 ## 1. 文档职责
 
@@ -28,6 +23,7 @@ Builder 完成任务只代表执行步骤结束，不代表任务被 Maker 接�
 Builder 返回后必须先由 Collaborator 回看：
 
 - 是否符合原 Ticket 或等价执行边界；
+- 产物承载类型、路径域和适用写法是否与交接边界一致；
 - 是否符合上游设计、Phase 目标和禁止范围；
 - 是否提供了验证证据；
 - Diff 是否只包含本任务范围；
@@ -43,6 +39,8 @@ Builder 返回时应提供以下信息：
 ```text
 Builder 返回报告：
 - 任务边界：
+- 产物承载类型：
+- 路径域与适用写法：
 - 实际修改：
 - 验证证据：
 - 未完成项：
@@ -55,6 +53,7 @@ Builder 返回报告：
 其中：
 
 - `任务边界` 引用启动前交接边界，不重新定义目标；
+- `产物承载类型` 与 `路径域与适用写法` 引用启动前交接边界，用于检查是否把一种产物格式规则套到另一种产物上；
 - `实际修改` 列出文件、资产或文档变化；
 - `验证证据` 包含命令、检查、手工验证或无法验证的原因；
 - `未完成项` 必须如实列出；
@@ -69,6 +68,7 @@ Builder 返回后，AI Collaborator 按以下顺序回看：
 | 检查项 | 必须判断 | 失败时动作 |
 | --- | --- | --- |
 | 任务边界一致性 | 实际结果是否符合目标、非目标、输入、输出和允许范围 | 标记未完成或要求 Builder 修正 |
+| 承载类型一致性 | 实际产物是否符合交接时声明的承载类型、路径域和适用写法；是否误套项目文档、Skill reference、模板、代码、配置或 Prompt 的规则 | 触发承载类型错位门槛，报告错位并等待修正或 Maker 决定 |
 | 禁止范围 | 是否修改了项目方向、Phase、成功标准、Git 状态或权威规则 | 触发对应硬性门槛 |
 | 验证证据 | 验证是否执行，结果是否支持验收标准 | 验证失败或缺失时不得宣称完成 |
 | Diff 范围 | Diff 是否只包含本任务范围 | 报告越界 Diff，等待 Maker 决定 |
@@ -124,6 +124,7 @@ Builder 返回后，只有以下变化需要考虑写回：
 | 验证失败 | Working 或 Blocked | 报告失败命令或手工检查结果，说明能否在当前范围修复 |
 | 验证未执行 | Working | 不宣称完成，说明未执行原因和后续验证方式 |
 | Diff 越界 | Blocked 或 Working | 报告越界文件和影响，等待 Maker 决定是否拆分或回退 |
+| 承载类型错位 | Blocked 或 Working | 报告错位产物、被误套的规则和正确承载类型；不进入 Maker Review，除非 Maker 明确接受该例外 |
 | 违反禁止范围 | Blocked | 触发硬性门槛，不继续扩大 |
 | Builder 报告不完整 | Working | 要求补充实际修改、验证证据、风险或 Diff 范围 |
 | 需要 Maker 决策 | Ready for Maker Review 或 Blocked | 明确列出决策点，不替 Maker 判断 |
@@ -172,6 +173,19 @@ Builder 返回后，只有以下变化需要考虑写回：
 - 不自动暂存、提交、推送或合并；
 - 任务状态为 Ready for Maker Review。
 
+### 承载类型错位场景
+
+**输入场景**
+
+- Builder 返回的产物路径或正文看似完成；
+- 但 Skill reference 使用了项目 Phase 文档的“文档状态”表，或不会实例化为目标项目 `DOCS/` 权威文档的模板、代码、配置、Prompt 正文套用了其他承载物的格式规则。
+
+**预期行为**
+
+- AI 返回 Collaborator 视角并触发承载类型错位门槛；
+- 报告错位产物、路径域、误套规则和正确适用写法；
+- 不进入 Ready for Maker Review，除非 Maker 明确接受该例外或要求按当前范围修正。
+
 ### 状态回写卫生场景
 
 **输入场景**
@@ -194,9 +208,10 @@ Builder 返回后，只有以下变化需要考虑写回：
 - 定义未完成项和风险报告；
 - 定义 Diff 范围报告；
 - 定义 Collaborator 回看清单；
+- 定义承载类型错位的返回复核；
 - 定义 Maker 审阅提示；
 - 定义是否需要更新 `PROJECT_STATE.md` 的判断；
-- 覆盖 S7、验证失败、Diff 等待审阅和状态回写卫生场景；
+- 覆盖 S7、验证失败、Diff 等待审阅、承载类型错位和状态回写卫生场景；
 - 不执行 Build；
 - 不替 Maker 接受 Diff；
 - 不自动提交、推送或合并；
