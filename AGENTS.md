@@ -263,6 +263,27 @@ Implementation Choice 仅指 Implementation Plan 和上游文档尚未明确指�
 
 ---
 
+## Language Rules
+
+Implementation Repository 中由 Codex 新生成或实质性改写的 Markdown 文档、说明文档、Template 文案和其他面向人类阅读的文本内容，默认使用简体中文。
+
+允许保留必要的英文技术术语、协议字段、代码标识符、文件名、目录名、枚举值和上游已经冻结的英文 Identifier。
+
+不得因为原始技术术语为英文而将整篇文档生成为英文。
+
+以下类型不受“正文必须中文”限制：
+
+- Source Code；
+- JSON / Schema；
+- Class / Function / Variable Name；
+- Protocol Field；
+- Enum Value；
+- Command；
+- File / Directory Name；
+- 上游已经冻结的 Identifier。
+
+如果当前 Task 生成 `SKILL.md`、`README.md`、`AGENTS.md` 或其他人类可读文档，其说明性正文必须使用简体中文，除非 Implementation Plan 或上游冻结文档明确要求其他语言。
+
 ## 9. Validation Rules
 
 不得使用以下表述代替验证：
