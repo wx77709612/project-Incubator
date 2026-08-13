@@ -1,0 +1,32 @@
+{
+  "reference_locations": {
+    "workflow_definition": "references/workflow/core_workflow.json",
+    "gate_definition": "references/gates/gates.json",
+    "context_definition": "references/context/context_model.json",
+    "advisory_definition": "references/advisory/advisory.json"
+  },
+  "template_locations": {
+    "context_templates": "templates/context",
+    "project_profile_template": "templates/context/PROJECT_PROFILE.template.md",
+    "project_state_template": "templates/context/PROJECT_STATE.template.md",
+    "project_plan_template": "templates/context/PROJECT_PLAN.template.md",
+    "decision_record_template": "templates/context/DECISION_RECORD.template.md"
+  },
+  "script_locations": {
+    "script_root": "scripts"
+  },
+  "definition_identity_mapping": {
+    "workflow_definition": "PROJECT_INCUBATOR_V1_CORE_WORKFLOW",
+    "gate_definition": "PROJECT_INCUBATOR_V1_GATE_DEFINITIONS",
+    "context_definition": "PROJECT_INCUBATOR_V1_CONTEXT_MODEL",
+    "advisory_definition": "PROJECT_INCUBATOR_V1_ADVISORY_MODEL",
+    "runtime_contract_types": {
+      "context_access_result_status": "PROJECT_INCUBATOR.runtime.core.contracts.ContextAccessResultStatus",
+      "workflow_result_status": "PROJECT_INCUBATOR.runtime.core.contracts.WorkflowResultStatus",
+      "gate_evaluation_result": "PROJECT_INCUBATOR.runtime.core.contracts.GateEvaluationResult",
+      "script_execution_status": "PROJECT_INCUBATOR.runtime.core.contracts.ScriptExecutionStatus",
+      "script_validation_result": "PROJECT_INCUBATOR.runtime.core.contracts.ScriptValidationResult",
+      "runtime_execution_state": "PROJECT_INCUBATOR.runtime.core.runtime_types.RuntimeExecutionState"
+    }
+  }
+}
