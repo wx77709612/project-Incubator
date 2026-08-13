@@ -1,0 +1,529 @@
+{
+  "definition_id": "PROJECT_INCUBATOR_V1_GATE_DEFINITIONS",
+  "source_document": [
+    "SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md",
+    "SPECS/CONTRACTS/PROJECT_INCUBATOR_V1_GATE_CONTRACT.md"
+  ],
+  "definition_version": "v1-implementation-projection",
+  "gate_definitions": {
+    "supported_gate_set": [
+      "GATE-GIT",
+      "GATE-PHASE",
+      "GATE-AUTHORITY-DOCUMENT",
+      "GATE-SCOPE",
+      "GATE-BUILDER",
+      "GATE-UNCLOSED-TASK",
+      "GATE-CONTEXT-INTEGRITY",
+      "GATE-LOCAL-PROTOCOL",
+      "GATE-ARTIFACT-BOUNDARY",
+      "GATE-CHALLENGE-RESPONSE",
+      "GATE-CORRECTION-PERSISTENCE",
+      "GATE-ARCHITECTURE-DECISION",
+      "GATE-FRAMEWORK-MODIFICATION",
+      "GATE-PHASE-MODEL-MODIFICATION",
+      "GATE-MATRIX-MODIFICATION"
+    ],
+    "evaluation_result_set": [
+      "REQUIREMENT_SATISFIED",
+      "REQUIREMENT_UNSATISFIED",
+      "AUTHORIZATION_REQUIRED",
+      "EVIDENCE_INSUFFICIENT",
+      "ACTION_BLOCKED"
+    ],
+    "gates": [
+      {
+        "gate_id": "GATE-GIT",
+        "gate_name": "Git Gate",
+        "scope": "Universal Gate",
+        "purpose": "保护 Git Repository 状态和版本历史，防止未经确认的高影响 Git 操作。",
+        "trigger_condition": [
+          "commit",
+          "push",
+          "merge",
+          "branch 创建",
+          "branch 切换",
+          "Git history 修改",
+          "branch 删除"
+        ],
+        "risk_object": [
+          "Repository State",
+          "Branch",
+          "Commit History",
+          "Remote Repository"
+        ],
+        "evaluation_nature": "Evidence-Based",
+        "evaluation_requirement": [
+          "当前 Git 状态是否明确",
+          "当前操作目标是否明确",
+          "当前操作是否存在未处理修改",
+          "当前操作是否可能影响远程仓库或版本历史"
+        ],
+        "required_authorization": [
+          "push",
+          "merge",
+          "修改 Git History",
+          "删除 Branch"
+        ],
+        "allowed_action": "Gate Requirement 满足后，可以继续对应 Git 操作。",
+        "blocked_action": "Gate Requirement 未满足时，不允许执行对应 Git 操作。"
+      },
+      {
+        "gate_id": "GATE-PHASE",
+        "gate_name": "Phase Gate",
+        "scope": "Universal Gate",
+        "purpose": "保护 Core Workflow 的 Phase Boundary，防止项目在不满足 Workflow Requirement 时改变 Phase。",
+        "trigger_condition": [
+          "Phase Transition",
+          "Phase Skip",
+          "Phase Rollback",
+          "修改当前 Phase 状态"
+        ],
+        "risk_object": [
+          "Current Phase",
+          "Target Phase",
+          "Required Artifact",
+          "State Change Requirement",
+          "Phase Transition Boundary"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "Current Phase 是否明确",
+          "Target Phase 是否属于允许的下一 Phase",
+          "当前 Phase 的 Required Artifact Requirement 是否满足",
+          "必要的 State Change Requirement 是否已经形成",
+          "是否存在阻止 Phase Transition 的未解决条件"
+        ],
+        "required_authorization": [
+          "Skip Core Phase",
+          "Rollback 到非正常 Workflow Path",
+          "修改 Phase Model"
+        ],
+        "allowed_action": "Gate Requirement 满足后，可以提出或继续对应 Phase Transition。",
+        "blocked_action": "Gate Requirement 未满足时，不允许完成对应 Phase Transition。"
+      },
+      {
+        "gate_id": "GATE-AUTHORITY-DOCUMENT",
+        "gate_name": "Authority Document Gate",
+        "scope": "Universal Gate",
+        "purpose": "保护项目中的 Authority Document 与 Source of Truth 关系。",
+        "trigger_condition": [
+          "修改 Authority Document",
+          "修改文档职责归属",
+          "修改 Source of Truth",
+          "修改长期规则文件"
+        ],
+        "risk_object": [
+          "Authority Document",
+          "Source of Truth",
+          "Document Responsibility Boundary",
+          "Long-Term Project Rule"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "目标文档是否属于 Authority Document",
+          "修改是否改变 Source of Truth",
+          "修改是否改变文档职责边界",
+          "修改是否改变已经冻结的长期规则或项目事实"
+        ],
+        "required_authorization": [
+          "修改 PROJECT_PROFILE",
+          "修改 PROJECT_DECISIONS",
+          "改变 Source of Truth",
+          "改变已冻结的 Framework Rule"
+        ],
+        "allowed_action": "Gate Requirement 满足后，可以继续对应 Authority Document 修改。",
+        "blocked_action": "Gate Requirement 未满足时，不允许修改相关 Authority Document 或 Source of Truth。"
+      },
+      {
+        "gate_id": "GATE-SCOPE",
+        "gate_name": "Scope Gate",
+        "scope": "Universal Gate",
+        "purpose": "防止项目目标、用户范围、商业目标或交付范围在未经 Maker 确认时扩大。",
+        "trigger_condition": [
+          "新增 Project Goal",
+          "新增目标用户",
+          "新增商业目标",
+          "新增 Project Type",
+          "扩大 Deliverable Scope",
+          "将当前项目扩展到新的问题域"
+        ],
+        "risk_object": [
+          "Project Goal",
+          "Project Scope",
+          "Target User",
+          "Business Objective",
+          "Deliverable Boundary"
+        ],
+        "evaluation_nature": "Judgment-Based",
+        "evaluation_requirement": [
+          "新增内容是否属于当前 Project Scope",
+          "是否改变原始 Project Intent",
+          "是否显著增加项目复杂度",
+          "是否更适合作为独立 Project",
+          "是否改变当前项目的 Success Criteria"
+        ],
+        "required_authorization": [
+          "任何 Scope Expansion 必须获得 Maker 明确授权"
+        ],
+        "allowed_action": "Maker 明确授权后，可以将新增范围纳入当前 Project。",
+        "blocked_action": "未经 Maker 授权，不允许扩大当前 Project Scope。"
+      },
+      {
+        "gate_id": "GATE-BUILDER",
+        "gate_name": "Builder Gate",
+        "scope": "Universal Gate",
+        "purpose": "确保 Builder 或 Codex 开始实现前，任务边界、目标和预期结果已经明确。",
+        "trigger_condition": [
+          "Agent 将任务交给 Builder",
+          "Codex 开始执行代码修改",
+          "Codex 开始执行文件修改",
+          "Builder 准备执行可能影响项目结构的任务"
+        ],
+        "risk_object": [
+          "Builder Task",
+          "Task Scope",
+          "Input",
+          "Expected Output",
+          "Validation Requirement",
+          "Execution Boundary"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "Task Goal 是否明确",
+          "Non-Goal 是否明确",
+          "Input 是否充分",
+          "Expected Output 是否明确",
+          "Validation Requirement 是否明确",
+          "Builder Boundary 是否明确",
+          "当前任务是否具备执行条件"
+        ],
+        "required_authorization": [
+          "Builder 修改核心架构",
+          "Builder 修改 Authority Document",
+          "Builder 执行不可逆操作"
+        ],
+        "allowed_action": "Gate Requirement 满足后，可以将任务交给 Builder 执行。",
+        "blocked_action": "Gate Requirement 未满足时，不允许开始 Builder Implementation。"
+      },
+      {
+        "gate_id": "GATE-UNCLOSED-TASK",
+        "gate_name": "Unclosed Task Gate",
+        "scope": "Universal Gate",
+        "purpose": "防止项目在当前 Task 或相关 Artifact 尚未正确收敛时无控制地切换到其他工作。",
+        "trigger_condition": [
+          "当前 Task 尚未完成",
+          "当前 Task 存在未处理变更",
+          "Required Artifact 尚未完成",
+          "当前工作准备被放弃或切换"
+        ],
+        "risk_object": [
+          "Current Task",
+          "Unfinished Change",
+          "Incomplete Artifact",
+          "Current Work Context"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "当前 Task 是否仍然处于未完成状态",
+          "是否存在需要保留的未完成工作",
+          "是否存在尚未处理的 Artifact",
+          "切换 Task 是否会造成项目上下文丢失"
+        ],
+        "required_authorization": [
+          "放弃当前 Task",
+          "删除未完成 Artifact",
+          "丢弃具有项目价值的未完成变更"
+        ],
+        "allowed_action": "Gate Requirement 满足后，可以结束、暂停或切换当前 Task。",
+        "blocked_action": "Gate Requirement 未满足时，不允许无记录地放弃或跳过当前 Task。"
+      },
+      {
+        "gate_id": "GATE-CONTEXT-INTEGRITY",
+        "gate_name": "Context Integrity Gate",
+        "scope": "Universal Gate",
+        "purpose": "防止 Agent 在项目上下文不完整、不可信或相互冲突时继续执行高影响操作。",
+        "trigger_condition": [
+          "Context 不完整",
+          "Context 信息发生冲突",
+          "Agent 无法确认当前项目状态",
+          "Context 压缩导致重要信息缺失",
+          "Source of Truth 与当前理解不一致"
+        ],
+        "risk_object": [
+          "Project Context",
+          "Current State",
+          "Project Identity",
+          "Decision History",
+          "Context Trustworthiness"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "必需 Context 是否存在",
+          "当前 Context 是否足以判断项目状态",
+          "是否存在相互冲突的信息",
+          "是否需要重新读取 Authority Context",
+          "是否需要 Maker 澄清"
+        ],
+        "required_authorization": [
+          "在已知 Context 不完整的情况下继续高影响修改",
+          "重建具有长期影响的项目状态"
+        ],
+        "allowed_action": "Context 足够可信后，可以继续依赖当前 Context 推进项目。",
+        "blocked_action": "Context 不足以支持可靠判断时，不允许继续执行高影响项目变更。"
+      },
+      {
+        "gate_id": "GATE-LOCAL-PROTOCOL",
+        "gate_name": "Local Protocol Gate",
+        "scope": "Universal Gate",
+        "purpose": "保护项目中的长期协议、输出约束和 Agent 行为规则。",
+        "trigger_condition": [
+          "修改 Project Rule",
+          "修改 Output Protocol",
+          "修改 Agent Behavior Constraint",
+          "新增长期例外规则"
+        ],
+        "risk_object": [
+          "Local Protocol",
+          "Output Rule",
+          "Agent Behavior Rule",
+          "Rule Priority",
+          "Rule Exception"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "当前修改是否与既有规则冲突",
+          "修改是否改变规则优先级",
+          "是否引入新的长期例外",
+          "是否会改变 Agent 的长期行为边界"
+        ],
+        "required_authorization": [
+          "修改长期规则必须获得 Maker 明确授权"
+        ],
+        "allowed_action": "Maker 明确确认后，可以修改或新增长期 Project Protocol。",
+        "blocked_action": "未经授权，不允许改变长期 Project Protocol。"
+      },
+      {
+        "gate_id": "GATE-ARTIFACT-BOUNDARY",
+        "gate_name": "Artifact Boundary Gate",
+        "scope": "Universal Gate",
+        "purpose": "保护项目 Artifact 的承载类型和成果边界，防止项目成果在未经确认时改变性质。",
+        "trigger_condition": [
+          "Artifact Type 发生变化",
+          "Artifact 承载形式发生变化",
+          "当前输出无法明确归属于预期 Artifact",
+          "核心 Deliverable 类型准备改变"
+        ],
+        "risk_object": [
+          "Artifact Type",
+          "Artifact Boundary",
+          "Deliverable Type",
+          "Artifact Carrier"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "当前 Artifact 是否符合项目目标",
+          "当前 Artifact 是否属于 Workflow 所要求的成果",
+          "Artifact 类型变化是否影响后续 Workflow",
+          "是否正在改变核心 Deliverable 形式"
+        ],
+        "required_authorization": [
+          "改变核心 Artifact Type 必须获得 Maker 明确授权"
+        ],
+        "allowed_action": "Gate Requirement 满足后，可以继续生成或修改对应 Artifact。",
+        "blocked_action": "Gate Requirement 未满足时，不允许改变核心 Artifact Boundary。"
+      },
+      {
+        "gate_id": "GATE-CHALLENGE-RESPONSE",
+        "gate_name": "Challenge Response Gate",
+        "scope": "Universal Gate",
+        "purpose": "确保 Maker 对当前方案提出质疑后，Agent 必须重新判断而不是自动维护原有方案或直接改变方向。",
+        "trigger_condition": [
+          "Maker 质疑当前设计",
+          "Maker 质疑当前判断",
+          "Maker 要求重新分析已经确定的方案"
+        ],
+        "risk_object": [
+          "Current Design",
+          "Current Recommendation",
+          "Current Decision Assumption",
+          "Maker Intent Interpretation"
+        ],
+        "evaluation_nature": "Judgment-Based",
+        "evaluation_requirement": [
+          "重新理解 Maker 的质疑",
+          "重新分析原判断依据",
+          "判断原方案是否仍然成立",
+          "明确哪些内容需要调整，哪些内容可以保持"
+        ],
+        "required_authorization": [
+          "如果重新判断导致项目方向、架构或已冻结决策发生变化，必须获得 Maker 明确确认"
+        ],
+        "allowed_action": "完成重新分析后，可以提出保持、调整或重新设计建议。",
+        "blocked_action": "不得忽略 Maker Challenge，也不得将 Agent 自己的重新判断直接视为 Maker Authorization。"
+      },
+      {
+        "gate_id": "GATE-CORRECTION-PERSISTENCE",
+        "gate_name": "Correction Persistence Gate",
+        "scope": "Universal Gate",
+        "purpose": "防止一次性的纠偏被 Agent 自动沉淀为长期规则。",
+        "trigger_condition": [
+          "Agent 准备将一次纠偏写入长期规则",
+          "Agent 准备根据单次反馈修改长期行为约束",
+          "Agent 准备将当前例外转化为永久协议"
+        ],
+        "risk_object": [
+          "Long-Term Rule",
+          "Persistent Behavior Constraint",
+          "Project Protocol",
+          "Agent Guidance"
+        ],
+        "evaluation_nature": "Judgment-Based",
+        "evaluation_requirement": [
+          "当前纠偏是否具有长期适用性",
+          "是否只是当前场景例外",
+          "是否会影响未来项目行为",
+          "是否可能与既有长期规则冲突"
+        ],
+        "required_authorization": [
+          "任何新的长期规则或长期行为约束必须获得 Maker 明确授权"
+        ],
+        "allowed_action": "Maker 明确确认后，可以将纠偏沉淀为长期规则。",
+        "blocked_action": "未经 Maker 明确确认，不允许将单次纠偏自动沉淀为长期规则。"
+      },
+      {
+        "gate_id": "GATE-ARCHITECTURE-DECISION",
+        "gate_name": "Architecture Decision Gate",
+        "scope": "Universal Gate",
+        "purpose": "保护具有长期系统影响的 Architecture Decision。",
+        "trigger_condition": [
+          "新增 Architecture Decision",
+          "修改已有 Architecture Decision",
+          "修改具有长期系统影响的架构原则"
+        ],
+        "risk_object": [
+          "Architecture Decision",
+          "Long-Term Architecture",
+          "System Boundary",
+          "Architectural Constraint"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "当前决定是否属于 Architecture Decision",
+          "决定是否具有长期影响",
+          "是否影响多个模块或下游设计",
+          "是否改变已冻结的 Architecture Boundary"
+        ],
+        "required_authorization": [
+          "新增或修改 Architecture Decision 必须获得 Maker 明确授权"
+        ],
+        "allowed_action": "Maker 明确确认后，可以记录或修改 Architecture Decision。",
+        "blocked_action": "未经 Maker 授权，不允许将架构建议确立为长期 Architecture Decision。"
+      },
+      {
+        "gate_id": "GATE-FRAMEWORK-MODIFICATION",
+        "gate_name": "Framework Modification Gate",
+        "scope": "Project Incubator Specific Gate",
+        "purpose": "保护 Project Incubator Framework 的整体结构和长期行为。",
+        "trigger_condition": [
+          "修改 Project Incubator Framework",
+          "修改 Framework 核心职责",
+          "修改 Framework 核心结构",
+          "修改 Framework 长期规则"
+        ],
+        "risk_object": [
+          "Project Incubator Framework",
+          "Framework Boundary",
+          "Framework Responsibility",
+          "Framework Long-Term Rule"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "Framework 修改是否必要",
+          "是否改变核心架构",
+          "是否影响已经冻结的系统边界",
+          "是否影响下游 Design / Contract / Runtime"
+        ],
+        "required_authorization": [
+          "任何 Framework Modification 必须获得 Maker 明确授权"
+        ],
+        "allowed_action": "Maker 明确确认后，可以继续 Framework Modification。",
+        "blocked_action": "未经 Maker 授权，不允许修改 Project Incubator Framework。"
+      },
+      {
+        "gate_id": "GATE-PHASE-MODEL-MODIFICATION",
+        "gate_name": "Phase Model Modification Gate",
+        "scope": "Project Incubator Specific Gate",
+        "purpose": "保护已经冻结的 Core Phase Model 和 Workflow Domain Model。",
+        "trigger_condition": [
+          "修改 Core Phase",
+          "修改 Phase Definition",
+          "修改 Phase Goal",
+          "修改 Phase Lifecycle",
+          "修改 Core Phase Relationship"
+        ],
+        "risk_object": [
+          "Core Phase Model",
+          "Phase Definition",
+          "Phase Lifecycle",
+          "Workflow Domain Model"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "修改是否改变 Core Phase 身份",
+          "是否改变 Phase 基础目标",
+          "是否改变 Phase Lifecycle",
+          "是否影响 Workflow Source of Truth",
+          "是否要求同步修改下游 Contract 或 Runtime"
+        ],
+        "required_authorization": [
+          "任何 Core Phase Model Modification 必须获得 Maker 明确授权"
+        ],
+        "allowed_action": "Maker 明确确认后，可以修改 Phase Model。",
+        "blocked_action": "未经 Maker 授权，不允许修改已经冻结的 Phase Model。"
+      },
+      {
+        "gate_id": "GATE-MATRIX-MODIFICATION",
+        "gate_name": "Gate Matrix Modification Gate",
+        "scope": "Project Incubator Specific Gate",
+        "purpose": "保护 Gate Domain Model 自身，防止 Gate Protection Boundary 被未经授权地改变或削弱。",
+        "trigger_condition": [
+          "新增 Gate Type",
+          "删除 Gate Type",
+          "修改现有 Gate Definition",
+          "修改 Gate Scope",
+          "修改 Required Authorization",
+          "修改 Gate Protection Boundary"
+        ],
+        "risk_object": [
+          "Gate Model",
+          "Gate Type",
+          "Gate Definition",
+          "Gate Protection Boundary",
+          "Maker Authorization Requirement"
+        ],
+        "evaluation_nature": "Mixed",
+        "evaluation_requirement": [
+          "Gate 变化是否改变现有保护边界",
+          "是否降低已有 Gate 的控制强度",
+          "是否改变 Maker Authorization Requirement",
+          "是否改变 Gate Domain Model 的长期语义"
+        ],
+        "required_authorization": [
+          "任何 Gate Model、Gate Type 或 Gate Definition 的实质性修改必须获得 Maker 明确授权"
+        ],
+        "allowed_action": "Maker 明确确认后，可以修改 Gate Domain Model。",
+        "blocked_action": "未经 Maker 授权，不允许新增、删除或实质性修改 Gate Type。"
+      }
+    ],
+    "contract_invariants": [
+      "Gate Definition 全部来自已经冻结的 Gate Design。",
+      "Gate Contract 不新增 Gate Type。",
+      "Gate Contract 不新增 Trigger Condition。",
+      "Gate Contract 不新增 Required Authorization。",
+      "Gate Output 不直接修改 Workflow、Context、Artifact 或 Runtime State。",
+      "Validation Result 不等于 Gate Evaluation Result。",
+      "Maker 是 Maker Authorization 的唯一来源。",
+      "一个 Requested Action 同时触发多个 Gate 时，每个 Gate 必须独立满足。"
+    ]
+  }
+}

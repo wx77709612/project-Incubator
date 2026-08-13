@@ -1,0 +1,215 @@
+{
+  "definition_id": "PROJECT_INCUBATOR_V1_ADVISORY_MODEL",
+  "source_document": [
+    "SPECS/DESIGN/PROJECT_INCUBATOR_V1_PHASE_ADVISORY_DESIGN.md"
+  ],
+  "definition_version": "v1-implementation-projection",
+  "advisory_model": {
+    "model_name": "Agent Advisory",
+    "purpose": "辅助 Agent 理解当前项目情境、识别问题并形成下一步建议。",
+    "nature": "Advisory 是建议性能力，不是项目控制能力。",
+    "core_triggers": [
+      {
+        "trigger_id": "PHASE_ENTRY",
+        "trigger_name": "Phase Entry",
+        "condition": "项目进入新的 Current Phase。",
+        "purpose": "帮助 Agent 理解当前 Phase Goal、阶段关注信息、可能缺失的关键内容和常见风险。"
+      },
+      {
+        "trigger_id": "MAKER_GUIDANCE_REQUEST",
+        "trigger_name": "Maker Guidance Request",
+        "condition": "Maker 主动询问下一步、当前关注点、方案合理性、风险或当前阶段缺失内容。",
+        "purpose": "响应 Maker 对当前项目推进方向或判断重点的指导请求。"
+      },
+      {
+        "trigger_id": "MISSING_INFORMATION",
+        "trigger_name": "Missing Information",
+        "condition": "Agent 发现当前项目缺少继续分析所需的重要领域信息。",
+        "purpose": "说明缺失什么、为什么重要，以及缺失信息会影响什么判断。"
+      },
+      {
+        "trigger_id": "RISK_DETECTED",
+        "trigger_name": "Risk Detected",
+        "condition": "Agent 发现可能影响当前项目目标、范围、质量、架构或后续执行的风险。",
+        "purpose": "产生风险指导；如果风险同时满足 Gate Trigger Condition，Gate 是否触发仍由 Gate Domain Model 与后续执行机制决定。"
+      },
+      {
+        "trigger_id": "DECISION_REQUIRED",
+        "trigger_name": "Decision Required",
+        "condition": "当前工作存在无法由 Agent 单方面确定的重要选择。",
+        "purpose": "描述需要决定的问题、主要影响和需要 Maker 确认的事项。"
+      },
+      {
+        "trigger_id": "VALIDATION_FEEDBACK",
+        "trigger_name": "Validation Feedback",
+        "condition": "存在包含问题、差距、风险、未满足条件或后续调整方向的 Validation Result。",
+        "purpose": "帮助 Agent 理解 Validation Feedback 对下一步工作的意义。"
+      },
+      {
+        "trigger_id": "ITERATION_RE_ENTRY",
+        "trigger_name": "Iteration Re-entry",
+        "condition": "项目因 Iteration 返回 Solution Design、Execution Planning、Creation 或 Validation。",
+        "purpose": "基于 Validation Result、当前返回目标和已知问题，提示重新进入该 Phase 时需要重点处理什么。"
+      }
+    ],
+    "advisory_context": {
+      "core_context": [
+        "PROJECT_PROFILE.md",
+        "PROJECT_STATE.md",
+        "Current Phase",
+        "Project Type"
+      ],
+      "conditional_context": [
+        "PROJECT_PLAN.md",
+        "PROJECT_DECISIONS.md",
+        "当前相关 Artifact",
+        "Validation Result",
+        "当前 Blocker",
+        "当前已识别 Risk"
+      ],
+      "source_of_truth_rule": [
+        "Advisory 必须尊重现有 Source of Truth。",
+        "不得用历史聊天记录覆盖当前 Context Source of Truth。",
+        "不得用 Agent 临时判断覆盖已确认项目事实。",
+        "不得将缺失信息当作已确认事实。",
+        "不得重新解释其他 Domain Model 的权威职责。"
+      ],
+      "insufficient_information_behavior": "如果 Advisory 所需信息不足，应产生 Missing Information 或 Required Clarification 类型的 Advisory Content，不得自行补全关键项目事实。"
+    },
+    "content_types": [
+      {
+        "content_type": "GOAL_CLARIFICATION",
+        "content_name": "Goal Clarification",
+        "purpose": "说明当前工作的目标、当前 Phase 应解决的问题，以及当前工作与 Project Intent 的关系。"
+      },
+      {
+        "content_type": "MISSING_INFORMATION",
+        "content_name": "Missing Information",
+        "purpose": "指出当前缺失的关键信息、缺失信息影响的判断，以及需要进一步澄清的事项。"
+      },
+      {
+        "content_type": "RISK_NOTICE",
+        "content_name": "Risk Notice",
+        "purpose": "指出已识别风险、风险影响对象，以及风险可能影响的后续工作。",
+        "boundary": "Risk Notice 不等于 Gate Decision。"
+      },
+      {
+        "content_type": "CONSTRAINT_REMINDER",
+        "content_name": "Constraint Reminder",
+        "purpose": "提醒项目范围、长期约束、已冻结边界、已确认 Decision 和当前 Project Type Constraint。"
+      },
+      {
+        "content_type": "DECISION_NEEDED",
+        "content_name": "Decision Needed",
+        "purpose": "表达当前存在需要 Maker 参与的重要决定，可包含 Decision Topic、主要影响和需要 Maker 确认的事项。",
+        "boundary": "不得把 Advisory Recommendation 当作 Maker Decision。"
+      },
+      {
+        "content_type": "RECOMMENDED_ACTION",
+        "content_name": "Recommended Action",
+        "purpose": "给出 Agent 建议采取的下一步行动。",
+        "boundary": "Recommended Action 只是建议，不直接改变项目状态。"
+      },
+      {
+        "content_type": "VALIDATION_CONCERN",
+        "content_name": "Validation Concern",
+        "purpose": "指出当前工作中与 Validation 相关的潜在问题。",
+        "boundary": "Advisory 不执行 Validation。"
+      },
+      {
+        "content_type": "PROJECT_TYPE_GUIDANCE",
+        "content_name": "Project Type Guidance",
+        "purpose": "提供特定 Project Type 的领域指导。",
+        "boundary": "Project Type Guidance 只能增加特定 Project Type 的关注点，不得重新定义 Core Advisory Model。"
+      }
+    ],
+    "response_model": {
+      "possible_fields": [
+        "Advisory Summary",
+        "Identified Issue",
+        "Relevant Context",
+        "Missing Information",
+        "Risk Notice",
+        "Constraint Reminder",
+        "Decision Needed",
+        "Recommended Action",
+        "Required Clarification",
+        "Suggested Next Step",
+        "Project Type Guidance"
+      ],
+      "required_nature": "Advisory Response 必须保持建议性质。",
+      "not_all_fields_required": true,
+      "determined_by": [
+        "Advisory Trigger",
+        "Current Phase",
+        "Project Context",
+        "当前问题"
+      ],
+      "insufficient_information_response": "当当前信息不足以可靠建议时，Response 应明确表达信息不足，不得通过推测补齐关键事实。"
+    },
+    "agent_use_boundary": {
+      "agent_may_use_advisory_to": [
+        "调整当前分析重点",
+        "检查缺失信息",
+        "识别风险",
+        "向 Maker 提出澄清问题",
+        "向 Maker 提出需要确认的决定",
+        "准备 Recommended Action",
+        "准备 Suggested Next Step",
+        "调整当前工作内容"
+      ],
+      "agent_must_not_use_advisory_to": [
+        "自动改变 Phase",
+        "自动更新 Workflow State",
+        "自动修改 Context",
+        "自动解除 Gate",
+        "自动视为 Maker 已授权",
+        "自动执行 Runtime Action"
+      ],
+      "followup_rules": [
+        "如果 Advisory 建议的下一步涉及 Workflow Transition，必须继续遵循 Workflow Domain Model。",
+        "如果 Advisory 建议的下一步涉及 Gate Requirement，必须继续遵循 Gate Domain Model。",
+        "如果 Advisory 建议的下一步涉及 Context Access 或 Mutation，必须继续遵循 Context Access Contract。",
+        "如果 Advisory 建议的下一步涉及具体执行，必须继续遵循 Runtime Specification。"
+      ]
+    },
+    "project_type_extension_boundary": {
+      "allowed_extensions": [
+        "Project Type Specific Trigger",
+        "Project Type Specific Content",
+        "Project Type Specific Risk",
+        "Project Type Specific Constraint",
+        "Project Type Specific Guidance"
+      ],
+      "must_not": [
+        "修改 Core Advisory Trigger 语义",
+        "删除 Core Advisory Content Type",
+        "重新定义 Workflow",
+        "重新定义 Gate",
+        "重新定义 Context",
+        "定义 Runtime Execution",
+        "定义 Prompt Template Implementation"
+      ],
+      "extension_nature": "Project Type Extension 只增加特定 Project Type 所需的额外指导信息。"
+    },
+    "runtime_boundary": {
+      "not_runtime_command": true,
+      "must_not": [
+        "修改 Workflow State",
+        "执行 Phase Transition",
+        "决定 Gate 是否通过",
+        "替代 Maker Authorization",
+        "修改 Context",
+        "直接控制 Runtime",
+        "将建议直接转化为执行结果",
+        "创建 Prompt Template Engine"
+      ],
+      "response_not_equal_to": [
+        "Workflow Decision",
+        "Gate Decision",
+        "Maker Authorization",
+        "Runtime Command"
+      ]
+    }
+  }
+}

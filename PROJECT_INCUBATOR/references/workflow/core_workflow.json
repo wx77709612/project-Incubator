@@ -1,0 +1,413 @@
+{
+  "definition_id": "PROJECT_INCUBATOR_V1_CORE_WORKFLOW",
+  "source_document": [
+    "SPECS/DESIGN/PROJECT_INCUBATOR_V1_WORKFLOW_DESIGN.md",
+    "SPECS/CONTRACTS/PROJECT_INCUBATOR_V1_WORKFLOW_CONTRACT.md"
+  ],
+  "definition_version": "v1-implementation-projection",
+  "workflow": {
+    "workflow_identity": "PROJECT_INCUBATOR_V1_CORE_WORKFLOW",
+    "workflow_name": "Project Incubator V1 Workflow",
+    "core_phase_set": [
+      "P0",
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6"
+    ],
+    "phase_lifecycle_states": [
+      "Not Started",
+      "Active",
+      "Awaiting Gate",
+      "Completed",
+      "Reopened"
+    ],
+    "phases": [
+      {
+        "phase_id": "P0",
+        "phase_name": "Intent Discovery",
+        "phase_goal": "明确 Maker 创建项目的目标，包括为什么创建、解决什么问题、服务什么对象、成功标准是什么。",
+        "input": [
+          "Maker Idea",
+          "Initial Requirement",
+          "Background Information"
+        ],
+        "process_boundary": {
+          "agent": [
+            "理解用户目标",
+            "发现关键问题",
+            "澄清项目边界"
+          ],
+          "maker": [
+            "确认项目方向",
+            "确认成功标准"
+          ]
+        },
+        "output": [
+          "PROJECT_PROFILE.md"
+        ],
+        "required_artifact": [
+          "PROJECT_PROFILE.md"
+        ],
+        "state_change_requirement": {
+          "required": true,
+          "description": "P0 完成必要 Process 后必须形成 State Change Requirement。",
+          "fields": [
+            "Current Phase",
+            "Current Phase State",
+            "Completed Workflow Items",
+            "Current Blockers",
+            "Requested Next Phase"
+          ]
+        },
+        "gate_trigger_requirement": [
+          "P0 proposes P0 -> P1 Phase Transition Request",
+          "PROJECT_PROFILE.md changes in a way that affects later Workflow progression",
+          "P0 proposes State Change Requirement that affects current project state"
+        ],
+        "allowed_next_phase": [
+          "P1"
+        ]
+      },
+      {
+        "phase_id": "P1",
+        "phase_name": "Project Definition",
+        "phase_goal": "建立项目执行上下文。",
+        "input": [
+          "PROJECT_PROFILE.md"
+        ],
+        "process_boundary": [
+          "建立项目状态",
+          "建立项目约束",
+          "建立当前执行范围"
+        ],
+        "output": [
+          "PROJECT_STATE.md"
+        ],
+        "required_artifact": [
+          "PROJECT_STATE.md"
+        ],
+        "state_change_requirement": {
+          "required": true,
+          "description": "P1 完成必要 Process 后必须形成 State Change Requirement。",
+          "fields": [
+            "Current Phase",
+            "Current Phase State",
+            "Completed Workflow Items",
+            "Current Blockers",
+            "Requested Next Phase"
+          ]
+        },
+        "gate_trigger_requirement": [
+          "P1 proposes P1 -> P2 Phase Transition Request",
+          "PROJECT_STATE.md changes in a way that affects later Workflow progression",
+          "P1 proposes State Change Requirement that affects current project state"
+        ],
+        "allowed_next_phase": [
+          "P2"
+        ]
+      },
+      {
+        "phase_id": "P2",
+        "phase_name": "Solution Design",
+        "phase_goal": "形成项目解决方案设计。",
+        "input": [
+          "PROJECT_PROFILE.md",
+          "PROJECT_STATE.md"
+        ],
+        "process_boundary": [
+          "定义解决方案",
+          "定义系统边界",
+          "定义技术方向",
+          "形成 Design Artifact",
+          "形成 Decision Proposal when required"
+        ],
+        "output": [
+          "Design Document",
+          "Solution Definition",
+          "Decision Proposal when required",
+          "PROJECT_DECISIONS.md for Maker confirmed important decisions"
+        ],
+        "required_artifact": [
+          "Solution Design Artifact"
+        ],
+        "required_artifact_detail": {
+          "Solution Design Artifact": [
+            "Design Document",
+            "Solution Definition"
+          ],
+          "Decision Proposal": "not a universal required artifact for all P2 transitions"
+        },
+        "state_change_requirement": {
+          "required": true,
+          "description": "P2 完成必要 Process 后必须形成 State Change Requirement。",
+          "fields": [
+            "Current Phase",
+            "Current Phase State",
+            "Completed Workflow Items",
+            "Current Blockers",
+            "Requested Next Phase"
+          ]
+        },
+        "gate_trigger_requirement": [
+          "P2 proposes P2 -> P3 Phase Transition Request",
+          "Solution Design Artifact changes in a way that affects later Workflow progression",
+          "P2 proposes State Change Requirement that affects current project state"
+        ],
+        "allowed_next_phase": [
+          "P3"
+        ]
+      },
+      {
+        "phase_id": "P3",
+        "phase_name": "Execution Planning",
+        "phase_goal": "建立项目执行路线。",
+        "input": [
+          "PROJECT_PROFILE.md",
+          "PROJECT_STATE.md"
+        ],
+        "process_boundary": [
+          "制定阶段任务",
+          "制定执行顺序",
+          "制定依赖关系",
+          "制定 Artifact 目标",
+          "制定验证方式"
+        ],
+        "output": [
+          "PROJECT_PLAN.md"
+        ],
+        "required_artifact": [
+          "PROJECT_PLAN.md"
+        ],
+        "state_change_requirement": {
+          "required": true,
+          "description": "P3 完成必要 Process 后必须形成 State Change Requirement。",
+          "fields": [
+            "Current Phase",
+            "Current Phase State",
+            "Completed Workflow Items",
+            "Current Blockers",
+            "Requested Next Phase"
+          ]
+        },
+        "gate_trigger_requirement": [
+          "P3 proposes P3 -> P4 Phase Transition Request",
+          "PROJECT_PLAN.md changes in a way that affects later Workflow progression",
+          "P3 proposes State Change Requirement that affects current project state"
+        ],
+        "allowed_next_phase": [
+          "P4"
+        ]
+      },
+      {
+        "phase_id": "P4",
+        "phase_name": "Creation",
+        "phase_goal": "执行项目创建。",
+        "input": [
+          "PROJECT_PROFILE.md",
+          "PROJECT_STATE.md",
+          "PROJECT_PLAN.md"
+        ],
+        "process_boundary": [
+          "根据 Project Type 与已确认执行计划完成项目创建活动"
+        ],
+        "output": [
+          "Project Artifact"
+        ],
+        "required_artifact": [
+          "Project Artifact"
+        ],
+        "state_change_requirement": {
+          "required": true,
+          "description": "P4 完成必要 Process 后必须形成 State Change Requirement。",
+          "fields": [
+            "Current Phase",
+            "Current Phase State",
+            "Completed Workflow Items",
+            "Current Blockers",
+            "Requested Next Phase"
+          ]
+        },
+        "gate_trigger_requirement": [
+          "P4 proposes P4 -> P5 Phase Transition Request",
+          "Project Artifact changes in a way that affects later Workflow progression",
+          "P4 proposes State Change Requirement that affects current project state"
+        ],
+        "allowed_next_phase": [
+          "P5"
+        ]
+      },
+      {
+        "phase_id": "P5",
+        "phase_name": "Validation",
+        "phase_goal": "确认项目成果是否满足目标。",
+        "input": [
+          "Artifact",
+          "PROJECT_PROFILE.md",
+          "PROJECT_PLAN.md"
+        ],
+        "process_boundary": [
+          "验证 Artifact 完整性",
+          "验证 Intent 一致性",
+          "验证质量要求",
+          "验证项目约束"
+        ],
+        "output": [
+          "Validation Result"
+        ],
+        "required_artifact": [
+          "Validation Result"
+        ],
+        "state_change_requirement": {
+          "required": true,
+          "description": "P5 完成必要 Process 后必须形成 State Change Requirement。",
+          "fields": [
+            "Current Phase",
+            "Current Phase State",
+            "Completed Workflow Items",
+            "Current Blockers",
+            "Requested Next Phase"
+          ]
+        },
+        "gate_trigger_requirement": [
+          "P5 proposes P5 -> P6 Phase Transition Request",
+          "Validation Result is produced or changes in a way that affects later Workflow progression",
+          "P5 proposes State Change Requirement that affects current project state"
+        ],
+        "allowed_next_phase": [
+          "P6"
+        ]
+      },
+      {
+        "phase_id": "P6",
+        "phase_name": "Iteration",
+        "phase_goal": "根据 Validation Result 推进下一轮优化。",
+        "input": [
+          "Validation Result",
+          "PROJECT_STATE.md"
+        ],
+        "process_boundary": [
+          "根据 Validation Result 调整解决方案",
+          "根据 Validation Result 调整执行计划",
+          "根据 Validation Result 修改 Artifact",
+          "返回 Solution Design",
+          "返回 Execution Planning",
+          "返回 Creation",
+          "返回 Validation"
+        ],
+        "output": [
+          "Solution Design Artifact when adjusted",
+          "PROJECT_PLAN.md when adjusted",
+          "Project Artifact when adjusted",
+          "PROJECT_STATE.md when adjusted"
+        ],
+        "required_artifact": [
+          "Validation Result",
+          "Workflow Artifact modified in current Iteration"
+        ],
+        "required_artifact_detail": {
+          "P6 -> P2": "Validation Result must explain the issue requiring re-entry to Solution Design.",
+          "P6 -> P3": "PROJECT_PLAN.md is the target Workflow Artifact for continued adjustment.",
+          "P6 -> P4": "Project Artifact is the target Workflow Artifact for continued adjustment.",
+          "P6 -> P5": "A Project Artifact that can re-enter Validation must exist."
+        },
+        "state_change_requirement": {
+          "required": true,
+          "description": "P6 在提出 Phase Transition Request 时必须形成当前 Transition 所需的 State Change Requirement。",
+          "fields": [
+            "Current Phase",
+            "Current Phase State",
+            "Completed Workflow Items",
+            "Current Blockers",
+            "Requested Next Phase"
+          ]
+        },
+        "gate_trigger_requirement": [
+          "P6 proposes P6 -> P2 Phase Transition Request",
+          "P6 proposes P6 -> P3 Phase Transition Request",
+          "P6 proposes P6 -> P4 Phase Transition Request",
+          "P6 proposes P6 -> P5 Phase Transition Request",
+          "P6 proposes changes to PROJECT_PLAN.md, Project Artifact, or other Workflow Artifact that affect later Workflow progression",
+          "P6 proposes State Change Requirement that affects current project state"
+        ],
+        "allowed_next_phase": [
+          "P2",
+          "P3",
+          "P4",
+          "P5"
+        ]
+      }
+    ],
+    "allowed_transitions": [
+      {
+        "from": "P0",
+        "to": "P1"
+      },
+      {
+        "from": "P1",
+        "to": "P2"
+      },
+      {
+        "from": "P2",
+        "to": "P3"
+      },
+      {
+        "from": "P3",
+        "to": "P4"
+      },
+      {
+        "from": "P4",
+        "to": "P5"
+      },
+      {
+        "from": "P5",
+        "to": "P6"
+      },
+      {
+        "from": "P6",
+        "to": "P2"
+      },
+      {
+        "from": "P6",
+        "to": "P3"
+      },
+      {
+        "from": "P6",
+        "to": "P4"
+      },
+      {
+        "from": "P6",
+        "to": "P5"
+      }
+    ],
+    "p6_iteration_transition_set": [
+      "P2",
+      "P3",
+      "P4",
+      "P5"
+    ],
+    "transition_eligibility_fields": [
+      "Current Phase Match",
+      "Process Completion",
+      "Requested Next Phase Allowed",
+      "Required Artifact Requirement",
+      "State Change Requirement",
+      "Gate Requirement"
+    ],
+    "transition_eligibility_results": [
+      "NOT_READY",
+      "READY_FOR_TRANSITION",
+      "TRANSITION_NOT_ALLOWED"
+    ],
+    "invariants": [
+      "Output is not equivalent to Required Artifact.",
+      "State Change Requirement is not Context Mutation.",
+      "Gate Trigger Requirement is not Gate Evaluation completion.",
+      "READY_FOR_TRANSITION is not Transition execution.",
+      "Runtime must not add Transition Path.",
+      "P6 may only request P2, P3, P4, or P5."
+    ]
+  }
+}

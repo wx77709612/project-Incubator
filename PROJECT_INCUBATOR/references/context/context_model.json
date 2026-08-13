@@ -1,0 +1,264 @@
+{
+  "definition_id": "PROJECT_INCUBATOR_V1_CONTEXT_MODEL",
+  "source_document": [
+    "SPECS/DESIGN/PROJECT_INCUBATOR_V1_CONTEXT_MODEL_DESIGN.md",
+    "SPECS/CONTRACTS/PROJECT_INCUBATOR_V1_CONTEXT_ACCESS_CONTRACT.md"
+  ],
+  "definition_version": "v1-implementation-projection",
+  "context_model": {
+    "context_layer": "Project Context Layer",
+    "core_context_types": [
+      "PROJECT_PROFILE",
+      "PROJECT_STATE",
+      "PROJECT_PLAN",
+      "PROJECT_DECISIONS"
+    ],
+    "core_contexts": [
+      {
+        "context_type": "PROJECT_PROFILE",
+        "file_name": "PROJECT_PROFILE.md",
+        "definition": "Project Identity Context",
+        "responsibility": "项目身份和长期目标。",
+        "authority_scope": [
+          "项目身份",
+          "项目类型",
+          "Intent",
+          "用户对象",
+          "成功标准",
+          "长期约束"
+        ],
+        "lifecycle": {
+          "established_when": "项目初始化阶段建立。",
+          "continues_as": "项目身份与长期目标的稳定 Context，在项目持续期间保持长期有效。",
+          "changes_when": [
+            "项目身份发生已确认的实质变化",
+            "项目类型发生已确认的实质变化",
+            "Intent 发生已确认的实质变化",
+            "用户对象发生已确认的实质变化",
+            "成功标准发生已确认的实质变化",
+            "长期约束发生已确认的实质变化"
+          ],
+          "not_changed_by": [
+            "临时任务",
+            "当前执行状态",
+            "短期计划变化"
+          ]
+        },
+        "boundary": {
+          "is_authority_for": [
+            "项目是什么",
+            "项目服务什么对象",
+            "项目长期目标是什么",
+            "成功标准是什么",
+            "长期约束是什么"
+          ],
+          "is_not_authority_for": [
+            "当前执行状态",
+            "当前未来计划",
+            "临时任务",
+            "未确认方案"
+          ]
+        }
+      },
+      {
+        "context_type": "PROJECT_STATE",
+        "file_name": "PROJECT_STATE.md",
+        "definition": "Project Current State Context",
+        "responsibility": "当前项目实际状态。",
+        "authority_scope": [
+          "项目当前实际状态"
+        ],
+        "source_of_truth": {
+          "status": "UNIQUE_SOURCE_OF_TRUTH",
+          "for": "Current Project State",
+          "statement": "PROJECT_STATE.md 是项目当前实际状态的唯一 Source of Truth。"
+        },
+        "lifecycle": {
+          "established_when": "项目当前状态首次建立时进入有效生命周期。",
+          "continues_as": "在项目持续期间保持有效，并随项目实际状态变化持续演进。",
+          "changes_when": [
+            "Current Phase 变化",
+            "Gate 状态变化",
+            "当前执行状态变化",
+            "已完成事项变化",
+            "当前阻塞事项变化",
+            "其他影响项目当前实际状态的事实变化"
+          ],
+          "not_changed_by": [
+            "尚未执行的未来计划",
+            "未确认方案",
+            "设计讨论过程"
+          ]
+        },
+        "boundary": {
+          "records": [
+            "当前 Phase",
+            "当前 Gate 状态",
+            "当前执行状态",
+            "已完成事项",
+            "当前阻塞事项",
+            "最近状态变化"
+          ],
+          "does_not_record": [
+            "未来计划",
+            "未执行方案",
+            "设计讨论过程"
+          ],
+          "cannot_be_replaced_by": [
+            "PROJECT_PLAN.md",
+            "历史聊天记录",
+            "Agent 临时记忆",
+            "未持久化上下文",
+            "Project Artifact State",
+            "Runtime State"
+          ]
+        }
+      },
+      {
+        "context_type": "PROJECT_PLAN",
+        "file_name": "PROJECT_PLAN.md",
+        "definition": "Project Execution Plan Context",
+        "responsibility": "项目未来执行计划。",
+        "authority_scope": [
+          "项目当前有效的未来执行计划"
+        ],
+        "lifecycle": {
+          "established_when": "项目形成当前有效执行计划时建立。",
+          "continues_as": "表达项目当前有效的未来执行计划。",
+          "changes_when": [
+            "阶段目标调整",
+            "阶段任务调整",
+            "执行顺序调整",
+            "依赖关系调整",
+            "预期 Artifact 调整",
+            "风险变化",
+            "验证方式变化"
+          ],
+          "not_changed_by": [
+            "已经实际发生的项目状态变化"
+          ]
+        },
+        "boundary": {
+          "records": [
+            "阶段目标",
+            "阶段任务",
+            "执行顺序",
+            "依赖关系",
+            "预期 Artifact",
+            "风险",
+            "验证方式"
+          ],
+          "does_not_record": [
+            "项目当前实际状态"
+          ],
+          "separation_principle": "PROJECT_PLAN.md 描述未来准备如何推进；PROJECT_STATE.md 描述当前实际发生什么。"
+        }
+      },
+      {
+        "context_type": "PROJECT_DECISIONS",
+        "file_name": "PROJECT_DECISIONS.md",
+        "definition": "Project Decision Record Context",
+        "responsibility": "Maker 已确认的重要决策。",
+        "authority_scope": [
+          "Maker 已确认的重要项目决策"
+        ],
+        "lifecycle": {
+          "established_when": "项目存在 Maker 已确认的重要决策记录需求时建立。",
+          "continues_as": "长期保存。",
+          "changes_when": [
+            "后续发生新的已确认决策时，通过新的 Decision Record 表达"
+          ],
+          "persistence_rule": "历史 Decision 不覆盖。"
+        },
+        "boundary": {
+          "records": [
+            "Decision ID",
+            "Decision Context",
+            "Selected Option",
+            "Decision Owner",
+            "Decision Timestamp",
+            "Impact"
+          ],
+          "does_not_record": [
+            "普通讨论",
+            "临时想法",
+            "Agent 自主判断",
+            "未确认方案"
+          ]
+        }
+      }
+    ],
+    "optional_context_definition": {
+      "context_type": "OPTIONAL_CONTEXT",
+      "definition": "用于支持不同 Project Type 的额外上下文需求。",
+      "default_presence": "不属于所有项目默认上下文。",
+      "creation_condition": [
+        "当前 Project Type 存在 Core Context 无法表达的额外上下文需求",
+        "该扩展 Context 具有明确的数据职责和 Authority Scope"
+      ],
+      "authority_scope": [
+        "对应 Project Type 的扩展上下文"
+      ],
+      "lifecycle": {
+        "established_when": "特定 Project Type 存在额外 Context Requirement 时，可以建立对应 Optional Context。",
+        "continues_as": "只在对应 Project Type 的上下文范围内有效。",
+        "changes_when": [
+          "对应 Project Type 的扩展上下文需求发生变化"
+        ],
+        "retires_when": "对应 Project Type Context Requirement 不再适用时，可以停止作为当前有效扩展上下文参与项目 Context Model。"
+      },
+      "boundary": {
+        "must_not_override": [
+          "PROJECT_PROFILE.md Authority",
+          "PROJECT_STATE.md Authority",
+          "PROJECT_PLAN.md Authority",
+          "PROJECT_DECISIONS.md Authority"
+        ],
+        "must_not_redefine": [
+          "Core Context Model"
+        ]
+      }
+    },
+    "project_artifacts_optional_context_identity": {
+      "context_type": "OPTIONAL_CONTEXT",
+      "optional_context_identity": "PROJECT_ARTIFACTS",
+      "file_name": "PROJECT_ARTIFACTS.md",
+      "definition": "Artifact Lifecycle Registry",
+      "responsibility": "管理项目 Artifact 的身份、类型、所属 Phase、当前状态、创建来源、依赖关系和验证状态。",
+      "authority_scope": [
+        "Project Type 特定的 Artifact Lifecycle Registry 扩展上下文"
+      ],
+      "boundary": {
+        "does_not_replace": [
+          "PROJECT_STATE.md",
+          "Workflow Artifact Flow",
+          "Core Context Authority"
+        ],
+        "does_not_store": [
+          "Artifact 本体"
+        ]
+      }
+    },
+    "context_separation_principle": {
+      "PROJECT_PROFILE": "定义项目是什么。",
+      "PROJECT_STATE": "记录项目当前在哪里。",
+      "PROJECT_PLAN": "描述项目准备如何推进。",
+      "PROJECT_DECISIONS": "记录哪些关键选择已经被确认。"
+    },
+    "context_authority_conflict_principle": {
+      "project_identity_and_long_term_goal": "PROJECT_PROFILE.md",
+      "current_actual_state": "PROJECT_STATE.md",
+      "current_effective_future_plan": "PROJECT_PLAN.md",
+      "maker_confirmed_decision_record": "PROJECT_DECISIONS.md",
+      "project_type_specific_extension": "Corresponding Optional Context"
+    },
+    "access_contract_boundary": {
+      "source_document": "SPECS/CONTRACTS/PROJECT_INCUBATOR_V1_CONTEXT_ACCESS_CONTRACT.md",
+      "principle": "Read Permission、Write Permission 和 Mutation Authority 属于 Contract Layer，不属于 Context Domain Authority。",
+      "mutation_execution_authority": "Runtime 是 V1 唯一 Context Mutation Executor。",
+      "maker_authorization_authority": "Maker 是唯一 Maker Authorization Authority。",
+      "script_direct_context_access": "Script 不拥有 Direct Context Access Authority。",
+      "runtime_boundary": "Runtime 不得重新定义 Core Context Type、Core Context Responsibility、Context Lifecycle、Context Authority 或 Context Source of Truth。"
+    }
+  }
+}
