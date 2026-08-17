@@ -35,6 +35,7 @@ from PROJECT_INCUBATOR.runtime.components.script_coordinator import (
     ScriptCoordinator,
     ScriptInvocationRequest,
     ScriptInvocationResult,
+    VALIDATION_UNSATISFIED,
 )
 from PROJECT_INCUBATOR.runtime.components.workflow_coordinator import (
     CurrentPhaseReference,
@@ -45,6 +46,8 @@ from PROJECT_INCUBATOR.runtime.components.workflow_coordinator import (
 )
 from PROJECT_INCUBATOR.runtime.core.contracts import (
     ContextAccessResultStatus,
+    ScriptExecutionStatus,
+    ScriptValidationResult,
     WorkflowResultStatus,
 )
 from PROJECT_INCUBATOR.runtime.core.runtime_types import RuntimeExecutionState
@@ -57,6 +60,7 @@ INVALID_WORKFLOW_STATE = "INVALID_WORKFLOW_STATE"
 WORKFLOW_NOT_READY = "WORKFLOW_NOT_READY"
 TRANSITION_NOT_ALLOWED = "TRANSITION_NOT_ALLOWED"
 CONTEXT_ACCESS_NOT_ACCEPTED = "CONTEXT_ACCESS_NOT_ACCEPTED"
+CONTEXT_CONFLICT = "CONTEXT_CONFLICT"
 CONTEXT_PERSISTENCE_VERIFICATION_FAILED = "CONTEXT_PERSISTENCE_VERIFICATION_FAILED"
 RUNTIME_DEPENDENCY_FAILURE = "RUNTIME_DEPENDENCY_FAILURE"
 SCRIPT_EXECUTION_NOT_COMPLETED = "SCRIPT_EXECUTION_NOT_COMPLETED"
@@ -370,6 +374,18 @@ class RuntimeCoordinator:
                     pending_requirement=(script_result.error_information,),
                 )
             if script_result.runtime_state is RuntimeExecutionState.SUSPENDED:
+                if (
+                    script_result.execution_status is ScriptExecutionStatus.COMPLETED
+                    and script_result.validation_result
+                    is ScriptValidationResult.REQUIREMENT_UNSATISFIED
+                ):
+                    return self._form_result(
+                        request=request,
+                        state=RuntimeExecutionState.SUSPENDED,
+                        reason=VALIDATION_UNSATISFIED,
+                        trace=trace,
+                        pending_requirement=(script_result.result_reason,),
+                    )
                 return self._form_result(
                     request=request,
                     state=RuntimeExecutionState.SUSPENDED,
@@ -476,6 +492,18 @@ class RuntimeCoordinator:
                     current_phase_reference=current_phase,
                     trace=trace,
                     pending_requirement=(context_result.gate_requirement_reference,),
+                )
+            if context_result.status is ContextAccessResultStatus.CONTEXT_CONFLICT:
+                return self._form_result(
+                    request=request,
+                    state=RuntimeExecutionState.SUSPENDED,
+                    reason=CONTEXT_CONFLICT,
+                    current_phase_reference=current_phase,
+                    trace=trace,
+                    pending_requirement=(
+                        context_result.conflict_reference
+                        or context_result.decision_reason,
+                    ),
                 )
             return self._form_result(
                 request=request,
@@ -689,6 +717,7 @@ class RuntimeCoordinator:
 
 __all__ = [
     "CONTEXT_ACCESS_NOT_ACCEPTED",
+    "CONTEXT_CONFLICT",
     "CONTEXT_PERSISTENCE_VERIFICATION_FAILED",
     "INVALID_WORKFLOW_STATE",
     "MISSING_CONTEXT",
