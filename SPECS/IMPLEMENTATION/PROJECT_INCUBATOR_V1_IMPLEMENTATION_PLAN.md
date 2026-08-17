@@ -1801,6 +1801,14 @@ UNSUPPORTED_INVOCATION
 
 EXECUTION_ERROR
 → SCRIPT_EXECUTION_ERROR
+
+DETERMINISTIC_OPERATION
++ COMPLETED
++ Validation Requirement = empty
++ Validation Result = empty
+→ Script Invocation 正常完成
+→ Continue Runtime Flow
+→ 不得映射为 VALIDATION_NOT_COMPLETED
 ```
 
 ---

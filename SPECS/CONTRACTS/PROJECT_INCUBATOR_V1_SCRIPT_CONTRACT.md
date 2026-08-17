@@ -299,6 +299,15 @@ DETERMINISTIC_OPERATION：
 
 可以同时返回 Validation Result。
 
+如果该 Operation 不包含 Validation Requirement：
+
+- Validation Result 必须显式为空；
+- 不得生成 REQUIREMENT_SATISFIED；
+- 不得生成 REQUIREMENT_UNSATISFIED；
+- 不得使用 VALIDATION_NOT_COMPLETED 表示“本次 Invocation 不需要 Validation”。
+
+“没有 Validation Requirement”与“Validation 未完成”属于不同语义。
+
 ---
 
 # 6. Script Input Contract

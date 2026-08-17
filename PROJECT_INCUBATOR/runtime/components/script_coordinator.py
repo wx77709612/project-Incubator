@@ -137,6 +137,21 @@ class ScriptCoordinator:
             }
 
         if execution_status is ScriptExecutionStatus.COMPLETED:
+            if (
+                validation_result is None
+                and self._is_pure_deterministic_operation(request)
+            ):
+                return self._runtime_result(
+                    request,
+                    RuntimeExecutionState.COMPLETED,
+                    EVIDENCE_READY,
+                    execution_status,
+                    None,
+                    evidence,
+                    diagnostic_information,
+                    error_information,
+                    script_output,
+                )
             if validation_result is ScriptValidationResult.REQUIREMENT_SATISFIED:
                 return self._runtime_result(
                     request,
@@ -257,12 +272,33 @@ class ScriptCoordinator:
             return ScriptExecutionStatus.EXECUTION_ERROR
 
     @staticmethod
-    def _parse_validation_result(script_output: dict[str, Any]) -> ScriptValidationResult:
+    def _parse_validation_result(script_output: dict[str, Any]) -> ScriptValidationResult | None:
         value = script_output.get("validation_result")
+        if value is None or value == "":
+            return None
         try:
             return ScriptValidationResult(value)
         except ValueError:
             return ScriptValidationResult.VALIDATION_NOT_COMPLETED
+
+    @staticmethod
+    def _is_pure_deterministic_operation(request: ScriptInvocationRequest) -> bool:
+        return (
+            request.invocation_purpose == "DETERMINISTIC_OPERATION"
+            and ScriptCoordinator._is_empty_validation_requirement(
+                request.validation_requirement,
+            )
+        )
+
+    @staticmethod
+    def _is_empty_validation_requirement(value: Any) -> bool:
+        if value is None:
+            return True
+        if isinstance(value, str):
+            return not value.strip()
+        if isinstance(value, (dict, list, tuple, set)):
+            return len(value) == 0
+        return False
 
     @staticmethod
     def _tuple_of_dicts(value: Any) -> tuple[dict[str, Any], ...]:

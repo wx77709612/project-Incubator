@@ -1986,6 +1986,35 @@ Validation Requirement Unsatisfied。
 
 ---
 
+## 42.7 DETERMINISTIC_OPERATION + COMPLETED + No Validation Requirement
+
+当：
+
+- Invocation Purpose = DETERMINISTIC_OPERATION；
+- Execution Status = COMPLETED；
+- Validation Requirement = empty；
+- Validation Result = empty；
+
+表示：
+
+Script 已正常完成当前确定性 Operation，本次 Invocation 不要求 Validation。
+
+Runtime 必须：
+
+- 将该 Script Invocation 视为正常完成；
+- 保留 Validation Result 为空；
+- 继续后续 Runtime Flow。
+
+Runtime 不得：
+
+- 自动生成 VALIDATION_NOT_COMPLETED；
+- 仅因为 Validation Result 为空进入 SUSPENDED；
+- 推断 REQUIREMENT_SATISFIED 或 REQUIREMENT_UNSATISFIED。
+
+完整 Runtime Execution 是否最终进入 COMPLETED，仍由 Runtime Completion Rule 决定。
+
+---
+
 # 43. Script and Gate Integration
 
 Script Validation Result：

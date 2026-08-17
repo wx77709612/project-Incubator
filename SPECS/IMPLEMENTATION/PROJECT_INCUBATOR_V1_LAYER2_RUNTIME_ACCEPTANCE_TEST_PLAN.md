@@ -1236,6 +1236,38 @@ EXECUTION_ERROR
 → SCRIPT_EXECUTION_ERROR
 ```
 
+## B5-06 Pure DETERMINISTIC_OPERATION
+
+### Input
+
+构造：
+
+```text
+Invocation Purpose = DETERMINISTIC_OPERATION
+Validation Requirement = empty
+Execution Status = COMPLETED
+Validation Result = empty
+```
+
+### Expected Result
+
+必须满足：
+
+- Script Invocation 正常完成；
+- Validation Result 保持为空；
+- Runtime Script Layer 可以继续后续 Runtime Flow；
+- 不得生成 VALIDATION_NOT_COMPLETED；
+- 不得仅因为 Validation Result 为空进入 SUSPENDED；
+- 不得生成 REQUIREMENT_SATISFIED；
+- 不得生成 REQUIREMENT_UNSATISFIED；
+- Script Output 与已有 Evidence 必须保留。
+
+本 Scenario 只验证 Script Runtime Layer 的正常完成与 Continue 语义。
+
+不得把它解释为：
+
+完整 Runtime Execution 已经最终 COMPLETED。
+
 同时验证：
 
 ```text

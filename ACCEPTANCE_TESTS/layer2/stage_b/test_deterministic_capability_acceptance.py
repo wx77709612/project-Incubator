@@ -823,16 +823,15 @@ class DeterministicCapabilityAcceptanceTest(unittest.TestCase):
         Unsupported Invocation 映射为 UNSUPPORTED_SCRIPT_INVOCATION。
         Execution Error 映射为 SCRIPT_EXECUTION_ERROR，且不被误判为 Validation Unsatisfied。
         DETERMINISTIC_OPERATION 使用同一受控 Script Runtime 调用链返回符合 Contract 的结果。
-        Pure DETERMINISTIC_OPERATION 允许：
+        Pure DETERMINISTIC_OPERATION：
+        Invocation Purpose = DETERMINISTIC_OPERATION
+        Validation Requirement = None
         Execution Status = COMPLETED
-        Script Output Validation Result = None
-        本测试验证该 Contract-valid Output 可以经过 Script Runtime，
-        且 Runtime 不伪造 REQUIREMENT_SATISFIED。
-        当前冻结 Runtime Specification 未明确规定：
-        COMPLETED + Validation Result = None
-        对应的 Runtime State / Runtime Reason。
-        因此实际 Runtime Mapping 只作为 Observed Implementation Behavior，
-        不作为本测试的 Frozen Expected Behavior。
+        Validation Result = None
+        必须正常完成 Script Invocation；Validation Result 保持 None；不生成
+        VALIDATION_NOT_COMPLETED；不因 Validation Result 为空进入 SUSPENDED；不伪造
+        REQUIREMENT_SATISFIED / REQUIREMENT_UNSATISFIED；保留 Script Output / Evidence；
+        允许 Runtime Flow 继续。
         Script Input Preparation 必须显式传入 Contract Input 字段。
         Malformed Script Output 不得被当成 Evidence 或合法 COMPLETED Result。
         """
@@ -956,7 +955,7 @@ class DeterministicCapabilityAcceptanceTest(unittest.TestCase):
                     ScriptValidationResult.REQUIREMENT_SATISFIED.value,
                     evidence=[
                         {
-                            "requirement_id": "Deterministic Operation",
+                            "requirement_id": "L2-B05-operation-completed",
                             "validation_target": "Temporary Script Fixture",
                             "observed_fact": {"operation_completed": True},
                             "expected_condition": {"operation_completed": True},
@@ -975,13 +974,24 @@ class DeterministicCapabilityAcceptanceTest(unittest.TestCase):
                 invocation_id="L2-B05-deterministic-operation",
                 script_identity="DETERMINISTIC_OPERATION_FIXTURE",
                 invocation_purpose="DETERMINISTIC_OPERATION",
+                validation_requirement={
+                    "requirement_id": "L2-B05-operation-completed",
+                    "requirement_description": "确定性 Operation 必须完成",
+                    "validation_target": "Temporary Script Fixture",
+                    "expected_condition": {
+                        "operation_completed": True,
+                    },
+                    "evidence_requirement": [
+                        "operation_completed",
+                    ],
+                },
             )
             operation = coordinator.invoke(operation_request)
             self.assertIs(operation.runtime_state, RuntimeExecutionState.COMPLETED)
             self.assertEqual(EVIDENCE_READY, operation.result_reason)
             self.assertIs(operation.execution_status, ScriptExecutionStatus.COMPLETED)
             self.assertIs(operation.validation_result, ScriptValidationResult.REQUIREMENT_SATISFIED)
-            self.assertEqual("Deterministic Operation", operation.evidence[0]["requirement_id"])
+            self.assertEqual("L2-B05-operation-completed", operation.evidence[0]["requirement_id"])
             self.assertEqual("L2-B05-deterministic-operation", operation.script_output["invocation_id"])
             self.assertEqual("DETERMINISTIC_OPERATION_FIXTURE", operation.script_output["script_identity"])
 
@@ -1017,11 +1027,16 @@ class DeterministicCapabilityAcceptanceTest(unittest.TestCase):
                 invocation_id="L2-B05-pure-deterministic-operation",
                 script_identity="PURE_DETERMINISTIC_OPERATION_FIXTURE",
                 invocation_purpose="DETERMINISTIC_OPERATION",
+                validation_requirement=None,
             )
             pure_operation = coordinator.invoke(pure_operation_request)
             self.assertIs(pure_operation.execution_status, ScriptExecutionStatus.COMPLETED)
             self.assertIsNone(pure_operation.script_output["validation_result"])
+            self.assertIsNone(pure_operation.validation_result)
+            self.assertIs(pure_operation.runtime_state, RuntimeExecutionState.COMPLETED,)            
+            self.assertNotEqual(VALIDATION_NOT_COMPLETED, pure_operation.result_reason)
             self.assertIsNot(pure_operation.validation_result, ScriptValidationResult.REQUIREMENT_SATISFIED)
+            self.assertIsNot(pure_operation.validation_result, ScriptValidationResult.REQUIREMENT_UNSATISFIED)
             self.assertEqual("Pure Deterministic Operation", pure_operation.evidence[0]["requirement_id"])
             self.assertEqual("L2-B05-pure-deterministic-operation", pure_operation.script_output["invocation_id"])
             self.assertEqual("PURE_DETERMINISTIC_OPERATION_FIXTURE", pure_operation.script_output["script_identity"])
@@ -1044,7 +1059,9 @@ class DeterministicCapabilityAcceptanceTest(unittest.TestCase):
             )
             input_capture = coordinator.invoke(input_capture_request)
             self.assertIs(input_capture.execution_status, ScriptExecutionStatus.COMPLETED)
-            self.assertEqual(VALIDATION_NOT_COMPLETED, input_capture.result_reason)
+            self.assertIsNone(input_capture.validation_result)
+            self.assertIs(input_capture.runtime_state, RuntimeExecutionState.COMPLETED)
+            self.assertNotEqual(VALIDATION_NOT_COMPLETED, input_capture.result_reason)
             self.assertEqual("L2-B05-input-preparation", input_capture.script_output["invocation_id"])
             self.assertEqual("INPUT_CAPTURE_FIXTURE", input_capture.script_output["script_identity"])
             received_input = input_capture.evidence[0]["observed_fact"]["received_input"]
