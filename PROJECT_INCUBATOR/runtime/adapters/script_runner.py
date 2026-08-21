@@ -40,6 +40,7 @@ class ScriptRunner:
         "INSPECT_GIT_EVIDENCE": "inspect_git_evidence.py",
         "VALIDATE_ARTIFACT_EVIDENCE": "validate_artifact_evidence.py",
         "VALIDATE_CONTEXT_INTEGRITY_EVIDENCE": "validate_context_integrity_evidence.py",
+        "BOOTSTRAP_HOST_INTEGRATION": "bootstrap_host_integration.py",
     }
 
     def __init__(

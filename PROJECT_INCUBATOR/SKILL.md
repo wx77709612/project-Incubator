@@ -1,3 +1,15 @@
+---
+name: project-incubator
+description: >
+  用于长期 AI 协作中的项目孵化与受控推进。Use when：Maker 希望把一个初始 Idea
+  逐步转化为明确的问题定义、可执行计划、可验证成果和可持续迭代的项目状态；
+  或需要恢复已有项目上下文、判断当前项目所处阶段与下一步行动、验证阶段成果、
+  处理项目迭代，并在 Maker 保留最终决策权的前提下控制项目目标、范围和状态推进。
+  本 Skill 通过持久项目 Context、State-driven Workflow、Gate 与 Runtime 边界降低
+  AI 发散和未经授权的项目变化。不用于一次性问答、单纯代码生成、通用任务管理，
+  也不替代 Maker 作出项目方向、范围或战略决策。
+---
+
 # Project Incubator
 
 当 Maker 需要长期 AI 协作，将一个初始想法推进为具有稳定上下文、明确 Workflow 位置、可执行计划、可验证 Artifact 和受控迭代的项目时，使用 Project Incubator。
@@ -52,6 +64,16 @@ V1 Core Context 文件包括：
 对于确定性的项目状态变化、Context Mutation、Gate 处理、Script Invocation、Transition Commit 和持久化状态验证，Agent 必须通过 Project Incubator Runtime 路由执行，而不是直接修改受控状态。
 
 Runtime 支持由 `runtime/` 下的包提供。Runtime 实现细节由冻结的 Runtime Specification 和 Implementation Plan 定义。
+
+## Host Environment Bootstrap
+
+当 Project Incubator 初始化新的 Managed Project、第一次在已有 Managed Project 中建立协作上下文，或 Maker 明确请求宿主环境集成时，Agent 应先解析 Host Environment。
+
+- Host = `CODEX`：通过 Runtime / Script Coordinator / `DETERMINISTIC_OPERATION` 调用 `BOOTSTRAP_HOST_INTEGRATION`，为尚未存在项目级 `AGENTS.md` 的 Managed Project 创建 Codex 协作入口。
+- Host = `OTHER`：不创建 Codex `AGENTS.md`。
+- Host = `UNKNOWN`：不猜测 Host，不创建 Codex `AGENTS.md`，并说明 Host Environment 无法确认。
+
+Host Environment Bootstrap 只处理宿主环境集成 Artifact，不改变 Current Phase，不触发 Workflow Transition，不修改 `PROJECT_STATE.md` 或其他 Core Context。已有且未包含 Project Incubator Integration Marker 的 `AGENTS.md` 不得被自动覆盖、删除、重写或强行追加。
 
 ## Agent 使用边界
 

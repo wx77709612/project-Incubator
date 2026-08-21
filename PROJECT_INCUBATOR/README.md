@@ -67,6 +67,12 @@ Runtime 负责确定性执行和边界 enforcement。它不替代 Maker 决策�
 - Transition Commit 与持久化状态验证；
 - Runtime Result 报告。
 
+## Codex Host Integration
+
+当 Project Incubator 在 Codex 中初始化或接管 Managed Project 时，可以通过 Runtime / Script Coordinator / `DETERMINISTIC_OPERATION` 调用 `BOOTSTRAP_HOST_INTEGRATION`。
+
+该操作只负责在 Codex Host 已确认时创建项目级 `AGENTS.md` 协作入口。它不改变 Current Phase，不触发 Workflow Transition，不修改 Core Context，也不会覆盖已有普通 `AGENTS.md`。
+
 ## 基本使用
 
 1. 使用 `SKILL.md` 判断 Project Incubator 是否适用。
