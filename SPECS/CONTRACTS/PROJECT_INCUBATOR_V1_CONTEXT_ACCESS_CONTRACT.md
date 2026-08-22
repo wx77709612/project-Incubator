@@ -734,21 +734,25 @@ V1 对 `PROJECT_STATE.md` 支持：
 
 `PROJECT_PLAN.md` 只表达：
 
-当前有效的未来执行计划。
+当前有效的项目生命周期规划。
 
 Mutation 可以涉及：
 
-- 阶段目标；
-- 阶段任务；
-- 执行顺序；
-- 依赖关系；
-- 预期 Artifact；
+- Phase Goal；
+- Gate；
+- Next Action；
+- Expected Artifact；
+- High-level Dependency；
 - 风险；
 - 验证方式。
 
 不得通过 `PROJECT_PLAN.md` Mutation：
 
 写入当前实际执行状态。
+
+不得通过 `PROJECT_PLAN.md` Mutation：
+
+写入 Implementation Task Breakdown Artifact 或 Project Type 特定实施任务拆解。
 
 ---
 
@@ -786,9 +790,13 @@ Context Access Contract 不得通过 Plan Mutation：
 
 ## 8.4 Workflow Boundary
 
-Execution Planning 产生 `PROJECT_PLAN.md` 时：
+Execution Planning 形成 `PROJECT_PLAN.md` 生命周期规划 Context Mutation Requirement 时：
 
 Workflow Runtime Component 可以形成对应 Mutation Request。
+
+P3 的 Phase Artifact 是 Implementation Plan。
+
+`PROJECT_PLAN.md` Mutation 不得被解释为 P3 Required Artifact。
 
 Iteration 对 `PROJECT_PLAN.md` 进行实际调整时：
 

@@ -84,6 +84,7 @@ Workflow Contract 向 Runtime 暴露以下信息：
 - Phase Input Requirement；
 - Phase Output Reference；
 - Required Artifact Requirement；
+- Context Mutation Requirement；
 - State Change Requirement；
 - Gate Trigger Requirement；
 - Allowed Next Phase；
@@ -224,6 +225,7 @@ Workflow Schema 是逻辑 Contract。
 - Process Boundary；
 - Output；
 - Required Artifact；
+- Context Mutation；
 - State Change Requirement；
 - Gate Trigger Requirement；
 - Allowed Next Phase。
@@ -338,11 +340,16 @@ Agent 如何完成上述分析或 Maker 如何进行交互。
 
 ---
 
-## 4.1.5 Phase Output
+## 4.1.5 Phase Artifact Output 与 Context Mutation
 
-P0 Output：
+P0 Phase Artifact Output：
 
-`PROJECT_PROFILE.md`
+- 无。
+
+P0 Context Mutation：
+
+- 建立或更新 `PROJECT_PROFILE.md`；
+- 建立或更新 `PROJECT_STATE.md`。
 
 ---
 
@@ -428,11 +435,15 @@ Workflow Contract 不定义上述内容的生成实现。
 
 ---
 
-## 4.2.5 Phase Output
+## 4.2.5 Phase Artifact Output 与 Context Mutation
 
-P1 Output：
+P1 Phase Artifact Output：
 
-`PROJECT_STATE.md`
+- 无。
+
+P1 Context Mutation：
+
+- 建立或更新 `PROJECT_STATE.md`。
 
 ---
 
@@ -515,7 +526,9 @@ Workflow Contract 不定义 Solution Design 的具体设计过程。
 
 ---
 
-## 4.3.5 Phase Output
+## 4.3.5 Phase Artifact Output 与 Context Mutation
+
+P2 Phase Artifact Output：
 
 P2 可以形成：
 
@@ -532,6 +545,11 @@ Decision Proposal：
 记录至：
 
 `PROJECT_DECISIONS.md`。
+
+P2 Context Mutation：
+
+- Maker 确认重要决策时，更新 `PROJECT_DECISIONS.md`；
+- 更新 `PROJECT_STATE.md` 中的当前 Phase 状态。
 
 ---
 
@@ -605,7 +623,8 @@ Phase Name：
 P3 Phase Input：
 
 - `PROJECT_PROFILE.md`；
-- `PROJECT_STATE.md`。
+- `PROJECT_STATE.md`；
+- `Solution Design Artifact`。
 
 ---
 
@@ -615,25 +634,40 @@ P3 Process Boundary：
 
 制定：
 
-- 阶段任务；
+- Implementation Plan；
+- Project Type 对应的实施任务拆解；
 - 执行顺序；
 - 依赖关系；
 - Artifact 目标；
-- 验证方式。
+- 验证方式；
+- PROJECT_PLAN.md 生命周期规划 Context Mutation。
 
 ---
 
-## 4.4.5 Phase Output
+## 4.4.5 Phase Artifact Output 与 Context Mutation
 
-P3 Output：
+P3 Phase Artifact Output：
 
-`PROJECT_PLAN.md`
+`Implementation Plan`
+
+`Implementation Plan`：
+
+- 属于 Phase Artifact；
+- 用于将 Solution Design 转换为可执行实施方案；
+- 不属于 Core Context；
+- 不替代 `PROJECT_PLAN.md`；
+- 具体结构由 Project Type 决定。
+
+P3 可以同时形成以下 Context Mutation Requirement：
+
+- 更新 `PROJECT_PLAN.md` 中的项目生命周期规划；
+- 更新 `PROJECT_STATE.md` 中的当前 Phase 状态。
 
 `PROJECT_PLAN.md`：
 
-只表达未来执行计划。
+只表达项目生命周期规划。
 
-不表达项目当前实际执行状态。
+不表达 Implementation Task Breakdown Artifact 或项目当前实际执行状态。
 
 ---
 
@@ -641,7 +675,7 @@ P3 Output：
 
 P3 Required Artifact：
 
-`PROJECT_PLAN.md`
+`Implementation Plan`
 
 ---
 
@@ -651,6 +685,12 @@ P3 完成必要 Process 后：
 
 必须形成 State Change Requirement。
 
+P3 Phase Completion 要求：
+
+- `Implementation Plan` Artifact 已生成或完成本 Phase 所要求的更新；
+- `PROJECT_PLAN.md` Context Mutation 已形成并在 Transition 执行时完成持久化；
+- `PROJECT_STATE.md` 状态变更已在 Transition 执行时完成持久化。
+
 ---
 
 ## 4.4.8 Gate Trigger Requirement
@@ -658,7 +698,8 @@ P3 完成必要 Process 后：
 P3 以下事件形成 Gate Trigger Requirement：
 
 - 提出 P3 → P4 Transition Request；
-- `PROJECT_PLAN.md` 发生影响后续 Workflow 推进的变化；
+- `Implementation Plan` 发生影响后续 Workflow 推进的变化；
+- `PROJECT_PLAN.md` Context Mutation 影响项目生命周期规划；
 - P3 提出影响项目当前状态的 State Change Requirement。
 
 ---
@@ -697,7 +738,8 @@ P4 Phase Input：
 
 - `PROJECT_PROFILE.md`；
 - `PROJECT_STATE.md`；
-- `PROJECT_PLAN.md`。
+- `PROJECT_PLAN.md`；
+- `Implementation Plan`。
 
 ---
 
@@ -706,7 +748,8 @@ P4 Phase Input：
 P4 根据：
 
 - Project Type；
-- 已确认执行计划
+- 已确认生命周期规划；
+- Implementation Plan
 
 完成项目创建活动。
 
@@ -724,11 +767,15 @@ Workflow Contract 不定义：
 
 ---
 
-## 4.5.5 Phase Output
+## 4.5.5 Phase Artifact Output 与 Context Mutation
 
-P4 Output：
+P4 Phase Artifact Output：
 
 `Project Artifact`
+
+P4 Context Mutation：
+
+- 更新 `PROJECT_STATE.md` 中的当前 Phase 状态。
 
 ---
 
@@ -813,11 +860,15 @@ Validation 如何具体执行。
 
 ---
 
-## 4.6.5 Phase Output
+## 4.6.5 Phase Artifact Output 与 Context Mutation
 
-P5 Output：
+P5 Phase Artifact Output：
 
 `Validation Result`
+
+P5 Context Mutation：
+
+- 更新 `PROJECT_STATE.md` 中的当前 Phase 状态。
 
 ---
 
@@ -889,7 +940,8 @@ P6 Phase Input：
 P6 可以根据 Validation Result：
 
 - 调整解决方案；
-- 调整执行计划；
+- 调整 Implementation Plan；
+- 调整项目生命周期规划 Context；
 - 修改 Artifact；
 - 返回 Solution Design；
 - 返回 Execution Planning；
@@ -902,16 +954,22 @@ P6 应该选择哪个目标 Phase。
 
 ---
 
-## 4.7.5 Phase Output
+## 4.7.5 Phase Artifact Output 与 Context Mutation
+
+Phase Artifact Output：
 
 根据本轮 Iteration 的实际调整范围：
 
 P6 可以更新：
 
 - Solution Design Artifact；
-- `PROJECT_PLAN.md`；
-- Project Artifact；
-- `PROJECT_STATE.md`。
+- Implementation Plan；
+- Project Artifact。
+
+Context Mutation：
+
+- 更新 `PROJECT_PLAN.md` 中的项目生命周期规划；
+- 更新 `PROJECT_STATE.md` 中的当前 Phase 状态。
 
 ---
 
@@ -1292,17 +1350,19 @@ Requirement Type 只允许表达上游 Workflow 已经定义的：
 
 ---
 
-## 8.3 Core Required Artifact Matrix
+## 8.3 Core Phase Boundary Matrix
 
-| Phase | Required Artifact |
-| --- | --- |
-| P0 | PROJECT_PROFILE.md |
-| P1 | PROJECT_STATE.md |
-| P2 | Solution Design Artifact |
-| P3 | PROJECT_PLAN.md |
-| P4 | Project Artifact |
-| P5 | Validation Result |
-| P6 | Validation Result + 本轮实际修改的 Workflow Artifact |
+| Phase | Required Artifact | Phase Artifact Output | Context Mutation |
+| --- | --- | --- | --- |
+| P0 | PROJECT_PROFILE.md | 无 | PROJECT_PROFILE.md；PROJECT_STATE.md |
+| P1 | PROJECT_STATE.md | 无 | PROJECT_STATE.md |
+| P2 | Solution Design Artifact | Design Document；Solution Definition；Decision Proposal（如需要） | PROJECT_DECISIONS.md（Maker 确认重要决策时）；PROJECT_STATE.md |
+| P3 | Implementation Plan | Implementation Plan | PROJECT_PLAN.md；PROJECT_STATE.md |
+| P4 | Project Artifact | Project Artifact | PROJECT_STATE.md |
+| P5 | Validation Result | Validation Result | PROJECT_STATE.md |
+| P6 | Validation Result + 本轮实际修改的 Workflow Artifact | Solution Design Artifact；Implementation Plan；Project Artifact（均仅在实际调整时） | PROJECT_PLAN.md；PROJECT_STATE.md |
+
+Context Mutation Target 不属于 Phase Artifact Output。Core Context 被更新时，不自动构成 Phase Artifact 或 Required Artifact。
 
 ---
 
@@ -1808,14 +1868,21 @@ Requested Next Phase：
 
 Required Artifact：
 
-`PROJECT_PLAN.md`
+`Implementation Plan`
 
 Transition 必须满足：
 
 - P3 Process 已形成领域结果；
-- `PROJECT_PLAN.md` Required Artifact Requirement 已满足；
+- `Implementation Plan` Required Artifact Requirement 已满足；
+- `PROJECT_PLAN.md` Context Mutation Requirement 已形成；
 - P3 State Change Requirement 已形成；
 - P3 Gate Requirement 已解决。
+
+P3 → P4 Transition 执行完成后：
+
+- `PROJECT_PLAN.md` 更新属于 Context Mutation 结果；
+- `PROJECT_STATE.md` 状态变更属于 Context Mutation 结果；
+- 二者不得被解释为 P3 Required Artifact。
 
 ---
 
@@ -1921,15 +1988,20 @@ Requested Next Phase：
 
 `P3 Execution Planning`
 
+`Implementation Plan`：
+
+属于本轮需要继续调整的目标 Phase Artifact。
+
 `PROJECT_PLAN.md`：
 
-属于本轮需要继续调整的目标 Workflow Artifact。
+属于生命周期规划 Context Mutation 目标，不作为 Implementation Task Breakdown Artifact。
 
 Transition Request 必须明确引用：
 
 - Validation Result；
 - 与本轮 Iteration 实际修改范围对应的 Workflow Artifact；
-- `PROJECT_PLAN.md` 作为返回 Execution Planning 的目标 Artifact Reference。
+- `Implementation Plan` 作为返回 Execution Planning 的目标 Artifact Reference；
+- 如果生命周期规划发生变化，引用 `PROJECT_PLAN.md` 作为 Context Mutation Target。
 
 Workflow Contract 不判断：
 
@@ -1995,14 +2067,21 @@ Transition Request 必须明确引用：
 Workflow 可以将 Context 作为：
 
 - Phase Input；
-- Phase Output；
-- Required Artifact；
+- Context Mutation Target；
 - Workflow 推进所依赖的项目事实；
 - State Change Requirement 涉及对象。
 
 Workflow Contract：
 
 只定义这些 Context Reference。
+
+Core Context 文件被 Phase 更新时，该更新属于 Context Mutation Requirement，不自动构成 Phase Artifact 或 Required Artifact。
+
+除非 Workflow Design 对某个 Phase 明确声明，否则不得使用：
+
+`Required Artifact = Core Context File`
+
+作为表达 Phase Artifact Requirement 的唯一方式。
 
 ---
 
@@ -2164,6 +2243,14 @@ Solution Design Artifact 至少包含：
 
 - Design Document；
 - Solution Definition
+
+P3 Implementation Plan：
+
+- 属于 Phase Artifact；
+- 用于将 Solution Design 转换为可执行实施方案；
+- 不属于 Core Context；
+- 不替代 `PROJECT_PLAN.md`；
+- 具体结构由 Project Type 决定。
 
 之外，
 

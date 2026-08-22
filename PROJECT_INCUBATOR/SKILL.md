@@ -59,6 +59,28 @@ V1 Core Context 文件包括：
 
 `PROJECT_STATE.md` 是当前项目状态的唯一 Source of Truth。Agent 不得使用历史聊天、临时记忆、计划、Artifact 或 Runtime temporary state 覆盖它。
 
+`PROJECT_PLAN.md` 是 Core Context，用于记录项目生命周期规划，包括 Phase Goal、Gate、Next Action、Expected Artifact 和 High-level Dependency。
+
+`PROJECT_PLAN.md` 不用于记录 Implementation Task Breakdown Artifact。
+
+## Artifact 与 Context 边界
+
+Project Incubator 区分：
+
+- Phase Artifact
+- Core Context
+- Context Mutation
+
+Phase Artifact 表示某个阶段产生的成果。
+
+Core Context 表示项目持续维护的信息。
+
+Context Mutation 表示 Workflow 执行过程中对 Core Context 的更新。
+
+Artifact 与 Context Mutation 是两个独立概念。
+
+Agent 不得因为某个 Core Context 文件被更新，就将其视为对应 Phase 的 Artifact。
+
 ## Runtime 入口
 
 对于确定性的项目状态变化、Context Mutation、Gate 处理、Script Invocation、Transition Commit 和持久化状态验证，Agent 必须通过 Project Incubator Runtime 路由执行，而不是直接修改受控状态。

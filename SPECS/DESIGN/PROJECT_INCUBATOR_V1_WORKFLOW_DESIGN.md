@@ -93,6 +93,7 @@ Workflow 负责定义：
 - Phase Process；
 - Phase 输出；
 - Required Artifact；
+- Context Mutation；
 - State Change Requirement；
 - Gate Trigger Requirement；
 - Artifact Flow；
@@ -130,10 +131,30 @@ Required Artifact 不要求必须由当前 Phase 首次创建。
 
 对于使用既有 Artifact 的 Phase，只要该 Artifact 已满足当前 Phase 的 Workflow Requirement，即视为 Required Artifact Requirement 已满足。
 
-Output 与 Required Artifact 不完全等价：
+Phase Artifact Output 与 Required Artifact 不完全等价：
 
-- Output 表示 Phase 可以产生或更新的结果；
+- Phase Artifact Output 表示 Phase 可以产生或更新的 Artifact；
 - Required Artifact 表示 Phase Transition 必须依赖的 Artifact 条件。
+
+Phase Artifact 与 Context Mutation 必须分开表达：
+
+- Phase Artifact 表示当前 Phase 产生或更新的项目成果；
+- Context Mutation 表示当前 Phase 对 Core Context 提出的持久化变更需求；
+- Core Context 文件被更新时，不自动等同于该 Phase 的 Required Artifact。
+
+P0-P6 统一使用以下 Phase Boundary Matrix 表达：
+
+| Phase | Required Artifact | Phase Artifact Output | Context Mutation |
+| --- | --- | --- | --- |
+| P0 | PROJECT_PROFILE.md | 无 | PROJECT_PROFILE.md；PROJECT_STATE.md |
+| P1 | PROJECT_STATE.md | 无 | PROJECT_STATE.md |
+| P2 | Solution Design Artifact | Design Document；Solution Definition；Decision Proposal（如需要） | PROJECT_DECISIONS.md（Maker 确认重要决策时）；PROJECT_STATE.md |
+| P3 | Implementation Plan | Implementation Plan | PROJECT_PLAN.md；PROJECT_STATE.md |
+| P4 | Project Artifact | Project Artifact | PROJECT_STATE.md |
+| P5 | Validation Result | Validation Result | PROJECT_STATE.md |
+| P6 | Validation Result；本轮实际修改的 Workflow Artifact | Solution Design Artifact；Implementation Plan；Project Artifact（均仅在实际调整时） | PROJECT_PLAN.md；PROJECT_STATE.md |
+
+表中的 Context Mutation Target 不是 Phase Artifact Output，也不因列入 Required Artifact 而自动成为 Phase Artifact。
 
 Core Phase 定义如下：
 
@@ -249,11 +270,16 @@ Maker：
 
 
 
-### 4.4 Output
+### 4.4 Phase Artifact Output 与 Context Mutation
 
-生成：
+Phase Artifact Output：
 
-PROJECT_PROFILE.md
+- 无。
+
+Context Mutation：
+
+- 建立或更新 PROJECT_PROFILE.md；
+- 建立或更新 PROJECT_STATE.md。
 
 Required Artifact：
 
@@ -337,11 +363,15 @@ SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 
 
 
-### 5.4 Output
+### 5.4 Phase Artifact Output 与 Context Mutation
 
-生成：
+Phase Artifact Output：
 
-PROJECT_STATE.md
+- 无。
+
+Context Mutation：
+
+- 建立或更新 PROJECT_STATE.md。
 
 Required Artifact：
 
@@ -408,7 +438,8 @@ SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 输入：
 
 - PROJECT_PROFILE.md；
-- PROJECT_STATE.md。
+- PROJECT_STATE.md；
+- Solution Design Artifact。
 
 
 ### 6.3 Process
@@ -423,7 +454,7 @@ SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 - Decision Proposal。
 
 
-### 6.4 Output
+### 6.4 Phase Artifact Output 与 Context Mutation
 
 
 生成：
@@ -438,6 +469,11 @@ SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 记录至：
 
 PROJECT_DECISIONS.md。
+
+Context Mutation：
+
+- Maker 确认重要决策时，更新 PROJECT_DECISIONS.md；
+- 更新 PROJECT_STATE.md 中的当前 Phase 状态。
 
 Required Artifact：
 
@@ -524,7 +560,8 @@ SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 
 制定：
 
-- 阶段任务；
+- Implementation Plan；
+- Project Type 对应的实施任务拆解；
 - 执行顺序；
 - 依赖关系；
 - Artifact 目标；
@@ -532,22 +569,35 @@ SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 
 
 
-### 7.4 Output
+### 7.4 Phase Artifact Output 与 Context Mutation
 
 
-生成：
+Phase Artifact Output：
 
-PROJECT_PLAN.md
+Implementation Plan。
 
-PROJECT_PLAN.md 记录未来执行计划。
+Implementation Plan 是 Phase Artifact。
 
-不记录当前实际执行状态。
+Implementation Plan 用于将 Solution Design 转换为可执行实施方案。
+
+Implementation Plan 不属于 Core Context，也不替代 PROJECT_PLAN.md。
+
+Implementation Plan 的具体结构由 Project Type 决定。
+
+Software、Skill、Video 等不同 Project Type 可以拥有不同 Implementation Plan 内容结构。
+
+Context Mutation：
+
+- 更新 PROJECT_PLAN.md 中的项目生命周期规划；
+- 更新 PROJECT_STATE.md 中的当前 Phase 状态。
+
+PROJECT_PLAN.md 记录项目生命周期规划，不记录 Implementation Task Breakdown Artifact。
 
 当前执行状态由 PROJECT_STATE.md 管理。
 
 Required Artifact：
 
-- PROJECT_PLAN.md。
+- Implementation Plan。
 
 ### 7.5 State Change Requirement
 
@@ -580,7 +630,8 @@ SPECS/RUNTIME/PROJECT_INCUBATOR_V1_SKILL_RUNTIME_SPEC.md
 以下流程事件需要触发 Gate：
 
 - Execution Planning 提出进入 Creation 的 Phase Transition Request；
-- PROJECT_PLAN.md 作为本 Phase Required Artifact，其状态发生影响后续流程推进的变化；
+- Implementation Plan 作为本 Phase Required Artifact，其状态发生影响后续流程推进的变化；
+- PROJECT_PLAN.md Context Mutation 影响项目生命周期规划；
 - Execution Planning 提出影响项目当前状态的 State Change Requirement。
 
 Gate 通过后：
@@ -592,6 +643,30 @@ Gate 通过后：
 SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 
 定义。
+
+### 7.7 Implementation Plan Artifact Boundary
+
+Implementation Plan 属于 Project Artifact 层面的 Phase Artifact。
+
+通用目标：
+
+- 将 Solution Design 转换为可执行实施方案；
+- 表达 Project Type 对应的实施任务拆解、执行顺序、依赖、验证方式和交付对象；
+- 为 Creation Phase 提供执行依据。
+
+Implementation Plan 不属于 Core Context。
+
+Implementation Plan 不替代 PROJECT_PLAN.md。
+
+PROJECT_PLAN.md 仍然是 Core Context，用于记录项目生命周期规划，包括 Phase Goal、Gate、Next Action、Expected Artifact 和 High-level Dependency。
+
+Implementation Plan 的具体结构由 Project Type 决定。
+
+不同 Project Type 可以拥有不同模板，例如：
+
+- Software Implementation Plan；
+- Skill Implementation Plan；
+- Video Implementation Plan。
 
 ## 8. Creation
 
@@ -610,14 +685,15 @@ SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 
 - PROJECT_PROFILE.md；
 - PROJECT_STATE.md；
-- PROJECT_PLAN.md。
+- PROJECT_PLAN.md；
+- Implementation Plan。
 
 
 
 ### 8.3 Process
 
 
-根据项目类型与已确认的执行计划完成项目创建活动。
+根据项目类型、已确认生命周期规划和 Implementation Plan 完成项目创建活动。
 
 创建活动可以包括：
 
@@ -633,11 +709,15 @@ Workflow 只定义 Creation Phase 的目标、输入、Process 边界和输出�
 
 
 
-### 8.4 Output
+### 8.4 Phase Artifact Output 与 Context Mutation
 
-生成：
+Phase Artifact Output：
 
 Project Artifact。
+
+Context Mutation：
+
+- 更新 PROJECT_STATE.md 中的当前 Phase 状态。
 
 Required Artifact：
 
@@ -719,11 +799,15 @@ SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 - 项目约束。
 
 
-### 9.4 Output
+### 9.4 Phase Artifact Output 与 Context Mutation
 
-生成：
+Phase Artifact Output：
 
 Validation Result。
+
+Context Mutation：
+
+- 更新 PROJECT_STATE.md 中的当前 Phase 状态。
 
 Required Artifact：
 
@@ -800,7 +884,8 @@ SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 根据 Validation Result：
 
 - 调整解决方案；
-- 调整执行计划；
+- 调整 Implementation Plan；
+- 调整项目生命周期规划 Context；
 - 修改 Artifact；
 - 返回 Solution Design；
 - 返回 Execution Planning；
@@ -809,14 +894,20 @@ SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md
 
 
 
-### 10.4 Output
+### 10.4 Phase Artifact Output 与 Context Mutation
+
+Phase Artifact Output：
 
 根据本轮 Iteration 的实际调整范围，可以更新：
 
 - Solution Design Artifact；
-- PROJECT_PLAN.md；
-- Project Artifact；
-- PROJECT_STATE.md。
+- Implementation Plan；
+- Project Artifact。
+
+Context Mutation：
+
+- 更新 PROJECT_PLAN.md 中的项目生命周期规划；
+- 更新 PROJECT_STATE.md 中的当前 Phase 状态。
 
 Required Artifact：
 
@@ -826,7 +917,7 @@ Required Artifact：
 其中：
 
 - 返回 Solution Design 时，Validation Result 必须能够说明需要重新进入 Solution Design 的问题；
-- 返回 Execution Planning 时，PROJECT_PLAN.md 属于本轮需要继续调整的目标 Artifact；
+- 返回 Execution Planning 时，Implementation Plan 属于本轮需要继续调整的 Phase Artifact，PROJECT_PLAN.md 属于生命周期规划 Context Mutation 目标；
 - 返回 Creation 时，Project Artifact 属于本轮需要继续调整的目标 Artifact；
 - 返回 Validation 时，必须存在可再次进入 Validation 的 Project Artifact。
 
@@ -845,7 +936,7 @@ Iteration 根据 Validation Result 可以提出以下 Phase Transition Request�
 以下流程事件需要触发 Gate：
 
 - Iteration 提出上述任一 Phase Transition Request；
-- Iteration 对 PROJECT_PLAN.md、Project Artifact 或其他 Workflow Artifact 提出影响后续流程推进的变更；
+- Iteration 对 Implementation Plan、PROJECT_PLAN.md、Project Artifact 或其他 Workflow Artifact 提出影响后续流程推进的变更；
 - Iteration 提出影响项目当前状态的 State Change Requirement。
 
 Gate 通过后：
@@ -930,7 +1021,7 @@ Execution Planning
 
 ↓
 
-PROJECT_PLAN.md
+Implementation Plan
 
 ↓
 
@@ -971,8 +1062,9 @@ Solution Design：
 
 Execution Planning：
 
-- 产生执行计划；
-- 为 Creation 提供任务、顺序、依赖和 Artifact 目标。
+- 产生 Implementation Plan；
+- 更新 PROJECT_PLAN.md 中的项目生命周期规划；
+- 为 Creation 提供 Project Type 对应的实施任务、顺序、依赖和 Artifact 目标。
 
 Creation：
 

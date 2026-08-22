@@ -206,12 +206,20 @@ class V1CoreWorkflowE2ETest(unittest.TestCase):
         self.assert_context_mutations_accepted(p2_result)
         self.assertTrue((self.project_root / "SOLUTION_DESIGN.md").exists())
 
+        self.write_agent_artifact(
+            "IMPLEMENTATION_PLAN.md",
+            "# Implementation Plan\n\nArtifact prepared by the Agent before Creation.\n",
+        )
         p3_result = self.runtime.execute(
             RuntimeRequest(
                 request_id="e2e-p3-execution-planning",
-                requested_action="P3 Execution Planning creates plan and advances",
+                requested_action="P3 Execution Planning creates implementation plan and updates lifecycle context",
                 project_root=self.project_root,
-                phase_result=self.phase_result("P3", "P4"),
+                phase_result=self.phase_result(
+                    "P3",
+                    "P4",
+                    artifact_evidence=("IMPLEMENTATION_PLAN.md",),
+                ),
                 context_mutation_intents=(
                     self.plan_intent(),
                     self.state_intent("P4"),
@@ -220,6 +228,7 @@ class V1CoreWorkflowE2ETest(unittest.TestCase):
         )
         self.assert_completed_transition(p3_result, "P4")
         self.assert_context_mutations_accepted(p3_result)
+        self.assertTrue((self.project_root / "IMPLEMENTATION_PLAN.md").exists())
         self.assertTrue((self.project_root / "PROJECT_PLAN.md").exists())
 
         self.write_agent_artifact(
@@ -358,13 +367,19 @@ class V1CoreWorkflowE2ETest(unittest.TestCase):
         return MutationIntent(
             mutation_type=MutationType.CREATE_CONTEXT,
             target_context=AccessTarget(ContextType.PROJECT_PLAN, "PROJECT_PLAN.md"),
-            change_purpose="Persist current future execution plan",
+            change_purpose="Persist current lifecycle execution plan",
             change_basis="WORKFLOW_STATE_CHANGE_REQUIREMENT",
             proposed_content=(
                 "# PROJECT_PLAN\n\n"
-                "## Execution Order / 总体执行顺序\n\n"
-                "1. P4 Creation\n"
-                "2. P5 Validation\n"
+                "## Context Boundary / 上下文边界\n\n"
+                "PROJECT_PLAN.md 用于记录项目生命周期规划。\n\n"
+                "## Phase Plan: P4 Creation\n\n"
+                "### Phase Goal / 阶段目标\n\n"
+                "- 创建 Project Artifact\n\n"
+                "### Next Action / 下一行动\n\n"
+                "- 进入 P4 Creation\n\n"
+                "### High-level Dependency / 高层依赖关系\n\n"
+                "- Implementation Plan\n"
             ),
         )
 

@@ -117,7 +117,7 @@ Project Incubator V1 默认使用以下 Core Context：
 | --- | --- |
 | PROJECT_PROFILE.md | 项目身份和长期目标 |
 | PROJECT_STATE.md | 当前项目实际状态 |
-| PROJECT_PLAN.md | 项目未来执行计划 |
+| PROJECT_PLAN.md | 项目生命周期规划 |
 | PROJECT_DECISIONS.md | Maker 已确认的重要决策 |
 
 
@@ -190,7 +190,7 @@ Core Context Authority 定义如下：
 | --- | --- |
 | PROJECT_PROFILE.md | 项目身份、项目类型、Intent、用户对象、成功标准和长期约束 |
 | PROJECT_STATE.md | 项目当前实际状态 |
-| PROJECT_PLAN.md | 项目当前有效的未来执行计划 |
+| PROJECT_PLAN.md | 项目当前有效的生命周期执行计划 |
 | PROJECT_DECISIONS.md | Maker 已确认的重要项目决策 |
 | Optional Context | 对应 Project Type 的扩展上下文 |
 
@@ -239,19 +239,23 @@ PROJECT_STATE.md 对项目当前实际状态具有唯一 Source of Truth Authori
 
 ### PROJECT_PLAN.md
 
-PROJECT_PLAN.md 对项目当前有效的未来执行计划具有 Authority。
+PROJECT_PLAN.md 对项目当前有效的生命周期执行计划具有 Authority。
 
 包括：
 
-- 阶段目标；
-- 阶段任务；
-- 执行顺序；
-- 依赖关系；
-- 预期 Artifact；
+- Phase Goal；
+- Gate；
+- Next Action；
+- Expected Artifact；
+- High-level Dependency；
 - 风险；
 - 验证方式。
 
 PROJECT_PLAN.md 不作为项目当前实际状态的 Authority。
+
+PROJECT_PLAN.md 不作为 Implementation Task Breakdown Artifact。
+
+具体实施任务拆解属于 Phase Artifact 层面的 Implementation Plan，不属于 Core Context。
 
 ### PROJECT_DECISIONS.md
 
@@ -473,12 +477,12 @@ PROJECT_STATE.md 只记录：
 ## 6.1 Definition
 
 
-PROJECT_PLAN.md 是项目执行计划。
+PROJECT_PLAN.md 是项目生命周期规划 Context。
 
 
 用于描述：
 
-项目未来准备如何推进。
+项目生命周期准备如何推进。
 
 
 ---
@@ -488,13 +492,22 @@ PROJECT_PLAN.md 是项目执行计划。
 
 PROJECT_PLAN.md 包含：
 
-- 阶段目标；
-- 阶段任务；
-- 执行顺序；
-- 依赖关系；
-- 预期 Artifact；
+- Phase Goal；
+- Gate；
+- Next Action；
+- Expected Artifact；
+- High-level Dependency；
 - 风险；
 - 验证方式。
+
+PROJECT_PLAN.md 不记录：
+
+- Implementation Task Breakdown Artifact；
+- 具体实施任务拆解；
+- Project Type 特定实施步骤细节；
+- 项目当前实际状态。
+
+Implementation Plan 承担将 Solution Design 转换为可执行实施方案的 Phase Artifact 职责。
 
 
 ---
@@ -527,25 +540,25 @@ PROJECT_STATE：
 
 ## 6.4 Lifecycle
 
-PROJECT_PLAN.md 在项目形成当前有效执行计划时建立。
+PROJECT_PLAN.md 在项目形成当前有效生命周期规划时建立。
 
 建立后：
 
-- 表达项目当前有效的未来执行计划；
-- 可以随项目目标、任务、执行顺序、依赖关系或预期 Artifact 的变化而调整；
+- 表达项目当前有效的生命周期执行计划；
+- 可以随项目目标、Gate、Next Action、High-level Dependency 或预期 Artifact 的变化而调整；
 - 新的当前有效计划可以取代已经不再适用的旧计划内容。
 
 PROJECT_PLAN.md 的 Lifecycle Change 可以由以下领域变化产生：
 
 - 阶段目标调整；
-- 阶段任务调整；
-- 执行顺序调整；
-- 依赖关系调整；
+- Gate 安排调整；
+- Next Action 调整；
+- High-level Dependency 调整；
 - 预期 Artifact 调整；
 - 风险变化；
 - 验证方式变化。
 
-PROJECT_PLAN.md 只描述未来准备如何推进。
+PROJECT_PLAN.md 只描述项目生命周期准备如何推进。
 
 已经实际发生的项目状态变化属于：
 
@@ -721,16 +734,18 @@ Context 定义：
 
 - 项目身份信息；
 - 当前项目状态；
-- 当前有效执行计划；
+- 当前有效生命周期执行计划；
 - Maker 已确认的重要决策；
 - Project Type 扩展上下文。
 
 Workflow 可以将 Context 作为：
 
 - Phase Input；
-- Phase Output；
+- Context Mutation Target；
 - Workflow 推进所依赖的项目事实；
 - State Change Requirement 所涉及的领域对象。
+
+当某个 Phase 更新 Core Context 时，该更新属于 Context Mutation，不自动等同于 Phase Artifact。
 
 Workflow 不重新定义：
 
@@ -826,11 +841,11 @@ Project Context Layer
 
 3. PROJECT_STATE.md 是项目当前实际状态的唯一 Source of Truth。
 
-4. PROJECT_PLAN.md 对项目当前有效的未来执行计划具有 Authority。
+4. PROJECT_PLAN.md 对项目当前有效的生命周期执行计划具有 Authority。
 
 5. PROJECT_PLAN.md 与 PROJECT_STATE.md 必须严格分离：
 
-   - PROJECT_PLAN.md 描述未来准备如何推进；
+   - PROJECT_PLAN.md 描述项目生命周期准备如何推进；
    - PROJECT_STATE.md 描述当前实际发生什么。
 
 6. PROJECT_DECISIONS.md 对 Maker 已确认的重要项目决策具有 Authority。
@@ -846,6 +861,7 @@ Project Context Layer
 以下内容属于项目 Artifact：
 
 - Design Document；
+- Implementation Plan；
 - Source Code；
 - Generated Content；
 - Validation Result。
@@ -854,7 +870,7 @@ Context Layer 保存：
 
 - 项目身份；
 - 当前状态；
-- 当前有效执行计划；
+- 当前有效生命周期执行计划；
 - Maker 已确认的重要决策；
 - 必要的 Project Type 扩展上下文。
 

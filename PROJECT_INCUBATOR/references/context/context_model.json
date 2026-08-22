@@ -117,41 +117,56 @@
       {
         "context_type": "PROJECT_PLAN",
         "file_name": "PROJECT_PLAN.md",
-        "definition": "Project Execution Plan Context",
-        "responsibility": "项目未来执行计划。",
+        "definition": "Project Lifecycle Plan Context",
+        "responsibility": "项目生命周期规划。",
         "authority_scope": [
-          "项目当前有效的未来执行计划"
+          "项目当前有效的生命周期执行计划"
         ],
         "lifecycle": {
-          "established_when": "项目形成当前有效执行计划时建立。",
-          "continues_as": "表达项目当前有效的未来执行计划。",
+          "established_when": "项目形成当前有效生命周期规划时建立。",
+          "continues_as": "表达项目当前有效的生命周期执行计划。",
+          "records": [
+            "Phase Goal",
+            "Gate",
+            "Next Action",
+            "Expected Artifact",
+            "High-level Dependency"
+          ],
           "changes_when": [
             "阶段目标调整",
-            "阶段任务调整",
-            "执行顺序调整",
-            "依赖关系调整",
+            "Gate 安排调整",
+            "下一行动调整",
+            "高层依赖关系调整",
             "预期 Artifact 调整",
             "风险变化",
             "验证方式变化"
           ],
+          "does_not_record": [
+            "Implementation Task Breakdown Artifact",
+            "具体实施任务拆解",
+            "项目当前实际状态"
+          ],
           "not_changed_by": [
-            "已经实际发生的项目状态变化"
+            "已经实际发生的项目状态变化",
+            "具体实施任务拆解变化"
           ]
         },
         "boundary": {
           "records": [
-            "阶段目标",
-            "阶段任务",
-            "执行顺序",
-            "依赖关系",
-            "预期 Artifact",
+            "Phase Goal",
+            "Gate",
+            "Next Action",
+            "Expected Artifact",
+            "High-level Dependency",
             "风险",
             "验证方式"
           ],
           "does_not_record": [
-            "项目当前实际状态"
+            "项目当前实际状态",
+            "Implementation Task Breakdown Artifact",
+            "具体实施任务拆解"
           ],
-          "separation_principle": "PROJECT_PLAN.md 描述未来准备如何推进；PROJECT_STATE.md 描述当前实际发生什么。"
+          "separation_principle": "PROJECT_PLAN.md 描述项目生命周期准备如何推进；Implementation Plan 描述特定 Project Type 下的可执行实施方案；PROJECT_STATE.md 描述当前实际发生什么。"
         }
       },
       {
@@ -242,13 +257,13 @@
     "context_separation_principle": {
       "PROJECT_PROFILE": "定义项目是什么。",
       "PROJECT_STATE": "记录项目当前在哪里。",
-      "PROJECT_PLAN": "描述项目准备如何推进。",
+      "PROJECT_PLAN": "描述项目生命周期准备如何推进。",
       "PROJECT_DECISIONS": "记录哪些关键选择已经被确认。"
     },
     "context_authority_conflict_principle": {
       "project_identity_and_long_term_goal": "PROJECT_PROFILE.md",
       "current_actual_state": "PROJECT_STATE.md",
-      "current_effective_future_plan": "PROJECT_PLAN.md",
+      "current_effective_lifecycle_plan": "PROJECT_PLAN.md",
       "maker_confirmed_decision_record": "PROJECT_DECISIONS.md",
       "project_type_specific_extension": "Corresponding Optional Context"
     },

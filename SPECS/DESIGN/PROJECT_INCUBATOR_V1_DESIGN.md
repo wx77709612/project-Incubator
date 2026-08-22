@@ -657,7 +657,8 @@ V1 Core Templates 包括：
 - PROJECT_PROFILE.template.md；
 - PROJECT_STATE.template.md；
 - PROJECT_PLAN.template.md；
-- DECISION_RECORD.template.md。
+- DECISION_RECORD.template.md；
+- IMPLEMENTATION_PLAN.template.md。
 
 各 Template 的架构作用：
 
@@ -671,7 +672,13 @@ PROJECT_STATE.template.md：
 
 PROJECT_PLAN.template.md：
 
-- 用于创建项目未来执行计划。
+- 用于创建项目生命周期规划 Context。
+
+IMPLEMENTATION_PLAN.template.md：
+
+- 用于创建 P3 Execution Planning 的 Implementation Plan Phase Artifact。
+- 用于将 Solution Design 转换为可执行实施方案。
+- 不属于 Core Context，不替代 PROJECT_PLAN.md。
 
 DECISION_RECORD.template.md：
 

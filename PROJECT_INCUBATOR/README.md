@@ -22,7 +22,7 @@ PROJECT_INCUBATOR/
 - `AGENTS.md` 定义 Managed Project 使用场景中的 Agent 行为边界。
 - `runtime/` 承载确定性执行支持。
 - `references/` 承载冻结定义的 Implementation Projection。
-- `templates/` 承载 Context Template。
+- `templates/` 承载 Context Template 和 Artifact Template。
 - `scripts/` 承载 Runtime 使用的确定性工具能力。
 
 ## Core Context
@@ -31,10 +31,32 @@ V1 在 Managed Project 中使用四个 Core Context 文件：
 
 - `PROJECT_PROFILE.md`：项目身份、Intent、目标用户、成功标准和长期约束。
 - `PROJECT_STATE.md`：当前实际项目状态，也是当前状态的唯一 Source of Truth。
-- `PROJECT_PLAN.md`：当前有效的未来执行计划。
+- `PROJECT_PLAN.md`：当前有效的项目生命周期规划。
 - `PROJECT_DECISIONS.md`：Maker 已确认的重要决策。
 
 这些 Context 文件职责分离。Plan 不替代 State，历史对话不替代 `PROJECT_STATE.md`。
+
+`PROJECT_PLAN.md` 记录 Phase Goal、Gate、Next Action、Expected Artifact 和 High-level Dependency。
+
+它不记录 Implementation Task Breakdown Artifact。
+
+## Artifact 与 Context 边界
+
+Project Incubator 区分：
+
+- Phase Artifact
+- Core Context
+- Context Mutation
+
+Phase Artifact 表示某个 Workflow Phase 产生的阶段性成果。
+
+Core Context 表示项目生命周期中持续维护的信息。
+
+Context Mutation 表示 Workflow 执行过程中对 Core Context 的更新。
+
+Artifact 与 Context Mutation 是不同概念。
+
+Agent 不得因为某个 Core Context 文件在某个 Phase 中被更新，就将其视为该 Phase 的 Artifact。
 
 ## Core Workflow
 

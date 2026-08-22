@@ -24,6 +24,21 @@
       "Completed",
       "Reopened"
     ],
+    "artifact_definitions": {
+      "Implementation Plan": {
+        "artifact_layer": "Phase Artifact",
+        "is_core_context": false,
+        "purpose": "将 Solution Design 转换为可执行实施方案。",
+        "structure_rule": "根据 Project Type 决定具体结构；Software / Skill / Video 等项目类型可以使用不同 Implementation Plan 模板。",
+        "does_not_replace": [
+          "PROJECT_PLAN.md"
+        ],
+        "consumed_by": [
+          "P4 Creation",
+          "P6 Iteration when returning to P3"
+        ]
+      }
+    },
     "phases": [
       {
         "phase_id": "P0",
@@ -45,11 +60,13 @@
             "确认成功标准"
           ]
         },
-        "output": [
-          "PROJECT_PROFILE.md"
-        ],
+        "artifact_output": [],
         "required_artifact": [
           "PROJECT_PROFILE.md"
+        ],
+        "context_mutation": [
+          "PROJECT_PROFILE.md",
+          "PROJECT_STATE.md"
         ],
         "state_change_requirement": {
           "required": true,
@@ -83,10 +100,11 @@
           "建立项目约束",
           "建立当前执行范围"
         ],
-        "output": [
+        "artifact_output": [],
+        "required_artifact": [
           "PROJECT_STATE.md"
         ],
-        "required_artifact": [
+        "context_mutation": [
           "PROJECT_STATE.md"
         ],
         "state_change_requirement": {
@@ -124,14 +142,17 @@
           "形成 Design Artifact",
           "形成 Decision Proposal when required"
         ],
-        "output": [
+        "artifact_output": [
           "Design Document",
           "Solution Definition",
-          "Decision Proposal when required",
-          "PROJECT_DECISIONS.md for Maker confirmed important decisions"
+          "Decision Proposal when required"
         ],
         "required_artifact": [
           "Solution Design Artifact"
+        ],
+        "context_mutation": [
+          "PROJECT_DECISIONS.md when Maker confirms important decisions",
+          "PROJECT_STATE.md"
         ],
         "required_artifact_detail": {
           "Solution Design Artifact": [
@@ -166,20 +187,27 @@
         "phase_goal": "建立项目执行路线。",
         "input": [
           "PROJECT_PROFILE.md",
-          "PROJECT_STATE.md"
+          "PROJECT_STATE.md",
+          "Solution Design Artifact"
         ],
         "process_boundary": [
-          "制定阶段任务",
+          "将 Solution Design 转换为可执行实施方案",
+          "制定 Project Type 对应的实施任务拆解",
           "制定执行顺序",
-          "制定依赖关系",
+          "制定实施依赖关系",
           "制定 Artifact 目标",
-          "制定验证方式"
+          "制定验证方式",
+          "更新项目生命周期规划 Context"
         ],
-        "output": [
-          "PROJECT_PLAN.md"
+        "artifact_output": [
+          "Implementation Plan"
         ],
         "required_artifact": [
-          "PROJECT_PLAN.md"
+          "Implementation Plan"
+        ],
+        "context_mutation": [
+          "PROJECT_PLAN.md",
+          "PROJECT_STATE.md"
         ],
         "state_change_requirement": {
           "required": true,
@@ -194,7 +222,8 @@
         },
         "gate_trigger_requirement": [
           "P3 proposes P3 -> P4 Phase Transition Request",
-          "PROJECT_PLAN.md changes in a way that affects later Workflow progression",
+          "Implementation Plan is produced or changes in a way that affects later Workflow progression",
+          "PROJECT_PLAN.md Context Mutation is proposed in a way that affects lifecycle planning",
           "P3 proposes State Change Requirement that affects current project state"
         ],
         "allowed_next_phase": [
@@ -208,16 +237,20 @@
         "input": [
           "PROJECT_PROFILE.md",
           "PROJECT_STATE.md",
-          "PROJECT_PLAN.md"
+          "PROJECT_PLAN.md",
+          "Implementation Plan"
         ],
         "process_boundary": [
-          "根据 Project Type 与已确认执行计划完成项目创建活动"
+          "根据 Project Type、已确认生命周期规划与 Implementation Plan 完成项目创建活动"
         ],
-        "output": [
+        "artifact_output": [
           "Project Artifact"
         ],
         "required_artifact": [
           "Project Artifact"
+        ],
+        "context_mutation": [
+          "PROJECT_STATE.md"
         ],
         "state_change_requirement": {
           "required": true,
@@ -254,11 +287,14 @@
           "验证质量要求",
           "验证项目约束"
         ],
-        "output": [
+        "artifact_output": [
           "Validation Result"
         ],
         "required_artifact": [
           "Validation Result"
+        ],
+        "context_mutation": [
+          "PROJECT_STATE.md"
         ],
         "state_change_requirement": {
           "required": true,
@@ -288,28 +324,32 @@
           "Validation Result",
           "PROJECT_STATE.md"
         ],
-        "process_boundary": [
-          "根据 Validation Result 调整解决方案",
-          "根据 Validation Result 调整执行计划",
-          "根据 Validation Result 修改 Artifact",
+                "process_boundary": [
+                    "根据 Validation Result 调整解决方案",
+                    "根据 Validation Result 调整 Implementation Plan",
+                    "根据 Validation Result 调整项目生命周期规划 Context",
+                    "根据 Validation Result 修改 Artifact",
           "返回 Solution Design",
           "返回 Execution Planning",
           "返回 Creation",
           "返回 Validation"
         ],
-        "output": [
+        "artifact_output": [
           "Solution Design Artifact when adjusted",
-          "PROJECT_PLAN.md when adjusted",
-          "Project Artifact when adjusted",
-          "PROJECT_STATE.md when adjusted"
+          "Implementation Plan when adjusted",
+          "Project Artifact when adjusted"
         ],
         "required_artifact": [
           "Validation Result",
           "Workflow Artifact modified in current Iteration"
         ],
+        "context_mutation": [
+          "PROJECT_PLAN.md",
+          "PROJECT_STATE.md"
+        ],
         "required_artifact_detail": {
           "P6 -> P2": "Validation Result must explain the issue requiring re-entry to Solution Design.",
-          "P6 -> P3": "PROJECT_PLAN.md is the target Workflow Artifact for continued adjustment.",
+          "P6 -> P3": "Implementation Plan is the target Phase Artifact for continued adjustment; PROJECT_PLAN.md is a Context Mutation target when lifecycle planning changes.",
           "P6 -> P4": "Project Artifact is the target Workflow Artifact for continued adjustment.",
           "P6 -> P5": "A Project Artifact that can re-enter Validation must exist."
         },
@@ -329,7 +369,7 @@
           "P6 proposes P6 -> P3 Phase Transition Request",
           "P6 proposes P6 -> P4 Phase Transition Request",
           "P6 proposes P6 -> P5 Phase Transition Request",
-          "P6 proposes changes to PROJECT_PLAN.md, Project Artifact, or other Workflow Artifact that affect later Workflow progression",
+          "P6 proposes changes to Implementation Plan, PROJECT_PLAN.md, Project Artifact, or other Workflow Artifact that affect later Workflow progression",
           "P6 proposes State Change Requirement that affects current project state"
         ],
         "allowed_next_phase": [
