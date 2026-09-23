@@ -52,6 +52,15 @@
         "purpose": "基于 Validation Result、当前返回目标和已知问题，提示重新进入该 Phase 时需要重点处理什么。"
       }
     ],
+    "reason_code_triggers": {
+      "REPEATED_FAILURE_WARNING": "RISK_DETECTED",
+      "MODEL_REVIEW_REQUIRED": "RISK_DETECTED",
+      "KNOWN_GOOD_REGRESSION": "VALIDATION_FEEDBACK",
+      "SEMANTIC_DRIFT_DETECTED": "RISK_DETECTED",
+      "OPAQUE_EXTENSION_RECOMMENDED": "RISK_DETECTED",
+      "HUMAN_VALIDATION_BUDGET_EXHAUSTED": "MISSING_INFORMATION",
+      "MAKER_SCOPE_REVIEW_REQUIRED": "DECISION_REQUIRED"
+    },
     "advisory_context": {
       "core_context": [
         "PROJECT_PROFILE.md",

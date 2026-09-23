@@ -5,6 +5,7 @@ from PROJECT_INCUBATOR.runtime.components.advisory_bridge import (
     AdvisoryBridge,
     AdvisoryBridgeRequest,
     AdvisoryResponse,
+    AdvisoryDefinitionError,
 )
 from PROJECT_INCUBATOR.runtime.core.runtime_types import RuntimeExecutionState
 
@@ -66,6 +67,61 @@ class AdvisoryBridgeTest(unittest.TestCase):
             handled.result_reason,
         )
         self.assertEqual(1, len(handled.pending_runtime_requests))
+
+    def test_v1_1_reason_codes_use_existing_triggers(self):
+        expected_triggers = {
+            "REPEATED_FAILURE_WARNING": "RISK_DETECTED",
+            "MODEL_REVIEW_REQUIRED": "RISK_DETECTED",
+            "KNOWN_GOOD_REGRESSION": "VALIDATION_FEEDBACK",
+            "SEMANTIC_DRIFT_DETECTED": "RISK_DETECTED",
+            "OPAQUE_EXTENSION_RECOMMENDED": "RISK_DETECTED",
+            "HUMAN_VALIDATION_BUDGET_EXHAUSTED": "MISSING_INFORMATION",
+            "MAKER_SCOPE_REVIEW_REQUIRED": "DECISION_REQUIRED",
+        }
+
+        for reason_code, trigger_id in expected_triggers.items():
+            with self.subTest(reason_code=reason_code):
+                result = self.bridge.prepare(
+                    AdvisoryBridgeRequest(
+                        request_id=reason_code,
+                        event_type="evidence advisory",
+                        reason_code=reason_code,
+                    )
+                )
+                self.assertEqual((trigger_id,), tuple(t.trigger_id for t in result.matched_triggers))
+
+    def test_context_packet_contains_bounded_evidence_references(self):
+        result = self.bridge.prepare(
+            AdvisoryBridgeRequest(
+                request_id="bounded-context",
+                event_type="evidence advisory",
+                reason_code="KNOWN_GOOD_REGRESSION",
+                claim_refs=("claim-1",),
+                evidence_refs=("evidence-3",),
+                failure_refs=("failure-2",),
+                baseline_refs=("baseline-1",),
+                drift_refs=("drift-1",),
+                human_validation_budget_refs=("budget-1",),
+            )
+        )
+
+        packet = result.advisory_context_packets[0]
+        self.assertEqual(("claim-1",), packet.claim_refs)
+        self.assertEqual(("evidence-3",), packet.evidence_refs)
+        self.assertEqual(("failure-2",), packet.failure_refs)
+        self.assertEqual(("baseline-1",), packet.baseline_refs)
+        self.assertEqual(("drift-1",), packet.drift_refs)
+        self.assertEqual(("budget-1",), packet.human_validation_budget_refs)
+
+    def test_unknown_reason_code_is_rejected(self):
+        with self.assertRaises(AdvisoryDefinitionError):
+            self.bridge.prepare(
+                AdvisoryBridgeRequest(
+                    request_id="unknown",
+                    event_type="evidence advisory",
+                    reason_code="NOT_APPROVED",
+                )
+            )
 
 
 if __name__ == "__main__":

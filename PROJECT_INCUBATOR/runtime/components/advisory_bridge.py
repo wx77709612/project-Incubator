@@ -24,6 +24,14 @@ DECISION_REQUIRED = "DECISION_REQUIRED"
 VALIDATION_FEEDBACK = "VALIDATION_FEEDBACK"
 ITERATION_RE_ENTRY = "ITERATION_RE_ENTRY"
 
+REPEATED_FAILURE_WARNING = "REPEATED_FAILURE_WARNING"
+MODEL_REVIEW_REQUIRED = "MODEL_REVIEW_REQUIRED"
+KNOWN_GOOD_REGRESSION = "KNOWN_GOOD_REGRESSION"
+SEMANTIC_DRIFT_DETECTED = "SEMANTIC_DRIFT_DETECTED"
+OPAQUE_EXTENSION_RECOMMENDED = "OPAQUE_EXTENSION_RECOMMENDED"
+HUMAN_VALIDATION_BUDGET_EXHAUSTED = "HUMAN_VALIDATION_BUDGET_EXHAUSTED"
+MAKER_SCOPE_REVIEW_REQUIRED = "MAKER_SCOPE_REVIEW_REQUIRED"
+
 
 class AdvisoryDefinitionError(Exception):
     """Raised when frozen Advisory definitions cannot support runtime use."""
@@ -44,6 +52,13 @@ class AdvisoryBridgeRequest:
     iteration_reentry_target: str | None = None
     requested_trigger_ids: tuple[str, ...] = field(default_factory=tuple)
     source_context_references: tuple[str, ...] = field(default_factory=tuple)
+    reason_code: str | None = None
+    claim_refs: tuple[str, ...] = field(default_factory=tuple)
+    evidence_refs: tuple[str, ...] = field(default_factory=tuple)
+    failure_refs: tuple[str, ...] = field(default_factory=tuple)
+    baseline_refs: tuple[str, ...] = field(default_factory=tuple)
+    drift_refs: tuple[str, ...] = field(default_factory=tuple)
+    human_validation_budget_refs: tuple[str, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -70,6 +85,13 @@ class AdvisoryContextPacket:
     allowed_response_fields: tuple[str, ...]
     available_content_types: tuple[str, ...]
     advisory_boundary: tuple[str, ...]
+    reason_code: str | None = None
+    claim_refs: tuple[str, ...] = field(default_factory=tuple)
+    evidence_refs: tuple[str, ...] = field(default_factory=tuple)
+    failure_refs: tuple[str, ...] = field(default_factory=tuple)
+    baseline_refs: tuple[str, ...] = field(default_factory=tuple)
+    drift_refs: tuple[str, ...] = field(default_factory=tuple)
+    human_validation_budget_refs: tuple[str, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -129,6 +151,16 @@ class AdvisoryBridge:
         ITERATION_RE_ENTRY,
     )
 
+    approved_reason_codes = (
+        REPEATED_FAILURE_WARNING,
+        MODEL_REVIEW_REQUIRED,
+        KNOWN_GOOD_REGRESSION,
+        SEMANTIC_DRIFT_DETECTED,
+        OPAQUE_EXTENSION_RECOMMENDED,
+        HUMAN_VALIDATION_BUDGET_EXHAUSTED,
+        MAKER_SCOPE_REVIEW_REQUIRED,
+    )
+
     def __init__(
         self,
         advisory_definition: dict[str, Any] | None = None,
@@ -150,6 +182,7 @@ class AdvisoryBridge:
             ),
         )
         self.runtime_boundary = self._load_runtime_boundary()
+        self.reason_code_triggers = self._load_reason_code_triggers()
 
     def prepare(self, request: AdvisoryBridgeRequest) -> AdvisoryBridgeResult:
         matched_triggers = self.identify_triggers(request)
@@ -178,6 +211,13 @@ class AdvisoryBridge:
 
         event_type = self._normalize_text(request.event_type)
         trigger_ids: list[str] = []
+        if request.reason_code is not None:
+            trigger_id = self.reason_code_triggers.get(request.reason_code)
+            if trigger_id is None:
+                raise AdvisoryDefinitionError(
+                    f"unknown Advisory Reason Code: {request.reason_code}",
+                )
+            trigger_ids.append(trigger_id)
         if self._event_matches(event_type, PHASE_ENTRY, "phase entry") or (
             request.current_phase is not None and "phase" in event_type
         ):
@@ -238,6 +278,13 @@ class AdvisoryBridge:
             allowed_response_fields=self.response_fields,
             available_content_types=self.content_types,
             advisory_boundary=self.runtime_boundary,
+            reason_code=request.reason_code,
+            claim_refs=tuple(request.claim_refs),
+            evidence_refs=tuple(request.evidence_refs),
+            failure_refs=tuple(request.failure_refs),
+            baseline_refs=tuple(request.baseline_refs),
+            drift_refs=tuple(request.drift_refs),
+            human_validation_budget_refs=tuple(request.human_validation_budget_refs),
         )
 
     def consume_advisory_response(
@@ -333,6 +380,19 @@ class AdvisoryBridge:
             raise AdvisoryDefinitionError("Advisory runtime boundary must not be command-capable")
         return tuple(must_not)
 
+    def _load_reason_code_triggers(self) -> dict[str, str]:
+        mapping = self._require_mapping(self.advisory_model, "reason_code_triggers")
+        if set(mapping) != set(self.approved_reason_codes):
+            raise AdvisoryDefinitionError("Advisory Reason Code set is not the approved V1.1 set")
+        loaded: dict[str, str] = {}
+        for reason_code, trigger_id in mapping.items():
+            if not isinstance(trigger_id, str) or trigger_id not in self.triggers_by_id:
+                raise AdvisoryDefinitionError(
+                    f"Advisory Reason Code references unknown Trigger: {reason_code}",
+                )
+            loaded[reason_code] = trigger_id
+        return loaded
+
     def _trigger_match(self, trigger: dict[str, Any]) -> AdvisoryTriggerMatch:
         return AdvisoryTriggerMatch(
             trigger_id=self._require_string(trigger, "trigger_id"),
@@ -386,12 +446,19 @@ __all__ = [
     "ADVISORY_RESPONSE_NO_RUNTIME_STATE_CHANGE",
     "DECISION_REQUIRED",
     "ITERATION_RE_ENTRY",
+    "HUMAN_VALIDATION_BUDGET_EXHAUSTED",
+    "KNOWN_GOOD_REGRESSION",
     "MAKER_GUIDANCE_REQUEST",
+    "MAKER_SCOPE_REVIEW_REQUIRED",
     "MISSING_INFORMATION",
     "NO_ADVISORY_TRIGGER",
+    "MODEL_REVIEW_REQUIRED",
+    "OPAQUE_EXTENSION_RECOMMENDED",
     "PHASE_ENTRY",
     "RECOMMENDED_ACTION_REQUIRES_RUNTIME_REQUEST",
     "RISK_DETECTED",
+    "REPEATED_FAILURE_WARNING",
+    "SEMANTIC_DRIFT_DETECTED",
     "VALIDATION_FEEDBACK",
     "AdvisoryBridge",
     "AdvisoryBridgeRequest",
