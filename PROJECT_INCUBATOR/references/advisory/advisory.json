@@ -3,7 +3,7 @@
   "source_document": [
     "SPECS/DESIGN/PHASE_ADVISORY_DESIGN.md"
   ],
-  "definition_version": "v1-implementation-projection",
+  "definition_version": "v1.1-implementation-projection",
   "advisory_model": {
     "model_name": "Agent Advisory",
     "purpose": "辅助 Agent 理解当前项目情境、识别问题并形成下一步建议。",

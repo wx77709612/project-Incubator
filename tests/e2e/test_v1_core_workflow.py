@@ -1,5 +1,6 @@
 import shutil
 import unittest
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -462,6 +463,35 @@ class V1CoreWorkflowE2ETest(unittest.TestCase):
         self.assertEqual(
             "Runtime-provided limited input",
             context_result.missing_requirement,
+        )
+
+    def test_v1_request_without_v1_1_fields_keeps_byte_stable_core_semantics(self):
+        (self.project_root / "PROJECT_STATE.md").write_text(
+            self.project_state_content("P4"),
+            encoding="utf-8",
+        )
+
+        result = RuntimeCoordinator().execute(
+            RuntimeRequest(
+                request_id="legacy-v1-request",
+                requested_action="contract check",
+                project_root=self.project_root,
+            )
+        )
+        serialized = json.dumps(
+            {
+                "phase": result.current_phase_reference.phase_id,
+                "reason": result.runtime_reason,
+                "state": result.runtime_execution_state.value,
+                "workflow": result.workflow_result_reference,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+
+        self.assertEqual(
+            b'{"phase":"P4","reason":"RUNTIME_COMPLETED","state":"COMPLETED","workflow":null}',
+            serialized,
         )
 
 

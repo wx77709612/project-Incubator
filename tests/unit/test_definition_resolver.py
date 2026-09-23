@@ -1,11 +1,19 @@
 import unittest
 from pathlib import Path
+import copy
+import json
 
 from PROJECT_INCUBATOR.runtime.components.definition_resolver import DefinitionResolver
+from PROJECT_INCUBATOR.runtime.components.workflow_coordinator import (
+    WorkflowCoordinator,
+    WorkflowDefinitionError,
+)
 from PROJECT_INCUBATOR.runtime.core.runtime_types import RuntimeExecutionState
 
 
 class DefinitionResolverTest(unittest.TestCase):
+    root = Path(__file__).resolve().parents[2]
+
     def test_default_definitions_resolve(self):
         result = DefinitionResolver().resolve()
 
@@ -130,6 +138,53 @@ class DefinitionResolverTest(unittest.TestCase):
         self.assertIn("将 Solution Design 转换为可执行实施方案", template)
         self.assertIn("不属于 Core Context", template)
         self.assertIn("不替代 `PROJECT_PLAN.md`", template)
+
+    def test_active_source_documents_exist_and_never_reference_archives(self):
+        for path in (self.root / "PROJECT_INCUBATOR/references").rglob("*.json"):
+            definition = json.loads(path.read_text(encoding="utf-8"))
+            source_documents = definition.get("source_document", ())
+            if isinstance(source_documents, str):
+                source_documents = (source_documents,)
+            for source_document in source_documents:
+                self.assertNotIn("/_V", source_document.replace("\\", "/"))
+                self.assertTrue(
+                    (self.root / source_document).is_file(),
+                    f"missing active source_document: {source_document}",
+                )
+
+    def test_v1_1_versions_preserve_stable_definition_ids(self):
+        definitions = DefinitionResolver().load_frozen_definition_set()
+        expected_ids = {
+            "workflow_definition": "PROJECT_INCUBATOR_V1_CORE_WORKFLOW",
+            "gate_definition": "PROJECT_INCUBATOR_V1_GATE_DEFINITIONS",
+            "context_definition": "PROJECT_INCUBATOR_V1_CONTEXT_MODEL",
+            "advisory_definition": "PROJECT_INCUBATOR_V1_ADVISORY_MODEL",
+        }
+        for field_name, expected_id in expected_ids.items():
+            definition = getattr(definitions, field_name)
+            self.assertEqual(expected_id, definition["definition_id"])
+            self.assertEqual("v1.1-implementation-projection", definition["definition_version"])
+
+    def test_relaxed_correction_thresholds_are_rejected(self):
+        workflow = copy.deepcopy(
+            DefinitionResolver().load_frozen_definition_set().workflow_definition
+        )
+        p4 = next(phase for phase in workflow["workflow"]["phases"] if phase["phase_id"] == "P4")
+        p4["correction_policy"]["advisory_threshold"] = 3
+        p4["correction_policy"]["correction_threshold"] = 4
+
+        with self.assertRaises(WorkflowDefinitionError):
+            WorkflowCoordinator(workflow_definition=workflow)
+
+    def test_runtime_config_exposes_optional_spiral_template(self):
+        config = json.loads(
+            (self.root / "PROJECT_INCUBATOR/runtime/config.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual("1.1", config["package_version"])
+        self.assertEqual(
+            "templates/context/CAPABILITY_SPIRAL_RECORD.template.md",
+            config["template_locations"]["capability_spiral_record_template"],
+        )
 
 
 if __name__ == "__main__":

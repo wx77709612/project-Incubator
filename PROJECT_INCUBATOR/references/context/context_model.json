@@ -4,7 +4,7 @@
     "SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md",
     "SPECS/CONTRACTS/CONTEXT_ACCESS_CONTRACT.md"
   ],
-  "definition_version": "v1-implementation-projection",
+  "definition_version": "v1.1-implementation-projection",
   "context_model": {
     "context_layer": "Project Context Layer",
     "core_context_types": [
