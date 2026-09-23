@@ -7,6 +7,7 @@ from typing import Any
 
 from PROJECT_INCUBATOR.runtime.components.definition_resolver import DefinitionResolver
 from PROJECT_INCUBATOR.runtime.core.contracts import GateEvaluationResult
+from PROJECT_INCUBATOR.runtime.core.evidence_types import EvidenceLevel
 from PROJECT_INCUBATOR.runtime.core.runtime_types import RuntimeExecutionState
 
 
@@ -246,6 +247,18 @@ class GateCoordinator:
         evidence_reference = self.collect_evidence(gate_input)
         required_authorization_status = self._authorization_status(gate_input)
 
+        evidence_policy_result = self._evaluate_evidence_policy(evidence_reference)
+        if evidence_policy_result is not None:
+            evaluation_result, reason_code, requirements = evidence_policy_result
+            return self._gate_output(
+                gate_input,
+                evaluation_result,
+                f"{reason_code}: V1.1 evidence policy requirement is not satisfied.",
+                requirements,
+                required_authorization_status,
+                evidence_reference,
+            )
+
         if self._has_action_blocked_evidence(evidence_reference):
             return self._gate_output(
                 gate_input,
@@ -310,6 +323,99 @@ class GateCoordinator:
             required_authorization_status,
             evidence_reference,
         )
+
+    def _evaluate_evidence_policy(
+        self,
+        evidence_set: tuple[dict[str, Any], ...],
+    ) -> tuple[GateEvaluationResult, str, tuple[str, ...]] | None:
+        for evidence in evidence_set:
+            if (
+                evidence.get("baseline_previous_result") == "PASS"
+                and evidence.get("baseline_current_result") == "FAIL"
+            ):
+                return (
+                    GateEvaluationResult.ACTION_BLOCKED,
+                    "BASELINE_REGRESSION",
+                    ("Known-Good Baseline Regression",),
+                )
+            if evidence.get("unresolved_drift") is True:
+                return (
+                    GateEvaluationResult.ACTION_BLOCKED,
+                    "DRIFT_UNRESOLVED",
+                    ("Drift Resolution",),
+                )
+            if (
+                evidence.get("ring_closure_required") is True
+                and evidence.get("ring_closure_complete") is not True
+            ):
+                return (
+                    GateEvaluationResult.REQUIREMENT_UNSATISFIED,
+                    "RING_CLOSURE_INCOMPLETE",
+                    ("Ring Closure Record",),
+                )
+            if (
+                evidence.get("human_validation_required") is True
+                and evidence.get("human_validation_plan_present") is not True
+            ):
+                return (
+                    GateEvaluationResult.EVIDENCE_INSUFFICIENT,
+                    "HUMAN_VALIDATION_PLAN_MISSING",
+                    ("Human Validation Plan",),
+                )
+
+            current_level = self._evidence_level(evidence.get("evidence_level"))
+            required_level = self._evidence_level(evidence.get("required_evidence_level"))
+            if required_level is not None and (
+                current_level is None or self._evidence_rank(current_level) < self._evidence_rank(required_level)
+            ):
+                return (
+                    GateEvaluationResult.EVIDENCE_INSUFFICIENT,
+                    "EVIDENCE_LEVEL_TOO_LOW",
+                    (f"Evidence Level {required_level.value}",),
+                )
+
+            evidence_scope = evidence.get("evidence_scope")
+            claim_scope = evidence.get("claim_scope")
+            if isinstance(claim_scope, (list, tuple, set)) and isinstance(
+                evidence_scope,
+                (list, tuple, set),
+            ):
+                if not set(claim_scope).issubset(set(evidence_scope)):
+                    return (
+                        GateEvaluationResult.EVIDENCE_INSUFFICIENT,
+                        "EVIDENCE_SCOPE_MISMATCH",
+                        ("Evidence Scope covers Claim Scope",),
+                    )
+
+            claim_strength = evidence.get("claim_strength")
+            if current_level in {EvidenceLevel.E0, EvidenceLevel.E1, EvidenceLevel.E2} and (
+                claim_strength == "FULL_TARGET_ENVIRONMENT"
+            ):
+                return (
+                    GateEvaluationResult.REQUIREMENT_UNSATISFIED,
+                    "CLAIM_EXCEEDS_EVIDENCE",
+                    ("Target-Environment Evidence",),
+                )
+            if current_level is EvidenceLevel.E3 and claim_strength == "REPRESENTATIVE_STABILITY":
+                return (
+                    GateEvaluationResult.REQUIREMENT_UNSATISFIED,
+                    "CLAIM_EXCEEDS_EVIDENCE",
+                    ("Representative Variant and Failure Evidence",),
+                )
+        return None
+
+    @staticmethod
+    def _evidence_level(raw_value: Any) -> EvidenceLevel | None:
+        if raw_value is None:
+            return None
+        try:
+            return EvidenceLevel(raw_value)
+        except (TypeError, ValueError) as error:
+            raise GateDefinitionError(f"invalid Evidence Level: {raw_value}") from error
+
+    @staticmethod
+    def _evidence_rank(level: EvidenceLevel) -> int:
+        return int(level.value[1:])
 
     def collect_evidence(self, gate_input: GateInput) -> tuple[dict[str, Any], ...]:
         return (

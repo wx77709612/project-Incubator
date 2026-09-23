@@ -30,6 +30,26 @@
       "EVIDENCE_INSUFFICIENT",
       "ACTION_BLOCKED"
     ],
+    "evidence_policy": {
+      "level_order": [
+        "E0",
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5"
+      ],
+      "reason_codes": [
+        "EVIDENCE_LEVEL_TOO_LOW",
+        "EVIDENCE_SCOPE_MISMATCH",
+        "CLAIM_EXCEEDS_EVIDENCE",
+        "BASELINE_REGRESSION",
+        "DRIFT_UNRESOLVED",
+        "RING_CLOSURE_INCOMPLETE",
+        "HUMAN_VALIDATION_PLAN_MISSING"
+      ],
+      "adds_gate_type": false
+    },
     "gates": [
       {
         "gate_id": "GATE-GIT",
