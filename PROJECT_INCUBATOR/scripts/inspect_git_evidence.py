@@ -74,6 +74,22 @@ def inspect_git_evidence(payload: Mapping[str, Any]) -> dict[str, Any]:
             inside_work_tree.stderr,
         )
 
+    top_level = run_git(repository, ["rev-parse", "--show-toplevel"])
+    if top_level.returncode != 0:
+        return make_execution_error(
+            invocation_id,
+            "Git repository top-level resolution failed",
+            "repository_path",
+            top_level.stderr,
+        )
+    resolved_top_level = Path(top_level.stdout.strip()).resolve()
+    if resolved_top_level != repository:
+        return make_execution_error(
+            invocation_id,
+            "repository_path must identify the Git repository top-level directory",
+            "repository_path",
+        )
+
     branch_result = current_branch(repository)
     if branch_result["error"] is not None:
         return make_execution_error(
