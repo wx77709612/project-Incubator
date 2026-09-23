@@ -7,6 +7,12 @@ from typing import Any
 
 from PROJECT_INCUBATOR.runtime.components.definition_resolver import DefinitionResolver
 from PROJECT_INCUBATOR.runtime.core.contracts import WorkflowResultStatus
+from PROJECT_INCUBATOR.runtime.core.evidence_types import (
+    CorrectionActivityState,
+    CorrectionResult,
+    failure_signature,
+    validate_thresholds,
+)
 from PROJECT_INCUBATOR.runtime.core.runtime_types import RuntimeExecutionState
 
 
@@ -79,6 +85,59 @@ class TransitionEligibilityResult:
     missing_requirements: tuple[str, ...] = field(default_factory=tuple)
 
 
+IMPACT_ASSESSMENT_FIELDS = (
+    "changes_product_goal",
+    "changes_success_criteria",
+    "changes_maker_approved_scope",
+    "changes_core_phase_model",
+    "changes_context_authority",
+    "changes_runtime_invariant",
+    "crosses_current_work_package",
+    "affected_scope_identified",
+    "regression_set_identified",
+)
+
+MAKER_SCOPE_FIELDS = IMPACT_ASSESSMENT_FIELDS[:7]
+
+
+@dataclass(frozen=True)
+class CorrectionAssessmentRequest:
+    request_id: str
+    current_phase: str
+    capability_id: str
+    candidate_model_version: str
+    scenario_id: str
+    boundary_step: str
+    observed_outcome: str
+    failure_signature: str
+    consecutive_failure_count: int
+    evidence_refs: tuple[str, ...]
+    affected_assumption_ids: tuple[str, ...]
+    affected_artifacts: tuple[str, ...]
+    impact_assessment: dict[str, Any]
+    authorization_evidence: tuple[str, ...] = field(default_factory=tuple)
+
+    @property
+    def counter_key(self) -> tuple[str, str, str]:
+        return (
+            self.capability_id,
+            self.candidate_model_version,
+            self.failure_signature,
+        )
+
+
+@dataclass(frozen=True)
+class CorrectionAssessmentResult:
+    request_id: str
+    current_phase: str
+    result: CorrectionResult
+    activity_state: CorrectionActivityState
+    decision_reason: str
+    counter_key: tuple[str, str, str] | None = None
+    missing_requirements: tuple[str, ...] = field(default_factory=tuple)
+    transition_request: None = None
+
+
 class WorkflowCoordinator:
     """Evaluates Workflow transition eligibility from frozen definitions only."""
 
@@ -96,6 +155,16 @@ class WorkflowCoordinator:
         self.p6_iteration_transition_set = frozenset(
             self._require_string_list(self.workflow, "p6_iteration_transition_set"),
         )
+        p4_policy = self.phases_by_id["P4"].get("correction_policy", {})
+        if not isinstance(p4_policy, dict):
+            raise WorkflowDefinitionError("P4 correction_policy must be an object")
+        try:
+            self.correction_thresholds = validate_thresholds(
+                advisory=p4_policy.get("advisory_threshold", 2),
+                correction=p4_policy.get("correction_threshold", 3),
+            )
+        except (TypeError, ValueError) as error:
+            raise WorkflowDefinitionError(str(error)) from error
 
     def resolve_current_phase(self, project_state: dict[str, Any]) -> CurrentPhaseReference:
         phase_id = self._extract_current_phase_id(project_state)
@@ -247,6 +316,134 @@ class WorkflowCoordinator:
     def is_transition_allowed(self, current_phase: str, requested_next_phase: str) -> bool:
         return (current_phase, requested_next_phase) in self.allowed_transitions
 
+    def evaluate_correction(
+        self,
+        request: CorrectionAssessmentRequest,
+    ) -> CorrectionAssessmentResult:
+        missing = self._validate_correction_request(request)
+        if missing:
+            return self._correction_result(
+                request,
+                CorrectionResult.CORRECTION_ASSESSMENT_INVALID,
+                CorrectionActivityState.CORRECTION_REVIEW,
+                "correction assessment input is incomplete or invalid",
+                missing,
+            )
+
+        impact = request.impact_assessment
+        maker_scope_required = any(impact[field_name] for field_name in MAKER_SCOPE_FIELDS)
+        maker_scope_required = maker_scope_required or not impact["affected_scope_identified"]
+        maker_scope_required = maker_scope_required or not impact["regression_set_identified"]
+        if maker_scope_required:
+            return self._correction_result(
+                request,
+                CorrectionResult.MAKER_SCOPE_REVIEW_REQUIRED,
+                CorrectionActivityState.AWAITING_MAKER_SCOPE_REVIEW,
+                "impact crosses the approved local correction boundary",
+            )
+
+        advisory_threshold, correction_threshold = self.correction_thresholds
+        if request.consecutive_failure_count >= correction_threshold:
+            return self._correction_result(
+                request,
+                CorrectionResult.P4_CORRECTION_REQUIRED,
+                CorrectionActivityState.CORRECTION_REVIEW,
+                "repeated failure reached the correction threshold",
+            )
+        if request.consecutive_failure_count >= advisory_threshold:
+            return self._correction_result(
+                request,
+                CorrectionResult.MODEL_REVIEW_ADVISORY,
+                CorrectionActivityState.NORMAL_CREATION,
+                "repeated failure reached the model review threshold",
+            )
+        return self._correction_result(
+            request,
+            CorrectionResult.NO_CORRECTION,
+            CorrectionActivityState.NORMAL_CREATION,
+            "correction threshold has not been reached",
+        )
+
+    @staticmethod
+    def validate_correction_resume(resume_request: dict[str, Any]) -> tuple[str, ...]:
+        required = (
+            "affected_scope",
+            "regression_set",
+            "updated_model",
+            "required_authorization",
+            "resolved_drift",
+            "evidence_change",
+            "confidence_change",
+            "baseline_change",
+            "next_action",
+        )
+        if not isinstance(resume_request, dict):
+            return required
+        return tuple(
+            key
+            for key in required
+            if key not in resume_request or resume_request[key] is None or resume_request[key] == ""
+        )
+
+    @staticmethod
+    def _validate_correction_request(
+        request: CorrectionAssessmentRequest,
+    ) -> tuple[str, ...]:
+        missing: list[str] = []
+        if request.current_phase != "P4":
+            missing.append("current_phase")
+        for field_name in (
+            "request_id",
+            "capability_id",
+            "candidate_model_version",
+            "scenario_id",
+            "boundary_step",
+            "observed_outcome",
+            "failure_signature",
+        ):
+            value = getattr(request, field_name)
+            if not isinstance(value, str) or not value:
+                missing.append(field_name)
+        if (
+            isinstance(request.consecutive_failure_count, bool)
+            or not isinstance(request.consecutive_failure_count, int)
+            or request.consecutive_failure_count < 1
+        ):
+            missing.append("consecutive_failure_count")
+        expected_signature = failure_signature(
+            request.capability_id,
+            request.scenario_id,
+            request.boundary_step,
+            request.observed_outcome,
+        )
+        if request.failure_signature != expected_signature:
+            missing.append("failure_signature_match")
+        if not isinstance(request.impact_assessment, dict):
+            missing.extend(IMPACT_ASSESSMENT_FIELDS)
+        else:
+            for field_name in IMPACT_ASSESSMENT_FIELDS:
+                if type(request.impact_assessment.get(field_name)) is not bool:
+                    missing.append(field_name)
+        return tuple(dict.fromkeys(missing))
+
+    @staticmethod
+    def _correction_result(
+        request: CorrectionAssessmentRequest,
+        result: CorrectionResult,
+        activity_state: CorrectionActivityState,
+        decision_reason: str,
+        missing_requirements: tuple[str, ...] = (),
+    ) -> CorrectionAssessmentResult:
+        return CorrectionAssessmentResult(
+            request_id=request.request_id,
+            current_phase=request.current_phase,
+            result=result,
+            activity_state=activity_state,
+            decision_reason=decision_reason,
+            counter_key=request.counter_key,
+            missing_requirements=missing_requirements,
+        )
+
     def _load_workflow_definition(
         self,
         definition_resolver: DefinitionResolver | None,
@@ -361,6 +558,8 @@ class WorkflowCoordinator:
 
 
 __all__ = [
+    "CorrectionAssessmentRequest",
+    "CorrectionAssessmentResult",
     "CurrentPhaseReference",
     "PhaseInputPreparation",
     "PhaseRequirementSet",

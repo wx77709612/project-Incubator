@@ -268,6 +268,27 @@
           "Project Artifact changes in a way that affects later Workflow progression",
           "P4 proposes State Change Requirement that affects current project state"
         ],
+        "correction_policy": {
+          "advisory_threshold": 2,
+          "correction_threshold": 3,
+          "failure_counter_key": [
+            "capability_id",
+            "candidate_model_version",
+            "failure_signature"
+          ],
+          "impact_assessment_fields": [
+            "changes_product_goal",
+            "changes_success_criteria",
+            "changes_maker_approved_scope",
+            "changes_core_phase_model",
+            "changes_context_authority",
+            "changes_runtime_invariant",
+            "crosses_current_work_package",
+            "affected_scope_identified",
+            "regression_set_identified"
+          ],
+          "creates_phase_transition": false
+        },
         "allowed_next_phase": [
           "P5"
         ]
