@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+import re
 from typing import Any
 
 from PROJECT_INCUBATOR.runtime.adapters.file_store import (
@@ -37,6 +38,10 @@ class ContextType(Enum):
     PROJECT_PLAN = "PROJECT_PLAN"
     PROJECT_DECISIONS = "PROJECT_DECISIONS"
     OPTIONAL_CONTEXT = "OPTIONAL_CONTEXT"
+    CAPABILITY_SPIRAL_RECORD = "CAPABILITY_SPIRAL_RECORD"
+    PROJECT_DECISION_HISTORY = "PROJECT_DECISION_HISTORY"
+    EVIDENCE_ARTIFACT = "EVIDENCE_ARTIFACT"
+    BASELINE_RECORD = "BASELINE_RECORD"
 
 
 class MutationType(Enum):
@@ -44,6 +49,13 @@ class MutationType(Enum):
     UPDATE_CONTEXT = "UPDATE_CONTEXT"
     APPEND_RECORD = "APPEND_RECORD"
     RETIRE_OPTIONAL_CONTEXT = "RETIRE_OPTIONAL_CONTEXT"
+    CREATE_DECISION = "CREATE_DECISION"
+    UPDATE_DECISION_STATUS = "UPDATE_DECISION_STATUS"
+    PARTIALLY_SUPERSEDE_DECISION = "PARTIALLY_SUPERSEDE_DECISION"
+    SUPERSEDE_DECISION = "SUPERSEDE_DECISION"
+    REVOKE_DECISION = "REVOKE_DECISION"
+    ARCHIVE_DECISION_CHANGELOG = "ARCHIVE_DECISION_CHANGELOG"
+    UPDATE_ASSUMPTION_STATUS = "UPDATE_ASSUMPTION_STATUS"
 
 
 @dataclass(frozen=True)
@@ -73,6 +85,13 @@ class MutationIntent:
     conflict_reference: str | None = None
     overrides_core_context_authority: bool = False
     execute_eligibility_granted: bool = False
+    decision_id: str | None = None
+    assumption_id: str | None = None
+    target_status: str | None = None
+    effective_scope: str | None = None
+    affected_decision_refs: tuple[str, ...] = ()
+    evidence_refs: tuple[str, ...] = ()
+    dependent_artifact_refs: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -104,6 +123,14 @@ class ContextAccessResult:
     persisted_result_verified: bool = False
 
 
+@dataclass(frozen=True)
+class DecisionArchiveResult:
+    status: ContextAccessResultStatus
+    decision_reason: str
+    history_result: FileWriteResult | None = None
+    active_view_result: FileWriteResult | None = None
+
+
 class ContextCoordinator:
     """Executes Context Access Contract checks before file interaction."""
 
@@ -112,6 +139,27 @@ class ContextCoordinator:
         ContextType.PROJECT_STATE: "PROJECT_STATE.md",
         ContextType.PROJECT_PLAN: "PROJECT_PLAN.md",
         ContextType.PROJECT_DECISIONS: "PROJECT_DECISIONS.md",
+        ContextType.CAPABILITY_SPIRAL_RECORD: "CAPABILITY_SPIRAL_RECORD.md",
+        ContextType.PROJECT_DECISION_HISTORY: "PROJECT_DECISION_HISTORY.md",
+        ContextType.EVIDENCE_ARTIFACT: "EVIDENCE_ARTIFACT.md",
+        ContextType.BASELINE_RECORD: "BASELINE_RECORD.md",
+    }
+
+    optional_context_types = {
+        ContextType.OPTIONAL_CONTEXT,
+        ContextType.CAPABILITY_SPIRAL_RECORD,
+        ContextType.PROJECT_DECISION_HISTORY,
+        ContextType.EVIDENCE_ARTIFACT,
+        ContextType.BASELINE_RECORD,
+    }
+
+    decision_mutation_types = {
+        MutationType.CREATE_DECISION,
+        MutationType.UPDATE_DECISION_STATUS,
+        MutationType.PARTIALLY_SUPERSEDE_DECISION,
+        MutationType.SUPERSEDE_DECISION,
+        MutationType.REVOKE_DECISION,
+        MutationType.ARCHIVE_DECISION_CHANGELOG,
     }
 
     direct_read_sources = {
@@ -287,6 +335,57 @@ class ContextCoordinator:
             persisted_result_verified=persisted_result.verified,
         )
 
+    def execute_decision_archive(
+        self,
+        active_view_content: str,
+        history_content: str,
+        *,
+        active_view_path: str | Path = "PROJECT_DECISIONS.md",
+        history_path: str | Path = "PROJECT_DECISION_HISTORY.md",
+    ) -> DecisionArchiveResult:
+        active_ids = self._decision_ids(active_view_content)
+        history_ids = self._decision_ids(history_content)
+        history_name = Path(history_path).name
+        if not active_ids or not history_ids or not active_ids.intersection(history_ids):
+            return DecisionArchiveResult(
+                ContextAccessResultStatus.REJECTED,
+                "archive must preserve at least one stable Decision ID",
+            )
+        if history_name not in active_view_content:
+            return DecisionArchiveResult(
+                ContextAccessResultStatus.REJECTED,
+                "active view must contain the verified Archive Ref",
+            )
+
+        active_existed = self.file_store.exists(active_view_path)
+        history_existed = self.file_store.exists(history_path)
+        original_active = self.file_store.read_file(active_view_path) if active_existed else ""
+        original_history = self.file_store.read_file(history_path) if history_existed else ""
+        history_result: FileWriteResult | None = None
+        try:
+            history_result = self.file_store.atomic_write(history_path, history_content)
+            verified_history = self.file_store.read_file(history_path)
+            if self._decision_ids(verified_history) != history_ids:
+                raise FileStoreError("archived Decision IDs failed read-back verification")
+            active_result = self.file_store.atomic_write(active_view_path, active_view_content)
+            if self.file_store.read_file(active_view_path) != active_view_content:
+                raise FileStoreError("active Decision view failed read-back verification")
+        except FileStoreError as error:
+            self._restore_archive_content(active_view_path, original_active, active_existed)
+            self._restore_archive_content(history_path, original_history, history_existed)
+            return DecisionArchiveResult(
+                ContextAccessResultStatus.REJECTED,
+                f"decision archive transaction failed: {error}",
+                history_result=history_result,
+            )
+
+        return DecisionArchiveResult(
+            ContextAccessResultStatus.ACCEPTED,
+            "decision history and active view persisted and verified",
+            history_result=history_result,
+            active_view_result=active_result,
+        )
+
     def check_mutation_authority(
         self,
         request: ContextAccessRequest,
@@ -344,6 +443,10 @@ class ContextCoordinator:
                     "runtime or workflow mutation request requires upstream basis",
                     missing_requirement="Change Basis",
                 )
+
+        semantic_check = self._check_v1_1_mutation_fields(request, intent)
+        if semantic_check is not None:
+            return semantic_check
 
         return self._check_context_boundary(request, intent)
 
@@ -410,11 +513,11 @@ class ContextCoordinator:
                 return self._boundary_violation(request, "PROJECT_PLAN and PROJECT_STATE boundary")
 
         if target_type is ContextType.PROJECT_DECISIONS:
-            if mutation_type is not MutationType.APPEND_RECORD:
-                return self._boundary_violation(request, "PROJECT_DECISIONS append-only rule")
+            if mutation_type not in self.decision_mutation_types | {MutationType.APPEND_RECORD}:
+                return self._boundary_violation(request, "PROJECT_DECISIONS mutation intent")
 
-        if target_type is ContextType.OPTIONAL_CONTEXT:
-            if not intent.target_context.optional_context_identity:
+        if target_type in self.optional_context_types:
+            if target_type is ContextType.OPTIONAL_CONTEXT and not intent.target_context.optional_context_identity:
                 return self._boundary_violation(request, "Optional Context identity")
             if intent.overrides_core_context_authority:
                 return self._boundary_violation(request, "Optional Context core authority boundary")
@@ -422,6 +525,7 @@ class ContextCoordinator:
                 MutationType.CREATE_CONTEXT,
                 MutationType.UPDATE_CONTEXT,
                 MutationType.RETIRE_OPTIONAL_CONTEXT,
+                MutationType.UPDATE_ASSUMPTION_STATUS,
             }:
                 return self._boundary_violation(request, "Optional Context allowed mutation intent")
 
@@ -478,6 +582,69 @@ class ContextCoordinator:
             return Path("OPTIONAL_CONTEXT.md")
         return Path(self.context_file_names[target.context_type])
 
+    def _check_v1_1_mutation_fields(
+        self,
+        request: ContextAccessRequest,
+        intent: MutationIntent,
+    ) -> ContextAccessResult | None:
+        if intent.mutation_type in self.decision_mutation_types:
+            missing = [
+                name
+                for name, value in (
+                    ("Decision ID", intent.decision_id),
+                    ("Target Status", intent.target_status),
+                    ("Effective Scope", intent.effective_scope),
+                )
+                if not isinstance(value, str) or not value
+            ]
+            if not intent.change_basis:
+                missing.append("Change Basis")
+            if missing:
+                return self._result(
+                    request,
+                    ContextAccessResultStatus.REJECTED,
+                    "decision mutation fields are incomplete",
+                    missing_requirement=", ".join(missing),
+                )
+
+        if intent.mutation_type is MutationType.UPDATE_ASSUMPTION_STATUS:
+            valid_statuses = {"WEAKENED", "INVALIDATED", "RETIRED"}
+            complete = (
+                isinstance(intent.assumption_id, str)
+                and bool(intent.assumption_id)
+                and intent.target_status in valid_statuses
+                and isinstance(intent.effective_scope, str)
+                and bool(intent.effective_scope)
+                and bool(intent.evidence_refs)
+                and bool(intent.dependent_artifact_refs)
+            )
+            if not complete:
+                return self._result(
+                    request,
+                    ContextAccessResultStatus.REJECTED,
+                    "assumption status mutation requires Evidence and affected scope",
+                    missing_requirement="Assumption ID, Evidence Ref, Effective Scope, Dependent Artifact Ref",
+                )
+        return None
+
+    @staticmethod
+    def _decision_ids(content: str) -> set[str]:
+        return set(re.findall(r"(?:^|\n)#+\s+Decision\s+([A-Za-z0-9_.-]+)", content))
+
+    def _restore_archive_content(
+        self,
+        path: str | Path,
+        original_content: str,
+        existed: bool,
+    ) -> None:
+        if not existed:
+            return
+        try:
+            if self.file_store.read_file(path) != original_content:
+                self.file_store.atomic_write(path, original_content)
+        except FileStoreError:
+            pass
+
     def _boundary_violation(
         self,
         request: ContextAccessRequest,
@@ -515,6 +682,7 @@ __all__ = [
     "ContextAccessResult",
     "ContextCoordinator",
     "ContextType",
+    "DecisionArchiveResult",
     "MutationIntent",
     "MutationType",
     "RequestSource",

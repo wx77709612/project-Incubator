@@ -183,7 +183,7 @@
           "changes_when": [
             "后续发生新的已确认决策时，通过新的 Decision Record 表达"
           ],
-          "persistence_rule": "历史 Decision 不覆盖。"
+          "persistence_rule": "活动视图保存当前 Decision 和有界 Changelog；详细历史经验证后归档到 PROJECT_DECISION_HISTORY。"
         },
         "boundary": {
           "records": [
@@ -207,6 +207,12 @@
       "context_type": "OPTIONAL_CONTEXT",
       "definition": "用于支持不同 Project Type 的额外上下文需求。",
       "default_presence": "不属于所有项目默认上下文。",
+      "named_access_targets": [
+        "CAPABILITY_SPIRAL_RECORD",
+        "PROJECT_DECISION_HISTORY",
+        "EVIDENCE_ARTIFACT",
+        "BASELINE_RECORD"
+      ],
       "creation_condition": [
         "当前 Project Type 存在 Core Context 无法表达的额外上下文需求",
         "该扩展 Context 具有明确的数据职责和 Authority Scope"
