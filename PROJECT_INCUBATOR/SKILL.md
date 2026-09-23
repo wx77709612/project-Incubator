@@ -6,7 +6,7 @@ description: >
   或需要恢复已有项目上下文、判断当前项目所处阶段与下一步行动、验证阶段成果、
   处理项目迭代，并在 Maker 保留最终决策权的前提下控制项目目标、范围和状态推进。
   本 Skill 通过持久项目 Context、State-driven Workflow、Gate 与 Runtime 边界降低
-  AI 发散和未经授权的项目变化。不用于一次性问答、单纯代码生成、通用任务管理，
+  AI 发散、证据越界和未经授权的项目变化。不用于一次性问答、单纯代码生成、通用任务管理，
   也不替代 Maker 作出项目方向、范围或战略决策。
 ---
 
@@ -25,7 +25,7 @@ description: >
 - 建立或恢复项目 Context 文件；
 - 判断当前项目 Phase 的含义；
 - 基于当前 Context 准备下一步项目行动；
-- 按冻结的 Project Incubator V1 Core Workflow 推进；
+- 按 Project Incubator 已发布 Core Workflow 与当前版本化规则推进；
 - 评估项目 Artifact 是否具备进入下一步的条件；
 - 根据 Validation Feedback 处理 Iteration；
 - 识别风险、缺失信息或需要 Maker 决策的问题。
@@ -34,7 +34,7 @@ description: >
 
 ## Core Workflow
 
-Project Incubator V1 使用以下冻结的 Core Workflow：
+Project Incubator 使用以下已发布 Core Workflow：
 
 ```text
 P0 Intent Discovery
@@ -48,9 +48,29 @@ P6 Iteration
 
 Iteration 只能返回冻结 Workflow Contract 已允许的目标。
 
+## Capability 与 Evidence
+
+Agent 应把用户可观察的最小产品结果表达为 Capability Claim，并明确支持边界、排除边界和当前证据上限。Evidence Maturity 使用 `E0`–`E5`：文档或局部调用不能被表述为完整目标环境能力，一次目标环境成功也不能被表述为代表性稳定。
+
+透明 Capability 使用轻量路径，不额外创建螺旋记录。只有 Capability 具有契约不足、隐藏状态、外部调度、非确定性、人工验证、难归因或显著版本风险时，Agent 才提出 Capability 级不透明度评估和 Extension 建议；Maker 确认可接受的成本、边界与风险。
+
+高不透明 Capability 启用 Extension 后，应围绕 Product Point 设计 Discovery Ring、Validation Ring、代表性垂直切片、可观察性、Evidence-to-Verification Loop、Known-Good Baseline 和 Human Validation Budget。`CAPABILITY_SPIRAL_RECORD.md` 是 Optional Context，不是新的 Core Context。
+
+## P4 Creation Correction
+
+P4 实现中发现 Evidence 推翻 Candidate Model 或 Runtime Assumption 时，可以触发 P4 内部的轻量 Model Correction 与 Execution Replanning。不得把 P4 Correction 表述为进入 P6、P2 或 P3，也不得由 Correction Result 自动产生 Phase Transition。
+
+相同 Failure Signature 默认连续 2 次产生 Model Review Advisory，连续 3 次暂停同方向修补并要求 Correction；Project Type Profile 只能更早触发。Correction 触及 Product Goal、Success Criteria、Maker-approved Scope、Core Phase Model、Context Authority、Runtime Invariant，越过当前 Work Package，或无法识别有限 Scope / Regression Set 时，必须等待 Maker Scope Review。
+
+## Decision 与 Assumption
+
+Product Decision 和 Architecture Decision 需要 Maker 确认。Runtime Assumption 可以被 Evidence 支持、削弱或判定失效，不需要伪造 Maker Decision；由此引起的产品或架构变化仍须取得对应授权。
+
+`PROJECT_DECISIONS.md` 使用 Active View、Bounded Changelog 与 Archive Ref。Decision 可以被部分替代、替代或撤销；详细历史进入 Optional `PROJECT_DECISION_HISTORY.md`，避免活动上下文无限增长。
+
 ## Core Context
 
-V1 Core Context 文件包括：
+Core Context 文件包括：
 
 - `PROJECT_PROFILE.md`
 - `PROJECT_STATE.md`

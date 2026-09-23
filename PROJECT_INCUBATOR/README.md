@@ -1,4 +1,4 @@
-# Project Incubator V1
+# Project Incubator
 
 Project Incubator 是一个 AI 辅助项目孵化 Skill。它帮助 Maker 与 Agent 在长期项目中维持稳定 Context、明确 Workflow State、受控决策和可验证 Artifact。
 
@@ -27,7 +27,7 @@ PROJECT_INCUBATOR/
 
 ## Core Context
 
-V1 在 Managed Project 中使用四个 Core Context 文件：
+Managed Project 使用四个 Core Context 文件：
 
 - `PROJECT_PROFILE.md`：项目身份、Intent、目标用户、成功标准和长期约束。
 - `PROJECT_STATE.md`：当前实际项目状态，也是当前状态的唯一 Source of Truth。
@@ -73,6 +73,16 @@ P6 Iteration
 ```
 
 Runtime 按冻结的 Workflow Contract 和 Runtime Specification 消费 Workflow。本 README 不重新定义 Workflow Rule。
+
+P4 允许证据触发内部 Creation Correction，但它不是 P6 Iteration，也不是返回 P2/P3。Correction 不新增 Phase 或 Transition。
+
+## Evidence-driven Evolution
+
+Project Incubator 使用 Capability Claim 和 `E0`–`E5` Evidence Maturity 限制结论强度。透明 Capability 保持轻量；不透明度达到条件的 Capability 可以按 Maker 确认启用 Opaque Capability Extension。
+
+Extension 提供 Product Point Spiral、Discovery / Validation Ring、可观察性、代表性垂直切片、Human Validation Budget 和 Target-Environment Baseline。`CAPABILITY_SPIRAL_RECORD.md` 仅是按风险创建的 Optional Context，不替代四个 Core Context。
+
+Decision 使用 Active View、Bounded Changelog 和 Optional History Archive，避免活动文档随迭代无限增长。Runtime Assumption 与 Maker Decision 分离，前者可以被 Evidence 直接判定失效。
 
 ## Runtime 使用
 

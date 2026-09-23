@@ -1,55 +1,75 @@
 # Decision Record Template
 
-## Template Usage / 模板使用规则
+## 模板使用规则
 
-本模板用于生成一条 Maker Confirmed Decision Record。
+本模板用于记录 Maker 已确认的 Product Decision 或 Architecture Decision。普通讨论、Runtime Assumption、Observation、Hypothesis 和未经 Maker 确认的方案不得写成 Decision。
 
-生成的 Decision Record 用于追加到 `PROJECT_DECISIONS.md`。
-
-`PROJECT_DECISIONS.md` 是保存多条长期 Decision Record 的 Context；其中每一条 Decision 必须作为独立二级标题块。
-
-历史 Decision 不覆盖、不改写。
-
-新的 Maker Confirmed Decision 创建新的 Decision Record。
-
-普通讨论、临时想法、Agent 判断、未经 Maker 确认的方案不得进入 Decision Record。
+`PROJECT_DECISIONS.md` 是 Active Decision View，只保留当前有效 Decision、必要关系和 Bounded Changelog。详细历史写入 `PROJECT_DECISION_HISTORY.md`，并在活动视图保留可验证的 Archive Ref。
 
 ## Decision: 待填写
 
-<!-- 使用能够识别该 Decision 的简短名称或 Decision ID。 -->
-
 ### Decision ID
 
-<!-- 填写唯一 Decision ID。建议使用稳定、可追加的编号。 -->
+待填写
+
+### Status
+
+<!-- ACTIVE / PARTIALLY_SUPERSEDED / SUPERSEDED / REVOKED -->
+
+ACTIVE
+
+### Decision Type
+
+<!-- PRODUCT / ARCHITECTURE -->
 
 待填写
 
 ### Decision Context
 
-<!-- 填写本次 Maker 已确认决策发生的背景和需要解决的问题。 -->
-
 待填写
 
 ### Selected Option
-
-<!-- 填写 Maker 已确认选择的方案或决定。 -->
 
 待填写
 
 ### Decision Owner
 
-<!-- Decision Owner 必须明确为 Maker。 -->
-
 MAKER
 
 ### Decision Timestamp
 
-<!-- 填写 Maker 确认该 Decision 的时间。 -->
-
 待填写
+
+### Effective Scope
+
+- 待填写
+
+### Supersedes
+
+- 无
+
+### Affected Decisions
+
+- 无
+
+### New Evidence
+
+- 无
 
 ### Impact
 
-<!-- 使用 Markdown 无序列表；一个 Impact 一个列表项。Agent 可以按照实际数量增加或删除列表项。无额外 Impact 时填写：- 无。 -->
+- 待填写
+
+### Migration Impact
+
+- 无
+
+### Bounded Changelog
+
+<!-- 只保留当前迭代窗口必要摘要；达到归档条件后迁移详细历史。 -->
 
 - 待填写
+
+### Archive Ref
+
+- 无
