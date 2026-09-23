@@ -545,6 +545,18 @@ class ContextCoordinator:
                     "maker authorization is required",
                     authorization_requirement="Maker Authorization",
                 )
+        if (
+            target_type is ContextType.CAPABILITY_SPIRAL_RECORD
+            and intent.mutation_type
+            in {MutationType.CREATE_CONTEXT, MutationType.RETIRE_OPTIONAL_CONTEXT}
+            and not self._has_maker_authorization(intent)
+        ):
+            return self._result(
+                request,
+                ContextAccessResultStatus.AUTHORIZATION_REQUIRED,
+                "creating or retiring a Capability Spiral Record requires Maker cost and boundary confirmation",
+                authorization_requirement="Maker Extension Cost and Boundary Authorization",
+            )
         return None
 
     def _check_gate_requirement(
