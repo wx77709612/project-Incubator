@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from enum import Enum
 
+from PROJECT_INCUBATOR.runtime.core.evidence_types import (
+    CorrectionActivityState,
+    CorrectionResult,
+)
+
 
 class ContextAccessResultStatus(Enum):
     """Context Access Contract result status."""
@@ -53,6 +58,8 @@ class ScriptValidationResult(Enum):
 
 __all__ = [
     "ContextAccessResultStatus",
+    "CorrectionActivityState",
+    "CorrectionResult",
     "GateEvaluationResult",
     "ScriptExecutionStatus",
     "ScriptValidationResult",

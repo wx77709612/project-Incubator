@@ -31,6 +31,9 @@ class RuntimeResultInput:
     required_maker_input: tuple[Any, ...] = field(default_factory=tuple)
     completed_action_reference: Any | None = None
     next_allowed_action: tuple[Any, ...] = field(default_factory=tuple)
+    correction_result_reference: Any | None = None
+    correction_activity_state: Any | None = None
+    advisory_output_reference: Any | None = None
 
 
 @dataclass(frozen=True)
@@ -47,6 +50,9 @@ class RuntimeResult:
     required_maker_input: tuple[Any, ...]
     completed_action_reference: Any | None
     next_allowed_action: tuple[Any, ...]
+    correction_result_reference: Any | None = None
+    correction_activity_state: Any | None = None
+    advisory_output_reference: Any | None = None
     result_reason: str = RUNTIME_RESULT_READY
 
 
@@ -75,6 +81,9 @@ class RuntimeResultCoordinator:
             required_maker_input=tuple(result_input.required_maker_input),
             completed_action_reference=result_input.completed_action_reference,
             next_allowed_action=tuple(result_input.next_allowed_action),
+            correction_result_reference=result_input.correction_result_reference,
+            correction_activity_state=result_input.correction_activity_state,
+            advisory_output_reference=result_input.advisory_output_reference,
         )
 
     def create_result(
@@ -91,6 +100,9 @@ class RuntimeResultCoordinator:
         required_maker_input: tuple[Any, ...] = (),
         completed_action_reference: Any | None = None,
         next_allowed_action: tuple[Any, ...] = (),
+        correction_result_reference: Any | None = None,
+        correction_activity_state: Any | None = None,
+        advisory_output_reference: Any | None = None,
     ) -> RuntimeResult:
         return self.form_result(
             RuntimeResultInput(
@@ -106,6 +118,9 @@ class RuntimeResultCoordinator:
                 required_maker_input=tuple(required_maker_input),
                 completed_action_reference=completed_action_reference,
                 next_allowed_action=tuple(next_allowed_action),
+                correction_result_reference=correction_result_reference,
+                correction_activity_state=correction_activity_state,
+                advisory_output_reference=advisory_output_reference,
             ),
         )
 

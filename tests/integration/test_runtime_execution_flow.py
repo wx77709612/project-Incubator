@@ -15,7 +15,10 @@ from PROJECT_INCUBATOR.runtime.components.script_coordinator import (
     ScriptCoordinator,
     ScriptInvocationRequest,
 )
-from PROJECT_INCUBATOR.runtime.components.workflow_coordinator import PhaseResult
+from PROJECT_INCUBATOR.runtime.components.workflow_coordinator import (
+    CorrectionAssessmentRequest,
+    PhaseResult,
+)
 from PROJECT_INCUBATOR.runtime.core.contracts import (
     ContextAccessResultStatus,
     WorkflowResultStatus,
@@ -28,6 +31,7 @@ from PROJECT_INCUBATOR.runtime.core.coordinator import (
     RuntimeRequest,
 )
 from PROJECT_INCUBATOR.runtime.core.runtime_types import RuntimeExecutionState
+from PROJECT_INCUBATOR.runtime.core.evidence_types import CorrectionResult, failure_signature
 
 
 class QueueScriptRunner:
@@ -232,6 +236,83 @@ class RuntimeExecutionFlowIntegrationTest(unittest.TestCase):
                 )
                 self.assert_project_state_phase(root, target_phase)
 
+    def test_p4_repeated_failure_advises_then_suspends(self):
+        root = self.project_root("p4_failure", "P4")
+
+        advisory = RuntimeCoordinator().execute(
+            RuntimeRequest(
+                request_id="p4-count-2",
+                requested_action="evaluate correction",
+                project_root=root,
+                correction_assessment_request=self.correction_request(2),
+            )
+        )
+        correction = RuntimeCoordinator().execute(
+            RuntimeRequest(
+                request_id="p4-count-3",
+                requested_action="evaluate correction",
+                project_root=root,
+                correction_assessment_request=self.correction_request(3),
+            )
+        )
+
+        self.assertIs(RuntimeExecutionState.EXECUTING, advisory.runtime_execution_state)
+        self.assertIs(CorrectionResult.MODEL_REVIEW_ADVISORY, advisory.correction_result_reference.result)
+        self.assertIsNotNone(advisory.advisory_output_reference)
+        self.assertIs(RuntimeExecutionState.SUSPENDED, correction.runtime_execution_state)
+        self.assertIs(CorrectionResult.P4_CORRECTION_REQUIRED, correction.correction_result_reference.result)
+        self.assert_project_state_phase(root, "P4")
+
+    def test_local_correction_resume_stays_in_p4(self):
+        root = self.project_root("p4_resume", "P4")
+        result = RuntimeCoordinator().execute(
+            RuntimeRequest(
+                request_id="p4-resume",
+                requested_action="resume local correction",
+                project_root=root,
+                correction_resume_request=self.correction_resume(),
+            )
+        )
+
+        self.assertIs(RuntimeExecutionState.EXECUTING, result.runtime_execution_state)
+        self.assertEqual("CORRECTION_RESUMED", result.runtime_reason)
+        self.assertEqual("CORRECTION_ACTIVE", result.correction_activity_state.value)
+        self.assert_project_state_phase(root, "P4")
+
+    def test_maker_scope_wait_and_authorized_resume(self):
+        root = self.project_root("maker_scope", "P4")
+        waiting = RuntimeCoordinator().execute(
+            RuntimeRequest(
+                request_id="maker-wait",
+                requested_action="evaluate correction",
+                project_root=root,
+                correction_assessment_request=self.correction_request(
+                    1,
+                    {"changes_maker_approved_scope": True},
+                ),
+            )
+        )
+        resume = self.correction_resume()
+        resume.update(
+            {
+                "maker_scope_resolution": "EXPAND_LOCAL_CORRECTION",
+                "authorization_evidence": "maker-confirmation-1",
+            }
+        )
+        resumed = RuntimeCoordinator().execute(
+            RuntimeRequest(
+                request_id="maker-resume",
+                requested_action="resume authorized correction",
+                project_root=root,
+                correction_resume_request=resume,
+            )
+        )
+
+        self.assertIs(RuntimeExecutionState.WAITING_FOR_MAKER, waiting.runtime_execution_state)
+        self.assertTrue(waiting.required_maker_input)
+        self.assertIs(RuntimeExecutionState.EXECUTING, resumed.runtime_execution_state)
+        self.assert_project_state_phase(root, "P4")
+
     def project_root(self, name, phase):
         root = self.base_root / name
         root.mkdir(parents=True)
@@ -271,6 +352,49 @@ class RuntimeExecutionFlowIntegrationTest(unittest.TestCase):
             state_change_requirement_formed=True,
             gate_requirement_resolved=True,
         )
+
+    def correction_request(self, count, impact_overrides=None):
+        impact = {
+            "changes_product_goal": False,
+            "changes_success_criteria": False,
+            "changes_maker_approved_scope": False,
+            "changes_core_phase_model": False,
+            "changes_context_authority": False,
+            "changes_runtime_invariant": False,
+            "crosses_current_work_package": False,
+            "affected_scope_identified": True,
+            "regression_set_identified": True,
+        }
+        impact.update(impact_overrides or {})
+        signature = failure_signature("cap-1", "scene-1", "boundary", "failed")
+        return CorrectionAssessmentRequest(
+            request_id=f"correction-{count}",
+            current_phase="P4",
+            capability_id="cap-1",
+            candidate_model_version="model-1",
+            scenario_id="scene-1",
+            boundary_step="boundary",
+            observed_outcome="failed",
+            failure_signature=signature,
+            consecutive_failure_count=count,
+            evidence_refs=("evidence-1",),
+            affected_assumption_ids=("assumption-1",),
+            affected_artifacts=("design.md",),
+            impact_assessment=impact,
+        )
+
+    def correction_resume(self):
+        return {
+            "affected_scope": ["cap-1"],
+            "regression_set": ["test-1"],
+            "updated_model": "model-2",
+            "required_authorization": "NOT_REQUIRED",
+            "resolved_drift": ["drift-1"],
+            "evidence_change": ["evidence-2"],
+            "confidence_change": "MEDIUM",
+            "baseline_change": "STALE",
+            "next_action": "continue bounded implementation",
+        }
 
     def assert_project_state_phase(self, root, phase):
         self.assertIn(

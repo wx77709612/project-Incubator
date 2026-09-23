@@ -10,6 +10,9 @@ from PROJECT_INCUBATOR.runtime.adapters.file_store import FileStore
 from PROJECT_INCUBATOR.runtime.components.advisory_bridge import (
     AdvisoryBridge,
     AdvisoryBridgeRequest,
+    MAKER_SCOPE_REVIEW_REQUIRED,
+    MODEL_REVIEW_REQUIRED,
+    REPEATED_FAILURE_WARNING,
 )
 from PROJECT_INCUBATOR.runtime.components.context_coordinator import (
     AccessTarget,
@@ -38,6 +41,8 @@ from PROJECT_INCUBATOR.runtime.components.script_coordinator import (
     VALIDATION_UNSATISFIED,
 )
 from PROJECT_INCUBATOR.runtime.components.workflow_coordinator import (
+    CorrectionAssessmentRequest,
+    CorrectionAssessmentResult,
     CurrentPhaseReference,
     PhaseResult,
     TransitionEligibilityResult,
@@ -51,6 +56,10 @@ from PROJECT_INCUBATOR.runtime.core.contracts import (
     WorkflowResultStatus,
 )
 from PROJECT_INCUBATOR.runtime.core.runtime_types import RuntimeExecutionState
+from PROJECT_INCUBATOR.runtime.core.evidence_types import (
+    CorrectionActivityState,
+    CorrectionResult,
+)
 
 
 RUNTIME_COMPLETED = "RUNTIME_COMPLETED"
@@ -64,6 +73,8 @@ CONTEXT_CONFLICT = "CONTEXT_CONFLICT"
 CONTEXT_PERSISTENCE_VERIFICATION_FAILED = "CONTEXT_PERSISTENCE_VERIFICATION_FAILED"
 RUNTIME_DEPENDENCY_FAILURE = "RUNTIME_DEPENDENCY_FAILURE"
 SCRIPT_EXECUTION_NOT_COMPLETED = "SCRIPT_EXECUTION_NOT_COMPLETED"
+CORRECTION_RESUMED = "CORRECTION_RESUMED"
+CORRECTION_RESUME_INVALID = "CORRECTION_RESUME_INVALID"
 
 
 class RuntimeCoordinatorError(Exception):
@@ -91,6 +102,8 @@ class RuntimeRequest:
     advisory_request: AdvisoryBridgeRequest | None = None
     completed_action_reference: Any | None = None
     next_allowed_action: tuple[Any, ...] = field(default_factory=tuple)
+    correction_assessment_request: CorrectionAssessmentRequest | None = None
+    correction_resume_request: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -100,6 +113,8 @@ class RuntimeExecutionTrace:
     gate_result: GateCoordinationResult | None = None
     workflow_result: TransitionEligibilityResult | None = None
     advisory_result: Any | None = None
+    correction_result: CorrectionAssessmentResult | None = None
+    correction_activity_state: CorrectionActivityState | None = None
 
 
 class RuntimeCoordinator:
@@ -201,6 +216,11 @@ class RuntimeCoordinator:
         elif request.new_project_bootstrap:
             current_phase = self._bootstrap_phase_reference()
 
+        if request.correction_assessment_request is not None:
+            return self._execute_correction_assessment(request, current_phase, trace)
+        if request.correction_resume_request is not None:
+            return self._execute_correction_resume(request, current_phase, trace)
+
         if request.advisory_request is not None:
             advisory_result = self.advisory_bridge.prepare(request.advisory_request)
             trace = replace(trace, advisory_result=advisory_result)
@@ -300,6 +320,153 @@ class RuntimeCoordinator:
             trace=trace,
             completed_action_reference=completed_action,
             next_allowed_action=request.next_allowed_action,
+        )
+
+    def _execute_correction_assessment(
+        self,
+        request: RuntimeRequest,
+        current_phase: CurrentPhaseReference | None,
+        trace: RuntimeExecutionTrace,
+    ) -> RuntimeResult:
+        correction_request = request.correction_assessment_request
+        assert correction_request is not None
+        if current_phase is None or current_phase.phase_id != "P4":
+            correction_request = replace(
+                correction_request,
+                current_phase=current_phase.phase_id if current_phase is not None else "",
+            )
+
+        assessment = self.workflow_coordinator.evaluate_correction(correction_request)
+        trace = replace(
+            trace,
+            correction_result=assessment,
+            correction_activity_state=assessment.activity_state,
+        )
+
+        advisory_reason = {
+            CorrectionResult.MODEL_REVIEW_ADVISORY: REPEATED_FAILURE_WARNING,
+            CorrectionResult.P4_CORRECTION_REQUIRED: MODEL_REVIEW_REQUIRED,
+            CorrectionResult.MAKER_SCOPE_REVIEW_REQUIRED: MAKER_SCOPE_REVIEW_REQUIRED,
+        }.get(assessment.result)
+        if advisory_reason is not None:
+            advisory_result = self.advisory_bridge.prepare(
+                AdvisoryBridgeRequest(
+                    request_id=f"{request.request_id}:correction-advisory",
+                    event_type="evidence advisory",
+                    current_phase={"phase_id": current_phase.phase_id} if current_phase else None,
+                    reason_code=advisory_reason,
+                    evidence_refs=tuple(correction_request.evidence_refs),
+                    failure_refs=(correction_request.failure_signature,),
+                )
+            )
+            trace = replace(trace, advisory_result=advisory_result)
+
+        state = {
+            CorrectionResult.NO_CORRECTION: RuntimeExecutionState.EXECUTING,
+            CorrectionResult.MODEL_REVIEW_ADVISORY: RuntimeExecutionState.EXECUTING,
+            CorrectionResult.P4_CORRECTION_REQUIRED: RuntimeExecutionState.SUSPENDED,
+            CorrectionResult.MAKER_SCOPE_REVIEW_REQUIRED: RuntimeExecutionState.WAITING_FOR_MAKER,
+            CorrectionResult.CORRECTION_ASSESSMENT_INVALID: RuntimeExecutionState.SUSPENDED,
+        }[assessment.result]
+        pending: tuple[Any, ...] = ()
+        maker_input: tuple[Any, ...] = ()
+        if assessment.result is CorrectionResult.P4_CORRECTION_REQUIRED:
+            pending = ("Bounded P4 Correction Action",)
+        elif assessment.result is CorrectionResult.MAKER_SCOPE_REVIEW_REQUIRED:
+            maker_input = (
+                "EXPAND_LOCAL_CORRECTION",
+                "PAUSE_CAPABILITY",
+                "REOPEN_FULL_DESIGN",
+            )
+        elif assessment.result is CorrectionResult.CORRECTION_ASSESSMENT_INVALID:
+            pending = assessment.missing_requirements
+
+        return self._form_result(
+            request=request,
+            state=state,
+            reason=assessment.result.value,
+            current_phase_reference=current_phase,
+            trace=trace,
+            pending_requirement=pending,
+            required_maker_input=maker_input,
+        )
+
+    def _execute_correction_resume(
+        self,
+        request: RuntimeRequest,
+        current_phase: CurrentPhaseReference | None,
+        trace: RuntimeExecutionTrace,
+    ) -> RuntimeResult:
+        resume = request.correction_resume_request or {}
+        missing = list(self.workflow_coordinator.validate_correction_resume(resume))
+        if current_phase is None or current_phase.phase_id != "P4":
+            missing.append("current_phase=P4")
+        maker_resolution = resume.get("maker_scope_resolution")
+        valid_resolutions = {
+            "EXPAND_LOCAL_CORRECTION",
+            "PAUSE_CAPABILITY",
+            "REOPEN_FULL_DESIGN",
+        }
+        if maker_resolution is not None and maker_resolution not in valid_resolutions:
+            missing.append("valid maker_scope_resolution")
+        if maker_resolution is not None and not resume.get("authorization_evidence"):
+            return self._form_result(
+                request=request,
+                state=RuntimeExecutionState.WAITING_FOR_MAKER,
+                reason=MAKER_SCOPE_REVIEW_REQUIRED,
+                current_phase_reference=current_phase,
+                trace=replace(
+                    trace,
+                    correction_activity_state=CorrectionActivityState.AWAITING_MAKER_SCOPE_REVIEW,
+                ),
+                required_maker_input=("Maker Authorization Evidence",),
+            )
+        if missing:
+            return self._form_result(
+                request=request,
+                state=RuntimeExecutionState.SUSPENDED,
+                reason=CORRECTION_RESUME_INVALID,
+                current_phase_reference=current_phase,
+                trace=replace(
+                    trace,
+                    correction_activity_state=CorrectionActivityState.CORRECTION_REVIEW,
+                ),
+                pending_requirement=tuple(missing),
+            )
+        if maker_resolution == "PAUSE_CAPABILITY":
+            return self._form_result(
+                request=request,
+                state=RuntimeExecutionState.SUSPENDED,
+                reason="CAPABILITY_PAUSED",
+                current_phase_reference=current_phase,
+                trace=replace(
+                    trace,
+                    correction_activity_state=CorrectionActivityState.CORRECTION_REVIEW,
+                ),
+            )
+        if maker_resolution == "REOPEN_FULL_DESIGN":
+            return self._form_result(
+                request=request,
+                state=RuntimeExecutionState.SUSPENDED,
+                reason="FULL_DESIGN_REOPEN_REQUESTED",
+                current_phase_reference=current_phase,
+                trace=replace(
+                    trace,
+                    correction_activity_state=CorrectionActivityState.CORRECTION_REVIEW,
+                ),
+                pending_requirement=("Existing Workflow Request",),
+            )
+
+        return self._form_result(
+            request=request,
+            state=RuntimeExecutionState.EXECUTING,
+            reason=CORRECTION_RESUMED,
+            current_phase_reference=current_phase,
+            trace=replace(
+                trace,
+                correction_activity_state=CorrectionActivityState.CORRECTION_ACTIVE,
+            ),
+            next_allowed_action=(resume["next_action"],),
         )
 
     def _validate_requested_action(self, request: RuntimeRequest) -> str | None:
@@ -640,6 +807,9 @@ class RuntimeCoordinator:
             required_maker_input=self._compact_tuple(required_maker_input),
             completed_action_reference=completed_action_reference,
             next_allowed_action=tuple(next_allowed_action),
+            correction_result_reference=trace.correction_result,
+            correction_activity_state=trace.correction_activity_state,
+            advisory_output_reference=trace.advisory_result,
         )
 
     def _gate_pending_requirements(
@@ -719,6 +889,8 @@ __all__ = [
     "CONTEXT_ACCESS_NOT_ACCEPTED",
     "CONTEXT_CONFLICT",
     "CONTEXT_PERSISTENCE_VERIFICATION_FAILED",
+    "CORRECTION_RESUMED",
+    "CORRECTION_RESUME_INVALID",
     "INVALID_WORKFLOW_STATE",
     "MISSING_CONTEXT",
     "RUNTIME_COMPLETED",
