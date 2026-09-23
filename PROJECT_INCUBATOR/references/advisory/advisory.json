@@ -1,7 +1,7 @@
 {
   "definition_id": "PROJECT_INCUBATOR_V1_ADVISORY_MODEL",
   "source_document": [
-    "SPECS/DESIGN/PROJECT_INCUBATOR_V1_PHASE_ADVISORY_DESIGN.md"
+    "SPECS/DESIGN/PHASE_ADVISORY_DESIGN.md"
   ],
   "definition_version": "v1-implementation-projection",
   "advisory_model": {

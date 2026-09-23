@@ -1,8 +1,8 @@
 {
   "definition_id": "PROJECT_INCUBATOR_V1_CORE_WORKFLOW",
   "source_document": [
-    "SPECS/DESIGN/PROJECT_INCUBATOR_V1_WORKFLOW_DESIGN.md",
-    "SPECS/CONTRACTS/PROJECT_INCUBATOR_V1_WORKFLOW_CONTRACT.md"
+    "SPECS/DESIGN/WORKFLOW_DESIGN.md",
+    "SPECS/CONTRACTS/WORKFLOW_CONTRACT.md"
   ],
   "definition_version": "v1-implementation-projection",
   "workflow": {

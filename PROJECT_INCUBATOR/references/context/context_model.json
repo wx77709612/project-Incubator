@@ -1,8 +1,8 @@
 {
   "definition_id": "PROJECT_INCUBATOR_V1_CONTEXT_MODEL",
   "source_document": [
-    "SPECS/DESIGN/PROJECT_INCUBATOR_V1_CONTEXT_MODEL_DESIGN.md",
-    "SPECS/CONTRACTS/PROJECT_INCUBATOR_V1_CONTEXT_ACCESS_CONTRACT.md"
+    "SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md",
+    "SPECS/CONTRACTS/CONTEXT_ACCESS_CONTRACT.md"
   ],
   "definition_version": "v1-implementation-projection",
   "context_model": {
@@ -268,7 +268,7 @@
       "project_type_specific_extension": "Corresponding Optional Context"
     },
     "access_contract_boundary": {
-      "source_document": "SPECS/CONTRACTS/PROJECT_INCUBATOR_V1_CONTEXT_ACCESS_CONTRACT.md",
+      "source_document": "SPECS/CONTRACTS/CONTEXT_ACCESS_CONTRACT.md",
       "principle": "Read Permission、Write Permission 和 Mutation Authority 属于 Contract Layer，不属于 Context Domain Authority。",
       "mutation_execution_authority": "Runtime 是 V1 唯一 Context Mutation Executor。",
       "maker_authorization_authority": "Maker 是唯一 Maker Authorization Authority。",

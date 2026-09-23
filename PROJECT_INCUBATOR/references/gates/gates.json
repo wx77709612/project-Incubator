@@ -1,8 +1,8 @@
 {
   "definition_id": "PROJECT_INCUBATOR_V1_GATE_DEFINITIONS",
   "source_document": [
-    "SPECS/DESIGN/PROJECT_INCUBATOR_V1_GATE_DESIGN.md",
-    "SPECS/CONTRACTS/PROJECT_INCUBATOR_V1_GATE_CONTRACT.md"
+    "SPECS/DESIGN/GATE_DESIGN.md",
+    "SPECS/CONTRACTS/GATE_CONTRACT.md"
   ],
   "definition_version": "v1-implementation-projection",
   "gate_definitions": {
