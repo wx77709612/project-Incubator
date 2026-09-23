@@ -58,6 +58,18 @@ def validate_artifact_evidence(payload: Mapping[str, Any]) -> dict[str, Any]:
         nested_value(input_mapping, "artifact_input_data", "path"),
         nested_value(payload, "artifact_input_data", "path"),
     )
+    evaluated_scope = first_non_empty_string(
+        payload.get("evaluated_scope"),
+        input_mapping.get("evaluated_scope"),
+    )
+    limitations = normalize_string_list(
+        payload.get("limitations", input_mapping.get("limitations")),
+        default=["仅验证交付物结构，不裁决目标环境语义。"],
+    )
+    supplied_delivery_metadata = payload.get(
+        "delivery_metadata",
+        input_mapping.get("delivery_metadata"),
+    )
 
     if not is_artifact_reference(artifact_reference):
         return make_invalid_input(
@@ -108,6 +120,18 @@ def validate_artifact_evidence(payload: Mapping[str, Any]) -> dict[str, Any]:
             "expected_requirement": expected_requirement,
         },
     }
+    artifact_ref = str(declared_artifact_identity)
+    delivery_metadata = (
+        dict(supplied_delivery_metadata)
+        if isinstance(supplied_delivery_metadata, Mapping)
+        else {}
+    )
+    delivery_metadata.update(
+        {
+            "artifact_path": str(path),
+            "size_bytes": size_bytes,
+        }
+    )
 
     checks = {
         "artifact_exists": artifact_exists if expected_conditions["must_exist"] else True,
@@ -141,6 +165,10 @@ def validate_artifact_evidence(payload: Mapping[str, Any]) -> dict[str, Any]:
                 observed_fact=observed_fact,
                 expected_condition=expected_conditions,
                 comparison_result=requirement_satisfied,
+                evaluated_scope=evaluated_scope or f"artifact:{artifact_ref}",
+                artifact_refs=[artifact_ref],
+                limitations=limitations,
+                delivery_metadata=delivery_metadata,
             ),
         ],
         diagnostic_information=diagnostics,
@@ -232,6 +260,14 @@ def first_non_empty_string(*values: Any) -> str | None:
     return None
 
 
+def normalize_string_list(value: Any, *, default: list[str]) -> list[str]:
+    if isinstance(value, (list, tuple)):
+        normalized = [item for item in value if is_non_empty_string(item)]
+        if normalized:
+            return normalized
+    return list(default)
+
+
 def make_invalid_input(invocation_id: str, reason: str, input_reference: str) -> dict[str, Any]:
     return make_output(
         invocation_id=invocation_id,
@@ -309,6 +345,10 @@ def evidence_item(
     observed_fact: Any,
     expected_condition: Any,
     comparison_result: bool,
+    evaluated_scope: str,
+    artifact_refs: list[str],
+    limitations: list[str],
+    delivery_metadata: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "requirement_id": requirement_id,
@@ -317,6 +357,10 @@ def evidence_item(
         "expected_condition": expected_condition,
         "comparison_result": "MATCHED" if comparison_result else "NOT_MATCHED",
         "evidence_reference": SCRIPT_IDENTITY,
+        "evaluated_scope": evaluated_scope,
+        "artifact_refs": artifact_refs,
+        "limitations": limitations,
+        "delivery_metadata": delivery_metadata,
     }
 
 

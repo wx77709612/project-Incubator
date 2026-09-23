@@ -24,6 +24,25 @@ INVALID_SCRIPT_INPUT = "INVALID_SCRIPT_INPUT"
 UNSUPPORTED_SCRIPT_INVOCATION = "UNSUPPORTED_SCRIPT_INVOCATION"
 SCRIPT_EXECUTION_ERROR = "SCRIPT_EXECUTION_ERROR"
 EVIDENCE_READY = "EVIDENCE_READY"
+SCRIPT_EVIDENCE_BOUNDARY_VIOLATION = "SCRIPT_EVIDENCE_BOUNDARY_VIOLATION"
+
+FORBIDDEN_SCRIPT_AUTHORITY_FIELDS = {
+    "semantic_drift",
+    "extension_activation",
+    "extension_enabled",
+    "maker_authorization",
+    "authorized_by_maker",
+    "evidence_level",
+    "promoted_evidence_level",
+    "claim_status",
+}
+
+STRUCTURED_EVIDENCE_FIELDS = {
+    "evaluated_scope",
+    "artifact_refs",
+    "limitations",
+    "delivery_metadata",
+}
 
 
 @dataclass(frozen=True)
@@ -128,6 +147,23 @@ class ScriptCoordinator:
             script_output.get("diagnostic_information"),
         )
         error_information = script_output.get("error_information")
+        evidence_boundary_error = self._script_evidence_boundary_error(script_output, evidence)
+        if evidence_boundary_error is not None:
+            return self._runtime_result(
+                request,
+                RuntimeExecutionState.SUSPENDED,
+                SCRIPT_EVIDENCE_BOUNDARY_VIOLATION,
+                execution_status,
+                ScriptValidationResult.VALIDATION_NOT_COMPLETED,
+                evidence,
+                diagnostic_information,
+                self._error_information(
+                    SCRIPT_EVIDENCE_BOUNDARY_VIOLATION,
+                    evidence_boundary_error,
+                    "script_output",
+                ),
+                script_output,
+            )
         if error_information is not None and not isinstance(error_information, dict):
             error_information = {
                 "error_type": SCRIPT_EXECUTION_ERROR,
@@ -264,6 +300,28 @@ class ScriptCoordinator:
         return None
 
     @staticmethod
+    def _script_evidence_boundary_error(
+        script_output: dict[str, Any],
+        evidence: tuple[dict[str, Any], ...],
+    ) -> str | None:
+        forbidden = FORBIDDEN_SCRIPT_AUTHORITY_FIELDS.intersection(script_output)
+        for item in evidence:
+            forbidden.update(FORBIDDEN_SCRIPT_AUTHORITY_FIELDS.intersection(item))
+        if forbidden:
+            return "script output claims protected authority: " + ", ".join(sorted(forbidden))
+
+        for item in evidence:
+            if item.get("structural_drift") is True:
+                missing = sorted(
+                    field_name
+                    for field_name in STRUCTURED_EVIDENCE_FIELDS
+                    if field_name not in item
+                )
+                if missing:
+                    return "Structural Drift evidence is missing: " + ", ".join(missing)
+        return None
+
+    @staticmethod
     def _parse_execution_status(script_output: dict[str, Any]) -> ScriptExecutionStatus:
         value = script_output.get("execution_status")
         try:
@@ -349,6 +407,7 @@ __all__ = [
     "EVIDENCE_READY",
     "INVALID_SCRIPT_INPUT",
     "SCRIPT_EXECUTION_ERROR",
+    "SCRIPT_EVIDENCE_BOUNDARY_VIOLATION",
     "UNSUPPORTED_SCRIPT_INVOCATION",
     "VALIDATION_NOT_COMPLETED",
     "VALIDATION_UNSATISFIED",
