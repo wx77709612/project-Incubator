@@ -6,8 +6,8 @@
 | --- | --- |
 | 当前研发版本 | V1.1 |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | Manual Acceptance Execution |
-| 产品实现状态 | RC Packaging Gap 已关闭；195 项矩阵通过，进入“雾港提醒器”人工行为验收 |
+| 当前阶段 | RC Manual Acceptance Remediation Design |
+| 产品实现状态 | 人工验收 Round 2 暴露多 Context Mutation 与 Maker Authorization 来源缺口；现有 RC 实现冻结，等待增量规格审阅 |
 | 当前入口 | 本文件 |
 
 ## 版本管理规则
@@ -23,6 +23,7 @@
 | Architecture | `ARCHITECTURE/ARCHITECTURE_CHANGE_PROPOSAL.md` | APPROVED | V1.1 变更总规格；Maker 于 2026-09-23 批准 |
 | Architecture | `ARCHITECTURE/DOCUMENT_ARCHITECTURE.md` | ACTIVE | 定义 V1.1 文档职责、层级、版本和加载规则 |
 | Architecture | `ARCHITECTURE/ARCHITECTURE_DECISIONS.md` | ACTIVE | 保留 V1.0 Decision 001–006，并登记 V1.1 Decision 007–011 |
+| Architecture | `ARCHITECTURE/CONTEXT_MUTATION_ORCHESTRATION_CHANGE_PROPOSAL.md` | DRAFT / REVIEW REQUIRED | Round 2 授权误判与多 Context 不闭合的 RC 修复提案；未获批前不构成实现依据 |
 | Design | `DESIGN/PROJECT_INCUBATOR_DESIGN.md` | APPROVED | V1.0 非冲突设计与 V1.1 Evidence-driven Evolution 总体关系 |
 | Design | `DESIGN/EVIDENCE_MODEL_DESIGN.md` | APPROVED | V1.1 Core Evidence、Claim、Assumption、Baseline 与 Drift 模型 |
 | Design | `DESIGN/WORKFLOW_DESIGN.md` | APPROVED | P4 Creation Correction 内部活动模型 |
@@ -30,12 +31,15 @@
 | Design | `DESIGN/GATE_DESIGN.md` | APPROVED | Evidence、Correction、Baseline 与 Drift 评估政策 |
 | Design | `DESIGN/PHASE_ADVISORY_DESIGN.md` | APPROVED | Model Review、Regression、Drift 与 Extension Reason Code |
 | Design | `DESIGN/RC_PACKAGING_DESIGN.md` | APPROVED / IMPLEMENTED / PACKAGING ACCEPTED | V1.1 RC 并行身份、自包含打包、安装烟雾测试与模拟验收隔离 |
+| Design | `DESIGN/CONTEXT_MUTATION_ORCHESTRATION_DESIGN.md` | DRAFT / REVIEW REQUIRED | Mutation Set、Extension 生命周期、授权来源与 Closure Check 设计 |
 | Extension | `EXTENSIONS/OPAQUE_CAPABILITY_EXTENSION.md` | APPROVED | Capability 级不透明性评估与产品点螺旋方法 |
 | Contract | `CONTRACTS/CONTEXT_ACCESS_CONTRACT.md` | APPROVED | Decision 活动视图、Optional Evidence Context 与 Assumption Mutation |
 | Contract | `CONTRACTS/WORKFLOW_CONTRACT.md` | APPROVED | P4 Correction Assessment、Result、Activity State 与 Resume Contract |
 | Contract | `CONTRACTS/GATE_CONTRACT.md` | APPROVED | Evidence Input、Evaluation Rule 与 Reason Code |
 | Contract | `CONTRACTS/SCRIPT_CONTRACT.md` | APPROVED | 确定性 Evidence、Failure Signature 与 Structural Drift |
+| Contract | `CONTRACTS/CONTEXT_MUTATION_ORCHESTRATION_CONTRACT.md` | DRAFT / REVIEW REQUIRED | 多 Context Mutation、Authorization Provenance 与闭合结果 Contract |
 | Runtime | `RUNTIME/SKILL_RUNTIME_SPEC.md` | APPROVED | V1.1 Evidence、Correction、Baseline、Drift 与 Extension 执行机制 |
+| Runtime | `RUNTIME/CONTEXT_MUTATION_ORCHESTRATION_RUNTIME_SPEC.md` | DRAFT / REVIEW REQUIRED | Prepare、Stage、Commit、Read-back、Rollback 与恢复语义 |
 | Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | V1.1 Tasks 1–10 已完成，等待 Maker 发布审阅 |
 | Implementation | `IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / PACKAGING ACCEPTED | RC 已构建并行安装；195 项矩阵、唯一发现入口、Managed Project RC 绑定和安装后九项检查通过 |
 | Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP CLOSED FOR RC | RC 可发现且独立运行；下一步为人工行为验收 |
@@ -48,6 +52,8 @@
 
 Maker 专用答案不得加入模拟项目或发送给被测 Agent。
 
+当前人工验收结论：Round 2 的 Capability 分析通过，但 Authority Boundary 失败；Round 2C 纠正通过。缺陷 `MULTI_CONTEXT_MUTATION_ORCHESTRATION_GAP` 保持 Release Blocking，Round 3 暂停。
+
 ## 当前 Source of Truth 解释
 
 在 V1.1 最终验收审阅期间：
@@ -57,6 +63,7 @@ Maker 专用答案不得加入模拟项目或发送给被测 Agent。
 3. 活动层文档是当前实现依据，`_V1.0` 仅用于回归比较、迁移分析和历史追踪；
 4. 若下游实现与上游规格冲突，必须先登记并解决 Design Gap；
 5. RC 自包含打包、仓库外安装烟雾测试和 Maker 人工验收完成前，不创建 V1.1 发布归档，也不将当前活动规格标记为已发布。
+6. 四份 `DRAFT / REVIEW REQUIRED` 增量规格仅用于 Maker 审阅；获批并并入活动规格、Implementation Plan 与 Acceptance Test Plan 前，不得修改 RC 产品行为或重新安装候选包。
 
 ## V1.1 文档推进顺序
 
