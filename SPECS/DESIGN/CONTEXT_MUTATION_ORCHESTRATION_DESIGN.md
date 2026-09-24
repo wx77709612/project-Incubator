@@ -1,7 +1,8 @@
 # Context Mutation Orchestration Design
 
 > Specification Version: V1.1 RC Remediation
-> Status: DRAFT / REVIEW REQUIRED
+> Status: APPROVED
+> Approved By: Maker, 2026-09-24
 > Depends On: `SPECS/ARCHITECTURE/CONTEXT_MUTATION_ORCHESTRATION_CHANGE_PROPOSAL.md`
 
 ## 1. 设计目的

@@ -114,6 +114,7 @@ Extension Design 和 Project Type Profile 都必须服从 Architecture 与 Core 
 | Document | 职责 |
 | --- | --- |
 | `ARCHITECTURE_CHANGE_PROPOSAL.md` | 描述 V1.1 变化动机、范围、Impact、兼容策略和批准边界 |
+| `CONTEXT_MUTATION_ORCHESTRATION_CHANGE_PROPOSAL.md` | 描述人工验收发现的授权来源与多 Context 闭合缺口及修复边界 |
 | `ARCHITECTURE_DECISIONS.md` | 保存当前有效 Architecture Decision 及其状态、关系和影响 |
 | `DOCUMENT_ARCHITECTURE.md` | 定义规格体系、层级职责、版本管理和加载规则 |
 
@@ -140,6 +141,7 @@ Architecture Layer 不定义字段级 Contract、Runtime 执行步骤或代码�
 | `CONTEXT_MODEL_DESIGN.md` | Core Context、Optional Context、Authority 和生命周期 |
 | `GATE_DESIGN.md` | Gate 类型、Evidence、评估边界和结论语义 |
 | `PHASE_ADVISORY_DESIGN.md` | Advisory Trigger、Model Review、Drift 和 Extension Activation 建议 |
+| `CONTEXT_MUTATION_ORCHESTRATION_DESIGN.md` | Mutation Set、授权来源、Extension 生命周期、Closure 与回滚领域模型 |
 
 Design Layer 不定义序列化 Payload、API 调用顺序、Runtime Algorithm 或文件级任务拆分。
 
@@ -212,6 +214,7 @@ Project Type Profile 不得放宽 Core Gate、Evidence、Authority 或 Correctio
 | `WORKFLOW_CONTRACT.md` | Phase、Transition、P4 Correction Request / Result 与恢复边界 |
 | `GATE_CONTRACT.md` | Gate Input、Evidence、Evaluation Result 和非控制性边界 |
 | `SCRIPT_CONTRACT.md` | Script Input / Output、确定性证据和禁止路径 |
+| `CONTEXT_MUTATION_ORCHESTRATION_CONTRACT.md` | Multi-Context Event、Mutation Set、Authorization Provenance、Closure Result 与错误语义 |
 
 Contract 必须由上游 Design 推导，不得自行创造 Domain Rule。
 
@@ -219,7 +222,10 @@ Contract 必须由上游 Design 推导，不得自行创造 Domain Rule。
 
 路径：`SPECS/RUNTIME/`
 
-当前文档：`SKILL_RUNTIME_SPEC.md`
+当前文档：
+
+- `SKILL_RUNTIME_SPEC.md`；
+- `CONTEXT_MUTATION_ORCHESTRATION_RUNTIME_SPEC.md`。
 
 职责：
 
@@ -249,6 +255,8 @@ Runtime 不判断产品目标、技术解释或语义 Evidence 是否真实，�
 | --- | --- |
 | `IMPLEMENTATION_PLAN.md` | V1.1 计划尚未编写，不构成实施授权 |
 | `LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | V1.1 验收计划尚未编写 |
+| `CONTEXT_MUTATION_ORCHESTRATION_IMPLEMENTATION_PLAN.md` | RC 人工验收 Release Blocking 缺陷的增量实施计划 |
+| `CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | Multi-Context Mutation 自动化与人工重放验收计划 |
 
 Implementation Plan 必须等待 Architecture、Design、Contract 和 Runtime Specification 获批后编写。
 
