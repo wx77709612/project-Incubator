@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 from typing import Iterable
 
@@ -34,6 +35,27 @@ def payload_manifest(root: Path) -> dict[str, str]:
         relative = path.relative_to(root).as_posix()
         files[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
     return files
+
+
+def rc_build_identity(
+    source_commit: str,
+    built_at: str,
+    files: dict[str, str],
+) -> str:
+    identity_input = {
+        "skill_identity": RC_SKILL_ID,
+        "package_version": RC_PACKAGE_VERSION,
+        "source_commit": source_commit,
+        "built_at": built_at,
+        "files": files,
+    }
+    encoded = json.dumps(
+        identity_input,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def tree_digest(root: Path, excluded_names: Iterable[str] = ()) -> str:

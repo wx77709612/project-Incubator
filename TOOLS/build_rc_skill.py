@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import shutil
 from dataclasses import dataclass
@@ -15,6 +14,7 @@ from TOOLS.rc_skill_common import (
     RC_PACKAGE_VERSION,
     RC_SKILL_ID,
     payload_manifest,
+    rc_build_identity,
 )
 
 
@@ -104,23 +104,6 @@ def _rewrite_runtime_version(config_path: Path) -> None:
     )
 
 
-def _build_identity(source_commit: str, built_at: str, files: dict[str, str]) -> str:
-    identity_input = {
-        "skill_identity": RC_SKILL_ID,
-        "package_version": RC_PACKAGE_VERSION,
-        "source_commit": source_commit,
-        "built_at": built_at,
-        "files": files,
-    }
-    encoded = json.dumps(
-        identity_input,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
-
-
 def build_rc_skill(
     source_root: Path,
     output_parent: Path,
@@ -161,7 +144,7 @@ def build_rc_skill(
         (agents_dir / "openai.yaml").write_text(_render_openai_yaml(), encoding="utf-8")
 
         files = payload_manifest(staging_root)
-        build_identity = _build_identity(source_commit, built_at, files)
+        build_identity = rc_build_identity(source_commit, built_at, files)
         manifest = {
             "skill_identity": RC_SKILL_ID,
             "package_version": RC_PACKAGE_VERSION,
