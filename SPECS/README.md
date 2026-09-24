@@ -6,8 +6,8 @@
 | --- | --- |
 | 当前研发版本 | V1.1 |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | Final Acceptance Review |
-| 产品实现状态 | 实施与自动化验收已完成；等待 Maker 最终审阅与发布归档决定 |
+| 当前阶段 | Release Candidate Packaging Design Review |
+| 产品实现状态 | Runtime 实施与仓库内自动化验收已完成；发现全局安装包自包含缺口，发布暂时阻塞 |
 | 当前入口 | 本文件 |
 
 ## 版本管理规则
@@ -29,6 +29,7 @@
 | Design | `DESIGN/CONTEXT_MODEL_DESIGN.md` | APPROVED | Decision 活动视图与 Evidence Optional Context |
 | Design | `DESIGN/GATE_DESIGN.md` | APPROVED | Evidence、Correction、Baseline 与 Drift 评估政策 |
 | Design | `DESIGN/PHASE_ADVISORY_DESIGN.md` | APPROVED | Model Review、Regression、Drift 与 Extension Reason Code |
+| Design | `DESIGN/RC_PACKAGING_DESIGN.md` | DRAFT / MAKER REVIEW REQUIRED | V1.1 RC 并行身份、自包含打包、安装烟雾测试与模拟验收隔离 |
 | Extension | `EXTENSIONS/OPAQUE_CAPABILITY_EXTENSION.md` | APPROVED | Capability 级不透明性评估与产品点螺旋方法 |
 | Contract | `CONTRACTS/CONTEXT_ACCESS_CONTRACT.md` | APPROVED | Decision 活动视图、Optional Evidence Context 与 Assumption Mutation |
 | Contract | `CONTRACTS/WORKFLOW_CONTRACT.md` | APPROVED | P4 Correction Assessment、Result、Activity State 与 Resume Contract |
@@ -36,17 +37,17 @@
 | Contract | `CONTRACTS/SCRIPT_CONTRACT.md` | APPROVED | 确定性 Evidence、Failure Signature 与 Structural Drift |
 | Runtime | `RUNTIME/SKILL_RUNTIME_SPEC.md` | APPROVED | V1.1 Evidence、Correction、Baseline、Drift 与 Extension 执行机制 |
 | Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | V1.1 Tasks 1–10 已完成，等待 Maker 发布审阅 |
-| Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED | V1.1 Acceptance Stage A–E 共 36 项通过，未发现 Release Blocking Condition |
+| Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP OPEN | V1.1 A–E 共 36 项通过；仓库外安装探测发现新增发布阻塞 |
 
 ## 当前 Source of Truth 解释
 
 在 V1.1 最终验收审阅期间：
 
 1. V1.0 已发布行为以 `_V1.0` 与当前产品实现为基线证据；
-2. V1.1 架构、设计、契约和 Runtime 规格均已批准，产品实现与自动化验收已按 Implementation Plan 完成；
+2. V1.1 架构、设计、契约和 Runtime 规格均已批准，产品实现与仓库内自动化验收已按 Implementation Plan 完成；
 3. 活动层文档是当前实现依据，`_V1.0` 仅用于回归比较、迁移分析和历史追踪；
 4. 若下游实现与上游规格冲突，必须先登记并解决 Design Gap；
-5. 在 Maker 完成最终验收审阅前，不创建 V1.1 发布归档，也不将当前活动规格标记为已发布。
+5. RC 自包含打包、仓库外安装烟雾测试和 Maker 人工验收完成前，不创建 V1.1 发布归档，也不将当前活动规格标记为已发布。
 
 ## V1.1 文档推进顺序
 
