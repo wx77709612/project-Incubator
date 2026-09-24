@@ -132,12 +132,12 @@
 
 - V1.0 Acceptance Stage A–E：40 / 40 通过；
 - Unit、Integration、E2E、V1.0 Acceptance 与 V1.1 Acceptance 原合并直接测试矩阵：170 / 170 通过；
-- 新增 RC 构建、隔离、入口与安装事务测试 21 项；当前完整矩阵：191 / 191 通过；
+- 新增 RC 构建、隔离、入口与安装事务测试 23 项；当前完整矩阵：193 / 193 通过；
 - Stage E 另以独立进程重放现有 `TESTS` 与 V1.0 Acceptance，结果通过；
 - 原计划覆盖范围内未发现 Release Blocking Condition；
 - 当前等待 Maker 审阅最终验收证据，尚未创建 V1.1 发布归档。
 
-## 12. 验收后发现的 Packaging Gap
+## 12. 验收后发现的 Packaging Gap（CLOSED FOR RC）
 
 2026-09-24 在 Implementation Repository 之外直接运行当前全局 Skill 的确定性脚本时，实际得到：
 
@@ -150,9 +150,10 @@ ModuleNotFoundError: No module named 'PROJECT_INCUBATOR'
 处理状态：
 
 - 分类：Delivery Artifact / Installation Verification Gap；
-- 严重性：Release Blocking；
+- 严重性：原为 Release Blocking，现已关闭；
 - 当前设计：`SPECS/DESIGN/RC_PACKAGING_DESIGN.md`；
 - 要求：建立自包含 RC、仓库外 Smoke Test 和 Installed Smoke Test；
 - 当前结果：Distribution 与 Installed RC 九项检查均通过，V1.0 摘要保持不变；
-- 剩余条件：在不加载 Implementation Repository 的新任务中完成显式 Skill Discovery；
-- 在该 Gap 关闭前，不得将 V1.1 标记为 Release Ready。
+- Skill Discovery：Maker 在独立新任务中显式加载并报告正确 Identity、Version 与 explicit-only Policy；
+- 发现入口：Installed RC 仅保留一个顶层 `SKILL.md`，嵌套 Python Package 不再形成第二个 Skill；
+- 结论：Packaging Gap 对 RC 已关闭；仍需完成人工行为验收，才能决定 V1.1 是否 Release Ready。

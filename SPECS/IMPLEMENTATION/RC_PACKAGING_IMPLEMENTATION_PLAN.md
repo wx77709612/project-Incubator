@@ -10,7 +10,7 @@
 
 **Spec:** `SPECS/DESIGN/RC_PACKAGING_DESIGN.md`
 
-**Status:** IMPLEMENTED / INSTALLED SMOKE PASSED / DISCOVERY PENDING
+**Status:** IMPLEMENTED / PACKAGING ACCEPTED / MANUAL ACCEPTANCE READY
 
 ## Global Constraints
 
@@ -480,7 +480,7 @@ python TOOLS/verify_rc_skill.py 'C:/Users/Xenia_Woo/.codex/skills/project-incuba
 
 Expected: 与 Distribution Artifact 相同的检查全部 PASS；实际模块路径来自 Installed RC。
 
-- [ ] **Step 6: 验证 Skill Discovery**
+- [x] **Step 6: 验证 Skill Discovery**
 
 启动一个不加载 Implementation Repository 的新任务，显式调用：
 
@@ -565,16 +565,17 @@ git commit -m "docs: record v1.1 rc installation evidence"
 
 | Evidence | Result |
 | --- | --- |
-| Source Commit | `4ce08ac77f2aef74fd263052e4d19f873cf5a639` |
-| RC Build Identity | `51b689f1f1a53fdde78a47bdbfc61a84e62556b6e2826e3072f2f3dd5239495c` |
-| Distribution Digest | `98635a01f3249dbad8c7e774f44a133bdb2fbeb2fd5273cb23f67fa2fb072fc5` |
-| Installed RC Digest | `98635a01f3249dbad8c7e774f44a133bdb2fbeb2fd5273cb23f67fa2fb072fc5` |
+| Source Commit | `c3a207e036c83f793fb84e79d9a07910329ac8fc` |
+| RC Build Identity | `6c8a68dcfa89b29dcd3c5f244731f34d58f0f31376682b3c4da05a7ffd3f811d` |
+| Distribution Digest | `7fe2df30d59bbb1085f2bf927373207d5ae72498285b3257ae56c79e9b8f4300` |
+| Installed RC Digest | `7fe2df30d59bbb1085f2bf927373207d5ae72498285b3257ae56c79e9b8f4300` |
 | Stable V1.0 Digest Before / After | `c01fe91e476e52b3f590e37b04f6bbd1208eeec3eded30a771f0bdaac6b41cf5` / 相同 |
-| Repository Test Matrix | 115 / 115 通过 |
+| Repository Test Matrix | 117 / 117 通过 |
 | V1.0 Acceptance | 40 / 40 通过 |
 | V1.1 Acceptance | 36 / 36 通过 |
 | Distribution Verification | 9 / 9 通过 |
 | Installed Verification | 9 / 9 通过 |
-| Skill Discovery | PENDING，等待 Maker 在新任务显式调用 |
+| Skill Discovery | PASSED；Maker 新任务报告正确 Identity、Version 与 explicit-only Policy |
+| Discovery Entry Uniqueness | PASSED；Installed RC 仅包含一个顶层 `SKILL.md` |
 
-相对于原 170 项矩阵，本次新增 21 项 RC 构建、隔离、入口和安装事务测试；当前合并矩阵为 191 / 191 通过。Task 1–5 的自动化与安装部分已完成，Task 5 Step 6 和 Task 6 的 Gap 关闭动作等待 Skill Discovery Evidence。
+相对于原 170 项矩阵，本次新增 23 项 RC 构建、隔离、入口和安装事务测试；当前合并矩阵为 193 / 193 通过。Task 1–6 已完成，Packaging Gap 关闭；下一阶段为隔离的“雾港提醒器”人工行为验收。
