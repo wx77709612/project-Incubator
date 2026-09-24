@@ -37,6 +37,7 @@
 | Contract | `CONTRACTS/SCRIPT_CONTRACT.md` | APPROVED | 确定性 Evidence、Failure Signature 与 Structural Drift |
 | Runtime | `RUNTIME/SKILL_RUNTIME_SPEC.md` | APPROVED | V1.1 Evidence、Correction、Baseline、Drift 与 Extension 执行机制 |
 | Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | V1.1 Tasks 1–10 已完成，等待 Maker 发布审阅 |
+| Implementation | `IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md` | DRAFT / MAKER REVIEW REQUIRED | RC 自包含构建、仓库外验证、并行安装与回滚验证计划 |
 | Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP OPEN | V1.1 A–E 共 36 项通过；仓库外安装探测发现新增发布阻塞 |
 
 ## 当前 Source of Truth 解释
