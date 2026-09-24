@@ -1,7 +1,7 @@
 # Project Incubator Skill Runtime Specification
 
-> Specification Version: V1.1  
-> Status: APPROVED  
+> Specification Version: V1.1
+> Status: APPROVED
 > Previous Baseline: `SPECS/_V1.0/RUNTIME/SKILL_RUNTIME_SPEC.md`
 
 V1.0 非冲突 Runtime 机制继续有效；第 71 节实现 V1.1 Contract 的执行语义，不改变既有 Runtime Authority。

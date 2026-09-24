@@ -1,7 +1,7 @@
 # Project Incubator Context Access Contract
 
-> Specification Version: V1.1  
-> Status: APPROVED  
+> Specification Version: V1.1
+> Status: APPROVED
 > Previous Baseline: `SPECS/_V1.0/CONTRACTS/CONTEXT_ACCESS_CONTRACT.md`
 
 V1.0 非冲突 Contract 继续有效；第 21 节替代 Append-only Decision 规则并扩展 Optional Evidence Context。

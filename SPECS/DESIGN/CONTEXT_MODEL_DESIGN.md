@@ -1,8 +1,8 @@
 # Project Incubator Context Model Design
 
-> Specification Version: V1.1  
-> Status: APPROVED  
-> Previous Baseline: `SPECS/_V1.0/DESIGN/CONTEXT_MODEL_DESIGN.md`  
+> Specification Version: V1.1
+> Status: APPROVED
+> Previous Baseline: `SPECS/_V1.0/DESIGN/CONTEXT_MODEL_DESIGN.md`
 > Architecture Decisions: Decision 007、008、010、011
 
 V1.0 非冲突 Context Design 继续有效；第 12 节替代“Optional Context 只服务 Project Type”的限制。
@@ -940,4 +940,3 @@ Core Context 只保存当前权威摘要、状态和引用。Optional Context �
 ## 12.5 生命周期
 
 Optional Context 在 Capability Extension 启用或 Decision History 达到归档条件时建立；退出后归档并从默认 Context 恢复集合移除。退出不得删除 Evidence，也不得改变 Core Context Authority。
-

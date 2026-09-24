@@ -1,8 +1,8 @@
 # Project Incubator Gate Design
 
-> Specification Version: V1.1  
-> Status: APPROVED  
-> Previous Baseline: `SPECS/_V1.0/DESIGN/GATE_DESIGN.md`  
+> Specification Version: V1.1
+> Status: APPROVED
+> Previous Baseline: `SPECS/_V1.0/DESIGN/GATE_DESIGN.md`
 > Architecture Decisions: Decision 007、009、011
 
 V1.0 Gate Type 与 Authority 继续有效；第 9 节只增加评估政策，不新增 Gate Type。

@@ -1,8 +1,8 @@
 # Project Incubator Phase Advisory Design
 
-> Specification Version: V1.1  
-> Status: APPROVED  
-> Previous Baseline: `SPECS/_V1.0/DESIGN/PHASE_ADVISORY_DESIGN.md`  
+> Specification Version: V1.1
+> Status: APPROVED
+> Previous Baseline: `SPECS/_V1.0/DESIGN/PHASE_ADVISORY_DESIGN.md`
 > Architecture Decisions: Decision 009、010、011
 
 V1.0 Advisory Domain Model 继续有效；第 10 节通过现有 Trigger 的 Reason Code 扩展建议内容。

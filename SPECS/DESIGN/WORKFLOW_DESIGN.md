@@ -1,8 +1,8 @@
 # Project Incubator Workflow Design
 
-> Specification Version: V1.1  
-> Status: APPROVED  
-> Previous Baseline: `SPECS/_V1.0/DESIGN/WORKFLOW_DESIGN.md`  
+> Specification Version: V1.1
+> Status: APPROVED
+> Previous Baseline: `SPECS/_V1.0/DESIGN/WORKFLOW_DESIGN.md`
 > Architecture Decision: Decision 009
 
 V1.0 非冲突 Workflow 继续有效；第 14 节在 P4 Correction 语义上优先。

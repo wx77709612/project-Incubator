@@ -1,7 +1,7 @@
 # Project Incubator Gate Contract
 
-> Specification Version: V1.1  
-> Status: APPROVED  
+> Specification Version: V1.1
+> Status: APPROVED
 > Previous Baseline: `SPECS/_V1.0/CONTRACTS/GATE_CONTRACT.md`
 
 V1.0 Gate Set 与 Result Set 继续有效；第 22 节扩展 Evidence Input 与 Reason Code，不新增 Gate Type。

@@ -2426,4 +2426,3 @@ Decision Record 还必须在适用时记录：
 - `SPECS/README.md` 已记录对应状态。
 
 一个版本的冻结不禁止后续版本演进。后续变化必须创建新的 Architecture Change Proposal，并通过新增、部分替代、替代或撤销 Decision 表达，不得由下游文档隐式覆盖。
-

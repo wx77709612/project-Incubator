@@ -1,8 +1,8 @@
 # Project Incubator Design
 
-> Specification Version: V1.1  
-> Status: APPROVED  
-> Previous Baseline: `SPECS/_V1.0/DESIGN/PROJECT_INCUBATOR_DESIGN.md`  
+> Specification Version: V1.1
+> Status: APPROVED
+> Previous Baseline: `SPECS/_V1.0/DESIGN/PROJECT_INCUBATOR_DESIGN.md`
 > Architecture Decisions: Decision 007–011
 
 V1.0 非冲突设计继续有效；本文件的 V1.1 增量章节在冲突处优先。

@@ -1,7 +1,7 @@
 # Project Incubator Script Contract
 
-> Specification Version: V1.1  
-> Status: APPROVED  
+> Specification Version: V1.1
+> Status: APPROVED
 > Previous Baseline: `SPECS/_V1.0/CONTRACTS/SCRIPT_CONTRACT.md`
 
 V1.0 Script Authority 继续有效；第 32 节扩展确定性 Evidence 与 Structural Drift，且不授予语义判断权。

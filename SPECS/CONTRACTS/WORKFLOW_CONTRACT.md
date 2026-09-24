@@ -1,7 +1,7 @@
 # Project Incubator Workflow Contract
 
-> Specification Version: V1.1  
-> Status: APPROVED  
+> Specification Version: V1.1
+> Status: APPROVED
 > Previous Baseline: `SPECS/_V1.0/CONTRACTS/WORKFLOW_CONTRACT.md`
 
 V1.0 Phase 与 Transition Contract 继续有效；第 25 节增加 P4 内部 Correction Contract，不新增 Transition。
