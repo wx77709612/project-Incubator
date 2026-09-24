@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import tempfile
 from dataclasses import dataclass
+import hashlib
 from pathlib import Path
 
 
@@ -29,6 +30,14 @@ class FileWriteResult:
     path: Path
     bytes_written: int
     verified: bool
+
+
+@dataclass(frozen=True)
+class FileSnapshot:
+    path: Path
+    existed: bool
+    content: str | None
+    digest: str | None
 
 
 class FileStore:
@@ -101,6 +110,41 @@ class FileStore:
             verified=True,
         )
 
+    def snapshot(self, path: str | Path) -> FileSnapshot:
+        resolved_path = self._resolve_path(path)
+        if not resolved_path.exists():
+            return FileSnapshot(
+                path=resolved_path,
+                existed=False,
+                content=None,
+                digest=None,
+            )
+        content = self.read_file(resolved_path)
+        return FileSnapshot(
+            path=resolved_path,
+            existed=True,
+            content=content,
+            digest=hashlib.sha256(content.encode(self.encoding)).hexdigest(),
+        )
+
+    def restore(self, snapshot: FileSnapshot) -> FileWriteResult | None:
+        if snapshot.existed:
+            if snapshot.content is None or snapshot.digest is None:
+                raise FileVerificationError("existing snapshot is incomplete")
+            actual_digest = hashlib.sha256(snapshot.content.encode(self.encoding)).hexdigest()
+            if actual_digest != snapshot.digest:
+                raise FileVerificationError("snapshot digest mismatch")
+            return self.atomic_write(snapshot.path, snapshot.content)
+
+        if snapshot.path.exists():
+            try:
+                snapshot.path.unlink()
+            except OSError as exc:
+                raise FileWriteError(f"failed to restore absent file: {snapshot.path}") from exc
+        if snapshot.path.exists():
+            raise FileVerificationError(f"restored file should be absent: {snapshot.path}")
+        return None
+
     def _resolve_path(self, path: str | Path) -> Path:
         raw_path = Path(path)
         if raw_path.is_absolute():
@@ -128,6 +172,7 @@ class FileStore:
 
 __all__ = [
     "FileReadError",
+    "FileSnapshot",
     "FileStore",
     "FileStoreError",
     "FileVerificationError",
