@@ -7,7 +7,7 @@
 | 当前研发版本 | V1.1 |
 | 上一发布基线 | `SPECS/_V1.0/` |
 | 当前阶段 | Manual Acceptance Execution |
-| 产品实现状态 | RC Packaging Gap 已关闭；193 项矩阵通过，进入“雾港提醒器”人工行为验收 |
+| 产品实现状态 | RC Packaging Gap 已关闭；195 项矩阵通过，进入“雾港提醒器”人工行为验收 |
 | 当前入口 | 本文件 |
 
 ## 版本管理规则
@@ -37,7 +37,7 @@
 | Contract | `CONTRACTS/SCRIPT_CONTRACT.md` | APPROVED | 确定性 Evidence、Failure Signature 与 Structural Drift |
 | Runtime | `RUNTIME/SKILL_RUNTIME_SPEC.md` | APPROVED | V1.1 Evidence、Correction、Baseline、Drift 与 Extension 执行机制 |
 | Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | V1.1 Tasks 1–10 已完成，等待 Maker 发布审阅 |
-| Implementation | `IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / PACKAGING ACCEPTED | RC 已构建并行安装；193 项矩阵、唯一发现入口和安装后九项检查通过 |
+| Implementation | `IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / PACKAGING ACCEPTED | RC 已构建并行安装；195 项矩阵、唯一发现入口、Managed Project RC 绑定和安装后九项检查通过 |
 | Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP CLOSED FOR RC | RC 可发现且独立运行；下一步为人工行为验收 |
 
 ## 人工验收入口

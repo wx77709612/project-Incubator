@@ -132,7 +132,7 @@
 
 - V1.0 Acceptance Stage A–E：40 / 40 通过；
 - Unit、Integration、E2E、V1.0 Acceptance 与 V1.1 Acceptance 原合并直接测试矩阵：170 / 170 通过；
-- 新增 RC 构建、隔离、入口与安装事务测试 23 项；当前完整矩阵：193 / 193 通过；
+- 新增 RC 构建、隔离、入口与安装事务测试 25 项；当前完整矩阵：195 / 195 通过；
 - Stage E 另以独立进程重放现有 `TESTS` 与 V1.0 Acceptance，结果通过；
 - 原计划覆盖范围内未发现 Release Blocking Condition；
 - 当前等待 Maker 审阅最终验收证据，尚未创建 V1.1 发布归档。
@@ -156,4 +156,5 @@ ModuleNotFoundError: No module named 'PROJECT_INCUBATOR'
 - 当前结果：Distribution 与 Installed RC 九项检查均通过，V1.0 摘要保持不变；
 - Skill Discovery：Maker 在独立新任务中显式加载并报告正确 Identity、Version 与 explicit-only Policy；
 - 发现入口：Installed RC 仅保留一个顶层 `SKILL.md`，嵌套 Python Package 不再形成第二个 Skill；
+- Managed Project 绑定：RC Bootstrap `AGENTS.md` 与 Project Profile Template 均明确要求 `project-incubator-v1-1-rc`、`1.1.0-rc.1` 和 explicit-only；
 - 结论：Packaging Gap 对 RC 已关闭；仍需完成人工行为验收，才能决定 V1.1 是否 Release Ready。

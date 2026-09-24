@@ -256,5 +256,6 @@ RC 安装不得修改 V1.0 文件，因此回滚只允许：
 - V1.0 全局 Skill 摘要在安装前后保持 `c01fe91e476e52b3f590e37b04f6bbd1208eeec3eded30a771f0bdaac6b41cf5`；
 - Maker 已在不加载 Implementation Repository 的新任务中显式发现 RC，并得到正确的 Identity、Version 与 explicit-only Policy；
 - 修订后的安装包只包含顶层一个 `SKILL.md`，不存在可绕过 explicit-only Policy 的嵌套发现入口。
+- RC Bootstrap 生成的 Managed Project `AGENTS.md` 与 Project Profile Template 均明确持久化 Required Skill、Required Version 与 explicit-only Policy，不会在后续任务回落到 V1.0。
 
 RC Packaging Gap 已关闭。该结论只证明候选包可发现、可隔离运行并且不会改写 V1.0，不替代“雾港提醒器”场景的人工行为验收，也不构成 V1.1 正式发布结论。

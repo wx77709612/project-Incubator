@@ -565,17 +565,18 @@ git commit -m "docs: record v1.1 rc installation evidence"
 
 | Evidence | Result |
 | --- | --- |
-| Source Commit | `c3a207e036c83f793fb84e79d9a07910329ac8fc` |
-| RC Build Identity | `6c8a68dcfa89b29dcd3c5f244731f34d58f0f31376682b3c4da05a7ffd3f811d` |
-| Distribution Digest | `7fe2df30d59bbb1085f2bf927373207d5ae72498285b3257ae56c79e9b8f4300` |
-| Installed RC Digest | `7fe2df30d59bbb1085f2bf927373207d5ae72498285b3257ae56c79e9b8f4300` |
+| Source Commit | `951401d64e9ce247c172746d09f9dfa482158457` |
+| RC Build Identity | `3f6c7bb68baa9bb24897d5b632f2f768c521aa932f67580a22ad857791e4fc0e` |
+| Distribution Digest | `e65d5df0f55870ae381f64a9fa992fca5640e1e4ec453d73858527abf8aa91cc` |
+| Installed RC Digest | `e65d5df0f55870ae381f64a9fa992fca5640e1e4ec453d73858527abf8aa91cc` |
 | Stable V1.0 Digest Before / After | `c01fe91e476e52b3f590e37b04f6bbd1208eeec3eded30a771f0bdaac6b41cf5` / 相同 |
-| Repository Test Matrix | 117 / 117 通过 |
+| Repository Test Matrix | 119 / 119 通过 |
 | V1.0 Acceptance | 40 / 40 通过 |
 | V1.1 Acceptance | 36 / 36 通过 |
 | Distribution Verification | 9 / 9 通过 |
 | Installed Verification | 9 / 9 通过 |
 | Skill Discovery | PASSED；Maker 新任务报告正确 Identity、Version 与 explicit-only Policy |
 | Discovery Entry Uniqueness | PASSED；Installed RC 仅包含一个顶层 `SKILL.md` |
+| Managed Project RC Binding | PASSED；Bootstrap `AGENTS.md` 与 Project Profile Template 均固定声明 RC Identity、Version 与 Policy |
 
-相对于原 170 项矩阵，本次新增 23 项 RC 构建、隔离、入口和安装事务测试；当前合并矩阵为 193 / 193 通过。Task 1–6 已完成，Packaging Gap 关闭；下一阶段为隔离的“雾港提醒器”人工行为验收。
+相对于原 170 项矩阵，本次新增 25 项 RC 构建、隔离、入口和安装事务测试；当前合并矩阵为 195 / 195 通过。Task 1–6 已完成，Packaging Gap 关闭；下一阶段为隔离的“雾港提醒器”人工行为验收。
