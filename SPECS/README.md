@@ -6,8 +6,8 @@
 | --- | --- |
 | 当前研发版本 | V1.1 |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | Architecture Change Proposal Review |
-| 产品实现状态 | 未开始；等待规格与实施计划获批 |
+| 当前阶段 | Final Acceptance Review |
+| 产品实现状态 | 实施与自动化验收已完成；等待 Maker 最终审阅与发布归档决定 |
 | 当前入口 | 本文件 |
 
 ## 版本管理规则
@@ -20,29 +20,33 @@
 
 | Layer | Document | Status | 说明 |
 | --- | --- | --- | --- |
-| Architecture | `ARCHITECTURE/ARCHITECTURE_CHANGE_PROPOSAL.md` | DRAFT / REVIEW REQUIRED | V1.1 变更总规格；当前审阅入口 |
-| Architecture | `ARCHITECTURE/DOCUMENT_ARCHITECTURE.md` | MIGRATING | 从 V1.0 继承，待按提案更新 |
-| Architecture | `ARCHITECTURE/ARCHITECTURE_DECISIONS.md` | MIGRATING | V1.0 决策基线；待登记 V1.1 决策 |
-| Design | `DESIGN/PROJECT_INCUBATOR_DESIGN.md` | MIGRATING | 未变更部分继承 V1.0；待集成 V1.1 设计 |
-| Design | `DESIGN/WORKFLOW_DESIGN.md` | MIGRATING | 待加入 P4 Creation Correction Loop |
-| Design | `DESIGN/CONTEXT_MODEL_DESIGN.md` | MIGRATING | 待加入 Claim、Evidence、Assumption 与 Baseline 语义 |
-| Design | `DESIGN/GATE_DESIGN.md` | MIGRATING | 待加入证据成熟度与 Drift 检查 |
-| Design | `DESIGN/PHASE_ADVISORY_DESIGN.md` | MIGRATING | 待加入重复失败、模型失效与扩展触发器 |
-| Extension | `EXTENSIONS/OPAQUE_CAPABILITY_EXTENSION.md` | PLANNED | 提案获批后编写 |
-| Contract | `CONTRACTS/*.md` | BASELINE COPIED | 当前仍为 V1.0 语义，待 Design 获批后更新 |
-| Runtime | `RUNTIME/SKILL_RUNTIME_SPEC.md` | BASELINE COPIED | 当前仍为 V1.0 语义，待 Contract 更新后修改 |
-| Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | PLANNED | V1.1 占位入口；完整计划尚未编写，不构成实施授权 |
-| Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PLANNED | V1.1 占位入口；验收计划尚未编写 |
+| Architecture | `ARCHITECTURE/ARCHITECTURE_CHANGE_PROPOSAL.md` | APPROVED | V1.1 变更总规格；Maker 于 2026-09-23 批准 |
+| Architecture | `ARCHITECTURE/DOCUMENT_ARCHITECTURE.md` | ACTIVE | 定义 V1.1 文档职责、层级、版本和加载规则 |
+| Architecture | `ARCHITECTURE/ARCHITECTURE_DECISIONS.md` | ACTIVE | 保留 V1.0 Decision 001–006，并登记 V1.1 Decision 007–011 |
+| Design | `DESIGN/PROJECT_INCUBATOR_DESIGN.md` | APPROVED | V1.0 非冲突设计与 V1.1 Evidence-driven Evolution 总体关系 |
+| Design | `DESIGN/EVIDENCE_MODEL_DESIGN.md` | APPROVED | V1.1 Core Evidence、Claim、Assumption、Baseline 与 Drift 模型 |
+| Design | `DESIGN/WORKFLOW_DESIGN.md` | APPROVED | P4 Creation Correction 内部活动模型 |
+| Design | `DESIGN/CONTEXT_MODEL_DESIGN.md` | APPROVED | Decision 活动视图与 Evidence Optional Context |
+| Design | `DESIGN/GATE_DESIGN.md` | APPROVED | Evidence、Correction、Baseline 与 Drift 评估政策 |
+| Design | `DESIGN/PHASE_ADVISORY_DESIGN.md` | APPROVED | Model Review、Regression、Drift 与 Extension Reason Code |
+| Extension | `EXTENSIONS/OPAQUE_CAPABILITY_EXTENSION.md` | APPROVED | Capability 级不透明性评估与产品点螺旋方法 |
+| Contract | `CONTRACTS/CONTEXT_ACCESS_CONTRACT.md` | APPROVED | Decision 活动视图、Optional Evidence Context 与 Assumption Mutation |
+| Contract | `CONTRACTS/WORKFLOW_CONTRACT.md` | APPROVED | P4 Correction Assessment、Result、Activity State 与 Resume Contract |
+| Contract | `CONTRACTS/GATE_CONTRACT.md` | APPROVED | Evidence Input、Evaluation Rule 与 Reason Code |
+| Contract | `CONTRACTS/SCRIPT_CONTRACT.md` | APPROVED | 确定性 Evidence、Failure Signature 与 Structural Drift |
+| Runtime | `RUNTIME/SKILL_RUNTIME_SPEC.md` | APPROVED | V1.1 Evidence、Correction、Baseline、Drift 与 Extension 执行机制 |
+| Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | V1.1 Tasks 1–10 已完成，等待 Maker 发布审阅 |
+| Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED | V1.1 Acceptance Stage A–E 共 36 项通过，未发现 Release Blocking Condition |
 
 ## 当前 Source of Truth 解释
 
-在 V1.1 规格尚未全部获批前：
+在 V1.1 最终验收审阅期间：
 
 1. V1.0 已发布行为以 `_V1.0` 与当前产品实现为基线证据；
-2. V1.1 拟议变化以 `ARCHITECTURE_CHANGE_PROPOSAL.md` 为审阅对象，但在 Maker 批准前不构成实施授权；
-3. 活动层中标为 `MIGRATING` 或 `BASELINE COPIED` 的文件只对未被提案改变的 V1.0 语义有效；
-4. 若提案与继承文档冲突，当前阶段应报告冲突，不得选择性实现；
-5. `PROJECT_INCUBATOR/` 的产品行为必须保持不变，直到 V1.1 Implementation Plan 获批。
+2. V1.1 架构、设计、契约和 Runtime 规格均已批准，产品实现与自动化验收已按 Implementation Plan 完成；
+3. 活动层文档是当前实现依据，`_V1.0` 仅用于回归比较、迁移分析和历史追踪；
+4. 若下游实现与上游规格冲突，必须先登记并解决 Design Gap；
+5. 在 Maker 完成最终验收审阅前，不创建 V1.1 发布归档，也不将当前活动规格标记为已发布。
 
 ## V1.1 文档推进顺序
 
