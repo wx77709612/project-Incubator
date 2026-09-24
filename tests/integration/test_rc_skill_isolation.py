@@ -208,6 +208,33 @@ class RcSkillIsolationTests(unittest.TestCase):
 
             self.assertTrue(report.passed, report)
 
+    def test_built_rc_bootstrap_binds_new_project_to_rc(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            built = self.build_rc(root / "dist")
+            managed_project = root / "模拟项目"
+            managed_project.mkdir()
+
+            result = run_script(
+                built.skill_root,
+                "bootstrap_host_integration.py",
+                {
+                    "invocation_id": "rc-bootstrap-binding",
+                    "invocation_purpose": "DETERMINISTIC_OPERATION",
+                    "input_data": {
+                        "host_environment": "CODEX",
+                        "managed_project_root": str(managed_project),
+                    },
+                },
+                cwd=root,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            agents = (managed_project / "AGENTS.md").read_text(encoding="utf-8")
+            self.assertIn("Required Skill: project-incubator-v1-1-rc", agents)
+            self.assertIn("Required Package Version: 1.1.0-rc.1", agents)
+            self.assertNotIn("`project-incubator` Skill", agents)
+
 
 if __name__ == "__main__":
     unittest.main()

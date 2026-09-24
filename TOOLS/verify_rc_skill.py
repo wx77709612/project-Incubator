@@ -171,6 +171,29 @@ def _identity_check(skill_root: Path) -> RcVerificationCheck:
         failures.append("SKILL name")
     if _implicit_policy(skill_root / "agents" / "openai.yaml") is not False:
         failures.append("explicit-only policy")
+    integration_template = (
+        skill_root
+        / "PROJECT_INCUBATOR"
+        / "templates"
+        / "integrations"
+        / "codex"
+        / "AGENTS.template.md"
+    )
+    try:
+        integration_text = integration_template.read_text(encoding="utf-8")
+    except OSError:
+        failures.append("managed project binding template")
+    else:
+        required_binding = (
+            f"Required Skill: {RC_SKILL_ID}",
+            f"Required Package Version: {RC_PACKAGE_VERSION}",
+            "Invocation Policy: explicit-only",
+            f"`{RC_SKILL_ID}` Skill",
+        )
+        if any(value not in integration_text for value in required_binding):
+            failures.append("managed project RC binding")
+        if "`project-incubator` Skill" in integration_text:
+            failures.append("stable Skill trigger in RC template")
 
     manifest, manifest_error = _read_json(skill_root / BUILD_MANIFEST_NAME)
     config, config_error = _read_json(

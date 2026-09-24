@@ -127,6 +127,22 @@ class RcSkillBuilderTests(unittest.TestCase):
 
         self.assertEqual(["SKILL.md"], skill_entries)
 
+    def test_build_binds_codex_managed_projects_to_rc_identity(self):
+        result = self._build("dist")
+        template = (
+            result.skill_root
+            / "PROJECT_INCUBATOR"
+            / "templates"
+            / "integrations"
+            / "codex"
+            / "AGENTS.template.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(f"Required Skill: {RC_SKILL_ID}", template)
+        self.assertIn(f"Required Package Version: {RC_PACKAGE_VERSION}", template)
+        self.assertIn(f"`{RC_SKILL_ID}` Skill", template)
+        self.assertNotIn("`project-incubator` Skill", template)
+
 
 if __name__ == "__main__":
     unittest.main()

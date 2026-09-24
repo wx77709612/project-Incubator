@@ -110,6 +110,27 @@ def _rewrite_runtime_version(config_path: Path) -> None:
     )
 
 
+def _rewrite_codex_integration_template(template_path: Path) -> None:
+    text = template_path.read_text(encoding="utf-8")
+    stable_trigger = "`project-incubator` Skill"
+    if stable_trigger not in text:
+        raise ValueError("Codex AGENTS template is missing the stable Skill trigger")
+    text = text.replace(stable_trigger, f"`{RC_SKILL_ID}` Skill", 1)
+    heading = "# AGENTS.md\n"
+    if heading not in text:
+        raise ValueError("Codex AGENTS template is missing its document heading")
+    binding = (
+        "\n## Required Skill Binding\n\n"
+        f"Required Skill: {RC_SKILL_ID}\n\n"
+        f"Required Package Version: {RC_PACKAGE_VERSION}\n\n"
+        "Invocation Policy: explicit-only\n"
+    )
+    template_path.write_text(
+        text.replace(heading, heading + binding, 1),
+        encoding="utf-8",
+    )
+
+
 def build_rc_skill(
     source_root: Path,
     output_parent: Path,
@@ -140,6 +161,9 @@ def build_rc_skill(
         nested_root.mkdir(parents=True)
         _copy_source_payload(source_root, nested_root)
         _rewrite_runtime_version(nested_root / "runtime" / "config.json")
+        _rewrite_codex_integration_template(
+            nested_root / "templates" / "integrations" / "codex" / "AGENTS.template.md"
+        )
 
         (staging_root / "SKILL.md").write_text(
             _render_rc_skill(source_root / "SKILL.md"),
