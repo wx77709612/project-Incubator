@@ -189,6 +189,16 @@ class RcSkillIsolationTests(unittest.TestCase):
 
             self.assertIn("package_structure", failed_check_names(report))
 
+    def test_verifier_rejects_nested_skill_discovery_entry(self):
+        with TemporaryDirectory() as temp:
+            built = self.build_rc(Path(temp) / "dist")
+            nested_skill = built.skill_root / "PROJECT_INCUBATOR" / "SKILL.md"
+            nested_skill.write_text("---\nname: duplicate\n---\n", encoding="utf-8")
+
+            report = verify_rc_skill(built.skill_root)
+
+            self.assertIn("package_structure", failed_check_names(report))
+
     def test_verifier_ignores_polluted_pythonpath(self):
         with TemporaryDirectory() as temp:
             built = self.build_rc(Path(temp) / "dist")

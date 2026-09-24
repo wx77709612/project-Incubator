@@ -147,10 +147,21 @@ def _structure_check(skill_root: Path) -> RcVerificationCheck:
         skill_root / "PROJECT_INCUBATOR" / "templates",
     )
     missing = [path.relative_to(skill_root).as_posix() for path in required if not path.exists()]
+    skill_entries = sorted(
+        path.relative_to(skill_root).as_posix()
+        for path in skill_root.rglob("SKILL.md")
+        if path.is_file()
+    )
+    unexpected_entries = [path for path in skill_entries if path != "SKILL.md"]
+    problems: list[str] = []
+    if missing:
+        problems.append(f"missing: {', '.join(missing)}")
+    if unexpected_entries:
+        problems.append(f"unexpected Skill entries: {', '.join(unexpected_entries)}")
     return RcVerificationCheck(
         "package_structure",
-        not missing,
-        "complete" if not missing else f"missing: {', '.join(missing)}",
+        not problems,
+        "complete" if not problems else "; ".join(problems),
     )
 
 

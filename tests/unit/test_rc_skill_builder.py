@@ -117,6 +117,16 @@ class RcSkillBuilderTests(unittest.TestCase):
         self.assertFalse(any("/ACCEPTANCE_TESTS/" in f"/{path}/" for path in relative_paths))
         self.assertFalse(any("/SPECS/_V" in f"/{path}" for path in relative_paths))
 
+    def test_build_contains_only_one_skill_discovery_entry(self):
+        result = self._build("dist")
+
+        skill_entries = sorted(
+            path.relative_to(result.skill_root).as_posix()
+            for path in result.skill_root.rglob("SKILL.md")
+        )
+
+        self.assertEqual(["SKILL.md"], skill_entries)
+
 
 if __name__ == "__main__":
     unittest.main()

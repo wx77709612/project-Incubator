@@ -44,6 +44,8 @@ def _validate_source(source_root: Path) -> None:
 
 def _is_source_payload(path: Path, source_root: Path) -> bool:
     relative = path.relative_to(source_root)
+    if relative == Path("SKILL.md"):
+        return False
     parts = relative.parts
     if any(part in PAYLOAD_EXCLUDED_DIRS for part in parts):
         return False
