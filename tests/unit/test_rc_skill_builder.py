@@ -143,6 +143,17 @@ class RcSkillBuilderTests(unittest.TestCase):
         self.assertIn(f"`{RC_SKILL_ID}` Skill", template)
         self.assertNotIn("`project-incubator` Skill", template)
 
+        profile_template = (
+            result.skill_root
+            / "PROJECT_INCUBATOR"
+            / "templates"
+            / "context"
+            / "PROJECT_PROFILE.template.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(f"Required Skill: {RC_SKILL_ID}", profile_template)
+        self.assertIn(f"Required Version: {RC_PACKAGE_VERSION}", profile_template)
+        self.assertIn("Invocation Policy: explicit-only", profile_template)
+
 
 if __name__ == "__main__":
     unittest.main()

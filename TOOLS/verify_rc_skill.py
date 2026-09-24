@@ -194,6 +194,25 @@ def _identity_check(skill_root: Path) -> RcVerificationCheck:
             failures.append("managed project RC binding")
         if "`project-incubator` Skill" in integration_text:
             failures.append("stable Skill trigger in RC template")
+    profile_template = (
+        skill_root
+        / "PROJECT_INCUBATOR"
+        / "templates"
+        / "context"
+        / "PROJECT_PROFILE.template.md"
+    )
+    try:
+        profile_text = profile_template.read_text(encoding="utf-8")
+    except OSError:
+        failures.append("project profile binding template")
+    else:
+        profile_binding = (
+            f"Required Skill: {RC_SKILL_ID}",
+            f"Required Version: {RC_PACKAGE_VERSION}",
+            "Invocation Policy: explicit-only",
+        )
+        if any(value not in profile_text for value in profile_binding):
+            failures.append("project profile RC binding")
 
     manifest, manifest_error = _read_json(skill_root / BUILD_MANIFEST_NAME)
     config, config_error = _read_json(

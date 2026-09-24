@@ -131,6 +131,17 @@ def _rewrite_codex_integration_template(template_path: Path) -> None:
     )
 
 
+def _rewrite_project_profile_template(template_path: Path) -> None:
+    text = template_path.read_text(encoding="utf-8").rstrip()
+    binding = (
+        "\n\n## Required Skill Binding\n\n"
+        f"Required Skill: {RC_SKILL_ID}\n\n"
+        f"Required Version: {RC_PACKAGE_VERSION}\n\n"
+        "Invocation Policy: explicit-only\n"
+    )
+    template_path.write_text(text + binding, encoding="utf-8")
+
+
 def build_rc_skill(
     source_root: Path,
     output_parent: Path,
@@ -163,6 +174,9 @@ def build_rc_skill(
         _rewrite_runtime_version(nested_root / "runtime" / "config.json")
         _rewrite_codex_integration_template(
             nested_root / "templates" / "integrations" / "codex" / "AGENTS.template.md"
+        )
+        _rewrite_project_profile_template(
+            nested_root / "templates" / "context" / "PROJECT_PROFILE.template.md"
         )
 
         (staging_root / "SKILL.md").write_text(
