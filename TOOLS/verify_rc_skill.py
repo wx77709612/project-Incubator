@@ -10,6 +10,9 @@ import sys
 from tempfile import TemporaryDirectory
 from typing import Any
 
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from TOOLS.rc_skill_common import (
     BUILD_MANIFEST_NAME,
     RC_PACKAGE_VERSION,

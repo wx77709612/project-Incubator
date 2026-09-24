@@ -5,7 +5,11 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 import shutil
+import sys
 import uuid
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from TOOLS.rc_skill_common import RC_SKILL_ID, tree_digest
 from TOOLS.verify_rc_skill import verify_rc_skill

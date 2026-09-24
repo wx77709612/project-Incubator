@@ -93,6 +93,19 @@ class RcSkillIsolationTests(unittest.TestCase):
             self.assertNotEqual(0, result.returncode)
             self.assertIn("No module named 'PROJECT_INCUBATOR'", result.stderr)
 
+    def test_release_tool_cli_entrypoints_load_from_direct_script_execution(self):
+        for tool_name in ("build_rc_skill.py", "verify_rc_skill.py", "install_rc_skill.py"):
+            with self.subTest(tool_name=tool_name):
+                result = subprocess.run(
+                    [sys.executable, "-B", str(REPOSITORY_ROOT / "TOOLS" / tool_name), "--help"],
+                    cwd=REPOSITORY_ROOT,
+                    text=True,
+                    capture_output=True,
+                    env=clean_environment(),
+                    check=False,
+                )
+                self.assertEqual(0, result.returncode, result.stderr)
+
     def test_nested_rc_layout_executes_script_outside_repository(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)
