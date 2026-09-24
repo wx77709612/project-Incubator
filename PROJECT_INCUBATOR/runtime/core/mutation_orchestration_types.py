@@ -193,6 +193,17 @@ class MutationOrchestrationResult:
     payload_digest: str | None = None
 
 
+def normalize_authorization_statement(statement: str) -> str:
+    """Normalize only transport-level differences without rewriting Maker meaning."""
+
+    return statement.replace("\r\n", "\n").replace("\r", "\n").strip()
+
+
+def authorization_statement_digest(statement: str) -> str:
+    normalized = normalize_authorization_statement(statement)
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
 def _canonical(value: Any) -> Any:
     if isinstance(value, Enum):
         return value.value
@@ -215,4 +226,6 @@ __all__ = [
     "MutationSetStatus",
     "MutationTargetSpec",
     "OrchestrationFailureCode",
+    "authorization_statement_digest",
+    "normalize_authorization_statement",
 ]

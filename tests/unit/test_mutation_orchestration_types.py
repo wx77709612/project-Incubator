@@ -9,6 +9,8 @@ from PROJECT_INCUBATOR.runtime.core.mutation_orchestration_types import (
     MutationSetStatus,
     MutationTargetSpec,
     OrchestrationFailureCode,
+    authorization_statement_digest,
+    normalize_authorization_statement,
 )
 
 
@@ -131,6 +133,16 @@ class MutationOrchestrationTypesTest(unittest.TestCase):
         self.assertEqual(first.payload_digest, same.payload_digest)
         self.assertEqual(first.idempotency_key, changed.idempotency_key)
         self.assertNotEqual(first.payload_digest, changed.payload_digest)
+
+    def test_authorization_statement_digest_normalizes_line_endings_and_outer_space(self):
+        self.assertEqual(
+            "确认启用\n范围仅限 C-1",
+            normalize_authorization_statement("  确认启用\r\n范围仅限 C-1  "),
+        )
+        self.assertEqual(
+            authorization_statement_digest("确认启用\r\n范围仅限 C-1"),
+            authorization_statement_digest("  确认启用\n范围仅限 C-1  "),
+        )
 
 
 if __name__ == "__main__":

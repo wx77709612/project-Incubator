@@ -14,6 +14,13 @@ from PROJECT_INCUBATOR.runtime.adapters.file_store import (
     FileWriteResult,
 )
 from PROJECT_INCUBATOR.runtime.core.contracts import ContextAccessResultStatus
+from PROJECT_INCUBATOR.runtime.core.mutation_orchestration_types import (
+    AuthorizationProvenance,
+    AuthorizationRequestRecord,
+    ContextMutationSet,
+    OrchestrationFailureCode,
+    authorization_statement_digest,
+)
 
 
 class AccessType(Enum):
@@ -385,6 +392,53 @@ class ContextCoordinator:
             history_result=history_result,
             active_view_result=active_result,
         )
+
+    def validate_authorization(
+        self,
+        pending_request: AuthorizationRequestRecord | None,
+        evidence: AuthorizationProvenance | AuthorizationEvidence | None,
+        mutation_set: ContextMutationSet,
+    ) -> OrchestrationFailureCode | None:
+        """Validate Maker authorization provenance for a protected mutation set."""
+
+        if pending_request is None:
+            return OrchestrationFailureCode.AUTHORIZATION_REQUIRED
+        if not isinstance(evidence, AuthorizationProvenance):
+            return OrchestrationFailureCode.AUTHORIZATION_INVALID
+        if pending_request.status != "PENDING":
+            return OrchestrationFailureCode.AUTHORIZATION_INVALID
+        if evidence.authorization_request_id != pending_request.authorization_request_id:
+            return OrchestrationFailureCode.AUTHORIZATION_INVALID
+        if (
+            evidence.source_actor != "MAKER"
+            or evidence.source_message_role != "MAKER"
+            or not evidence.source_message_ref
+            or not evidence.maker_statement_excerpt
+            or not evidence.confirmed_at
+            or evidence.statement_digest
+            != authorization_statement_digest(evidence.maker_statement_excerpt)
+        ):
+            return OrchestrationFailureCode.AUTHORIZATION_INVALID
+
+        if (
+            pending_request.event_type != mutation_set.event_type
+            or pending_request.event_ref != mutation_set.event_ref
+        ):
+            return OrchestrationFailureCode.AUTHORIZATION_SCOPE_MISMATCH
+
+        requested_scope = set(pending_request.requested_scope)
+        authorized_scope = set(evidence.authorized_scope)
+        target_types = {target.context_type for target in mutation_set.targets}
+        requested_targets = set(pending_request.requested_context_targets)
+        authorized_targets = set(evidence.authorized_context_targets)
+        if (
+            not requested_scope
+            or not requested_scope.issubset(authorized_scope)
+            or not target_types.issubset(requested_targets)
+            or not target_types.issubset(authorized_targets)
+        ):
+            return OrchestrationFailureCode.AUTHORIZATION_SCOPE_MISMATCH
+        return None
 
     def check_mutation_authority(
         self,
