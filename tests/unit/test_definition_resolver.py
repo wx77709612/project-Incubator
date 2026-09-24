@@ -3,7 +3,10 @@ from pathlib import Path
 import copy
 import json
 
-from PROJECT_INCUBATOR.runtime.components.definition_resolver import DefinitionResolver
+from PROJECT_INCUBATOR.runtime.components.definition_resolver import (
+    DefinitionLoadError,
+    DefinitionResolver,
+)
 from PROJECT_INCUBATOR.runtime.components.workflow_coordinator import (
     WorkflowCoordinator,
     WorkflowDefinitionError,
@@ -185,6 +188,59 @@ class DefinitionResolverTest(unittest.TestCase):
             "templates/context/CAPABILITY_SPIRAL_RECORD.template.md",
             config["template_locations"]["capability_spiral_record_template"],
         )
+
+    def test_context_event_recipe_resolves_opaque_activation(self):
+        recipe = DefinitionResolver().context_event_recipe("OPAQUE_EXTENSION_ACTIVATED")
+
+        self.assertEqual("MAKER", recipe["authority_requirement"])
+        self.assertEqual(
+            ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+            recipe["commit_order"],
+        )
+
+    def test_unknown_context_event_recipe_is_rejected(self):
+        with self.assertRaisesRegex(DefinitionLoadError, "unknown context event recipe"):
+            DefinitionResolver().context_event_recipe("UNKNOWN_EVENT")
+
+    def test_context_event_recipe_rejects_duplicate_targets(self):
+        context_definition = copy.deepcopy(
+            DefinitionResolver().load_frozen_definition_set().context_definition
+        )
+        recipe = context_definition["context_model"]["multi_context_event_recipes"][
+            "OPAQUE_EXTENSION_ACTIVATED"
+        ]
+        recipe["required_targets"].append("PROJECT_PLAN")
+
+        with self.assertRaisesRegex(DefinitionLoadError, "duplicate required target"):
+            DefinitionResolver.validate_context_event_recipes(context_definition)
+
+    def test_context_event_recipe_rejects_project_state_before_last(self):
+        context_definition = copy.deepcopy(
+            DefinitionResolver().load_frozen_definition_set().context_definition
+        )
+        recipe = context_definition["context_model"]["multi_context_event_recipes"][
+            "OPAQUE_EXTENSION_ACTIVATED"
+        ]
+        recipe["commit_order"] = [
+            "PROJECT_STATE",
+            "CAPABILITY_SPIRAL_RECORD",
+            "PROJECT_PLAN",
+        ]
+
+        with self.assertRaisesRegex(DefinitionLoadError, "PROJECT_STATE must commit last"):
+            DefinitionResolver.validate_context_event_recipes(context_definition)
+
+    def test_context_event_recipe_rejects_unknown_closure_operator(self):
+        context_definition = copy.deepcopy(
+            DefinitionResolver().load_frozen_definition_set().context_definition
+        )
+        recipe = context_definition["context_model"]["multi_context_event_recipes"][
+            "OPAQUE_EXTENSION_ACTIVATED"
+        ]
+        recipe["closure_assertions"][0]["operator"] = "SEMANTICALLY_EQUALS"
+
+        with self.assertRaisesRegex(DefinitionLoadError, "invalid closure operator"):
+            DefinitionResolver.validate_context_event_recipes(context_definition)
 
 
 if __name__ == "__main__":

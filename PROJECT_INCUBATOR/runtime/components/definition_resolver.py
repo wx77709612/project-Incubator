@@ -16,6 +16,10 @@ from PROJECT_INCUBATOR.runtime.core.contracts import (
     WorkflowResultStatus,
 )
 from PROJECT_INCUBATOR.runtime.core.runtime_types import RuntimeExecutionState
+from PROJECT_INCUBATOR.runtime.core.mutation_orchestration_types import (
+    AuthorityRequirement,
+    ClosureOperator,
+)
 
 
 RUNTIME_DEPENDENCY_FAILURE = "RUNTIME_DEPENDENCY_FAILURE"
@@ -99,13 +103,79 @@ class DefinitionResolver:
 
     def load_frozen_definition_set(self) -> FrozenDefinitionSet:
         config = self._load_config()
+        workflow_definition = self._load_json_definition(config, "workflow_definition")
+        gate_definition = self._load_json_definition(config, "gate_definition")
+        context_definition = self._load_json_definition(config, "context_definition")
+        advisory_definition = self._load_json_definition(config, "advisory_definition")
+        self.validate_context_event_recipes(context_definition)
         return FrozenDefinitionSet(
-            workflow_definition=self._load_json_definition(config, "workflow_definition"),
-            gate_definition=self._load_json_definition(config, "gate_definition"),
-            context_definition=self._load_json_definition(config, "context_definition"),
-            advisory_definition=self._load_json_definition(config, "advisory_definition"),
+            workflow_definition=workflow_definition,
+            gate_definition=gate_definition,
+            context_definition=context_definition,
+            advisory_definition=advisory_definition,
             runtime_contract_types=self._load_runtime_contract_types(config),
         )
+
+    def context_event_recipe(self, event_type: str) -> dict[str, Any]:
+        context_definition = self.load_frozen_definition_set().context_definition
+        recipes = context_definition["context_model"]["multi_context_event_recipes"]
+        recipe = recipes.get(event_type)
+        if not isinstance(recipe, dict):
+            raise DefinitionLoadError(f"unknown context event recipe: {event_type}")
+        return recipe
+
+    @staticmethod
+    def validate_context_event_recipes(context_definition: dict[str, Any]) -> None:
+        context_model = context_definition.get("context_model")
+        recipes = context_model.get("multi_context_event_recipes") if isinstance(context_model, dict) else None
+        if not isinstance(recipes, dict) or not recipes:
+            raise DefinitionLoadError("missing context event recipes")
+
+        valid_authorities = {item.value for item in AuthorityRequirement}
+        valid_operators = {item.value for item in ClosureOperator}
+        for event_type, recipe in recipes.items():
+            if not isinstance(event_type, str) or not event_type or not isinstance(recipe, dict):
+                raise DefinitionLoadError("invalid context event recipe")
+            authority = recipe.get("authority_requirement")
+            if authority not in valid_authorities:
+                raise DefinitionLoadError(f"invalid authority requirement: {event_type}")
+
+            required = recipe.get("required_targets")
+            allowed = recipe.get("allowed_targets")
+            commit_order = recipe.get("commit_order")
+            for name, values in (
+                ("required target", required),
+                ("allowed target", allowed),
+                ("commit order", commit_order),
+            ):
+                if not isinstance(values, list) or not values or any(
+                    not isinstance(value, str) or not value for value in values
+                ):
+                    raise DefinitionLoadError(f"invalid {name}: {event_type}")
+                if len(values) != len(set(values)):
+                    raise DefinitionLoadError(f"duplicate {name}: {event_type}")
+            if not set(required).issubset(allowed):
+                raise DefinitionLoadError(f"required target is not allowed: {event_type}")
+            if set(commit_order) != set(allowed):
+                raise DefinitionLoadError(f"commit order must cover allowed targets: {event_type}")
+            if "PROJECT_STATE" in commit_order and commit_order[-1] != "PROJECT_STATE":
+                raise DefinitionLoadError(f"PROJECT_STATE must commit last: {event_type}")
+
+            assertions = recipe.get("closure_assertions")
+            if not isinstance(assertions, list) or not assertions:
+                raise DefinitionLoadError(f"missing closure assertions: {event_type}")
+            assertion_ids: list[str] = []
+            for assertion in assertions:
+                if not isinstance(assertion, dict):
+                    raise DefinitionLoadError(f"invalid closure assertion: {event_type}")
+                assertion_id = assertion.get("assertion_id")
+                if not isinstance(assertion_id, str) or not assertion_id:
+                    raise DefinitionLoadError(f"invalid closure assertion id: {event_type}")
+                assertion_ids.append(assertion_id)
+                if assertion.get("operator") not in valid_operators:
+                    raise DefinitionLoadError(f"invalid closure operator: {event_type}")
+            if len(assertion_ids) != len(set(assertion_ids)):
+                raise DefinitionLoadError(f"duplicate closure assertion: {event_type}")
 
     def _load_config(self) -> dict[str, Any]:
         if self.config_data is not None:
