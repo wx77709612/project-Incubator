@@ -10,7 +10,7 @@
 
 **Spec:** `SPECS/DESIGN/RC_PACKAGING_DESIGN.md`
 
-**Status:** DRAFT / MAKER REVIEW REQUIRED
+**Status:** IMPLEMENTED / INSTALLED SMOKE PASSED / DISCOVERY PENDING
 
 ## Global Constraints
 
@@ -558,3 +558,23 @@ git commit -m "docs: record v1.1 rc installation evidence"
 - Packaging Gap 被实际证据关闭；
 - 尚未创建 V1.1 正式发布归档；
 - 后续模拟项目明确绑定 `$project-incubator-v1-1-rc`。
+
+## Execution Record
+
+执行日期：2026-09-24。
+
+| Evidence | Result |
+| --- | --- |
+| Source Commit | `4ce08ac77f2aef74fd263052e4d19f873cf5a639` |
+| RC Build Identity | `51b689f1f1a53fdde78a47bdbfc61a84e62556b6e2826e3072f2f3dd5239495c` |
+| Distribution Digest | `98635a01f3249dbad8c7e774f44a133bdb2fbeb2fd5273cb23f67fa2fb072fc5` |
+| Installed RC Digest | `98635a01f3249dbad8c7e774f44a133bdb2fbeb2fd5273cb23f67fa2fb072fc5` |
+| Stable V1.0 Digest Before / After | `c01fe91e476e52b3f590e37b04f6bbd1208eeec3eded30a771f0bdaac6b41cf5` / 相同 |
+| Repository Test Matrix | 115 / 115 通过 |
+| V1.0 Acceptance | 40 / 40 通过 |
+| V1.1 Acceptance | 36 / 36 通过 |
+| Distribution Verification | 9 / 9 通过 |
+| Installed Verification | 9 / 9 通过 |
+| Skill Discovery | PENDING，等待 Maker 在新任务显式调用 |
+
+相对于原 170 项矩阵，本次新增 21 项 RC 构建、隔离、入口和安装事务测试；当前合并矩阵为 191 / 191 通过。Task 1–5 的自动化与安装部分已完成，Task 5 Step 6 和 Task 6 的 Gap 关闭动作等待 Skill Discovery Evidence。

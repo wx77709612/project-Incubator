@@ -131,7 +131,8 @@
 补充回归证据：
 
 - V1.0 Acceptance Stage A–E：40 / 40 通过；
-- Unit、Integration、E2E、V1.0 Acceptance 与 V1.1 Acceptance 合并直接测试矩阵：170 / 170 通过；
+- Unit、Integration、E2E、V1.0 Acceptance 与 V1.1 Acceptance 原合并直接测试矩阵：170 / 170 通过；
+- 新增 RC 构建、隔离、入口与安装事务测试 21 项；当前完整矩阵：191 / 191 通过；
 - Stage E 另以独立进程重放现有 `TESTS` 与 V1.0 Acceptance，结果通过；
 - 原计划覆盖范围内未发现 Release Blocking Condition；
 - 当前等待 Maker 审阅最终验收证据，尚未创建 V1.1 发布归档。
@@ -152,4 +153,6 @@ ModuleNotFoundError: No module named 'PROJECT_INCUBATOR'
 - 严重性：Release Blocking；
 - 当前设计：`SPECS/DESIGN/RC_PACKAGING_DESIGN.md`；
 - 要求：建立自包含 RC、仓库外 Smoke Test 和 Installed Smoke Test；
+- 当前结果：Distribution 与 Installed RC 九项检查均通过，V1.0 摘要保持不变；
+- 剩余条件：在不加载 Implementation Repository 的新任务中完成显式 Skill Discovery；
 - 在该 Gap 关闭前，不得将 V1.1 标记为 Release Ready。

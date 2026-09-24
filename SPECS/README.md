@@ -6,8 +6,8 @@
 | --- | --- |
 | 当前研发版本 | V1.1 |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | Release Candidate Packaging Design Review |
-| 产品实现状态 | Runtime 实施与仓库内自动化验收已完成；发现全局安装包自包含缺口，发布暂时阻塞 |
+| 当前阶段 | Release Candidate Skill Discovery Verification |
+| 产品实现状态 | RC 已并行安装且 Installed Smoke 通过；等待新任务验证 Skill Discovery，发布仍暂时阻塞 |
 | 当前入口 | 本文件 |
 
 ## 版本管理规则
@@ -29,7 +29,7 @@
 | Design | `DESIGN/CONTEXT_MODEL_DESIGN.md` | APPROVED | Decision 活动视图与 Evidence Optional Context |
 | Design | `DESIGN/GATE_DESIGN.md` | APPROVED | Evidence、Correction、Baseline 与 Drift 评估政策 |
 | Design | `DESIGN/PHASE_ADVISORY_DESIGN.md` | APPROVED | Model Review、Regression、Drift 与 Extension Reason Code |
-| Design | `DESIGN/RC_PACKAGING_DESIGN.md` | DRAFT / MAKER REVIEW REQUIRED | V1.1 RC 并行身份、自包含打包、安装烟雾测试与模拟验收隔离 |
+| Design | `DESIGN/RC_PACKAGING_DESIGN.md` | APPROVED / IMPLEMENTED / DISCOVERY PENDING | V1.1 RC 并行身份、自包含打包、安装烟雾测试与模拟验收隔离 |
 | Extension | `EXTENSIONS/OPAQUE_CAPABILITY_EXTENSION.md` | APPROVED | Capability 级不透明性评估与产品点螺旋方法 |
 | Contract | `CONTRACTS/CONTEXT_ACCESS_CONTRACT.md` | APPROVED | Decision 活动视图、Optional Evidence Context 与 Assumption Mutation |
 | Contract | `CONTRACTS/WORKFLOW_CONTRACT.md` | APPROVED | P4 Correction Assessment、Result、Activity State 与 Resume Contract |
@@ -37,8 +37,8 @@
 | Contract | `CONTRACTS/SCRIPT_CONTRACT.md` | APPROVED | 确定性 Evidence、Failure Signature 与 Structural Drift |
 | Runtime | `RUNTIME/SKILL_RUNTIME_SPEC.md` | APPROVED | V1.1 Evidence、Correction、Baseline、Drift 与 Extension 执行机制 |
 | Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | V1.1 Tasks 1–10 已完成，等待 Maker 发布审阅 |
-| Implementation | `IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md` | DRAFT / MAKER REVIEW REQUIRED | RC 自包含构建、仓库外验证、并行安装与回滚验证计划 |
-| Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP OPEN | V1.1 A–E 共 36 项通过；仓库外安装探测发现新增发布阻塞 |
+| Implementation | `IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / INSTALLED SMOKE PASSED / DISCOVERY PENDING | RC 已构建并行安装；191 项矩阵与安装后九项检查通过 |
+| Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP OPEN | RC 自包含与安装缺口已修复；等待新任务 Skill Discovery Evidence |
 
 ## 当前 Source of Truth 解释
 
