@@ -232,7 +232,7 @@ class RcSkillIsolationTests(unittest.TestCase):
             self.assertEqual(0, result.returncode, result.stderr)
             agents = (managed_project / "AGENTS.md").read_text(encoding="utf-8")
             self.assertIn("Required Skill: project-incubator-v1-1-rc", agents)
-            self.assertIn("Required Package Version: 1.1.0-rc.1", agents)
+            self.assertIn("Required Package Version: 1.1.0-rc.2", agents)
             self.assertNotIn("`project-incubator` Skill", agents)
 
 

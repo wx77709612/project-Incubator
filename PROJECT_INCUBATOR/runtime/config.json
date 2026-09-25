@@ -1,5 +1,5 @@
 {
-  "package_version": "1.1",
+  "package_version": "1.1.0-rc.2",
   "reference_locations": {
     "workflow_definition": "references/workflow/core_workflow.json",
     "gate_definition": "references/gates/gates.json",

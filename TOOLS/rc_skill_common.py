@@ -7,7 +7,7 @@ from typing import Iterable
 
 
 RC_SKILL_ID = "project-incubator-v1-1-rc"
-RC_PACKAGE_VERSION = "1.1.0-rc.1"
+RC_PACKAGE_VERSION = "1.1.0-rc.2"
 PAYLOAD_EXCLUDED_DIRS = {"__pycache__", ".git", "TESTS", "ACCEPTANCE_TESTS"}
 PAYLOAD_EXCLUDED_SUFFIXES = {".pyc"}
 BUILD_MANIFEST_NAME = "BUILD_MANIFEST.json"

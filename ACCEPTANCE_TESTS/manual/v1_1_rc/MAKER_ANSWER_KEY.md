@@ -8,7 +8,7 @@
 
 ```text
 Skill Identity: project-incubator-v1-1-rc
-Package Version: 1.1.0-rc.1
+Package Version: 1.1.0-rc.2
 Invocation Policy: 仅允许显式调用，不参与隐式路由
 ```
 
