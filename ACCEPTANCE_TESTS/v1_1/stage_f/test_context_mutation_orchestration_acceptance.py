@@ -10,7 +10,17 @@ ROOT = Path(__file__).resolve().parents[3]
 class ContextMutationOrchestrationAcceptance(unittest.TestCase):
     def test_f01_round_2_and_round_2r_replay_passes(self):
         completed = subprocess.run(
-            [sys.executable, str(ROOT / "tests/integration/test_mutation_orchestration_flow.py")],
+            [
+                sys.executable,
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                "tests/integration",
+                "-p",
+                "test_mutation_orchestration_flow.py",
+                "-q",
+            ],
             cwd=ROOT,
             capture_output=True,
             text=True,
