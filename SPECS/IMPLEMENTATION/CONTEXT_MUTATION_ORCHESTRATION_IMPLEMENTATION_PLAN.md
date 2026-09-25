@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Status:** DRAFT / REVIEW REQUIRED
+**Status:** IMPLEMENTED / AUTOMATED ACCEPTANCE PASSED / MANUAL ROUND 2R PENDING
 
 **Goal:** 阻止未经验证的 Maker Authorization 和部分完成的多 Context Mutation 被报告为成功，并使 Opaque Extension Activation 在失败时可整体回滚。
 
@@ -245,3 +245,17 @@ self.assertIs(OrchestrationFailureCode.AUTHORIZATION_REQUIRED, failure)
 - legacy single-context requests and the previous 195-test baseline remain compatible；
 - rebuilt Installed RC is self-contained and V1.0 remains unchanged；
 - manual Round 2R is ready for Maker execution before original Round 3 resumes。
+
+## Execution Evidence
+
+执行日期：2026-09-25。
+
+- Tasks 1–8 均已按 TDD 与任务级验证完成；实现提交范围为 `ce2e809` 至 `807a564`。
+- 仓库测试：158 / 158 通过，其中 Unit 123、Integration 32、E2E 3。
+- V1.1 Stage A–F：39 / 39 通过，其中 A=6、B=8、C=7、D=8、E=8、F=2。
+- Layer 2：40 / 40 通过，其中 A=15、B=5、C=8、D=9、E=3。
+- 合计执行 237 项自动化检查，0 失败；Stage E 内部回归重放不作为额外能力结论。
+- RC Package Version：`1.1.0-rc.2`；Build Identity：`679cda06aa68e8baa23efaed66249f9f5a2e11d4a20bb40233e0bc6f30a14f07`。
+- 构建包九项验证与安装后九项验证均通过；安装前后 Stable V1.0 Digest 均为 `c01fe91e476e52b3f590e37b04f6bbd1208eeec3eded30a771f0bdaac6b41cf5`。
+- 从仓库外临时目录导入 Installed Runtime 成功，Definition Resolution=`COMPLETED`，仓库路径未出现在 `sys.path`。
+- Manual Round 2R 尚未执行，因此本计划不声明人工验收完成，也不解除 Round 3 的人工流程暂停。

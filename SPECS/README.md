@@ -6,8 +6,8 @@
 | --- | --- |
 | 当前研发版本 | V1.1 |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | RC Manual Acceptance Remediation Plan Review |
-| 产品实现状态 | 多 Context Mutation 与 Maker Authorization 来源修复规格已批准；Implementation 与 Acceptance Plan 已形成草案，现有 RC 实现继续冻结 |
+| 当前阶段 | RC 1.1.0-rc.2 Manual Round 2R Acceptance |
+| 产品实现状态 | 多 Context Mutation 与 Maker Authorization 来源修复已实现；自动化矩阵、RC 构建、并行安装与仓库外烟雾测试通过，等待 Maker 执行 Round 2R |
 | 当前入口 | 本文件 |
 
 ## 版本管理规则
@@ -43,8 +43,8 @@
 | Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | V1.1 Tasks 1–10 已完成，等待 Maker 发布审阅 |
 | Implementation | `IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / PACKAGING ACCEPTED | RC 已构建并行安装；195 项矩阵、唯一发现入口、Managed Project RC 绑定和安装后九项检查通过 |
 | Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP CLOSED FOR RC | RC 可发现且独立运行；下一步为人工行为验收 |
-| Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_IMPLEMENTATION_PLAN.md` | DRAFT / REVIEW REQUIRED | Release Blocking 修复的 Tasks 1–8、文件范围、TDD 顺序与 RC 重建步骤 |
-| Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | DRAFT / REVIEW REQUIRED | Authorization、Rollback、Runtime Routing、Stage F 与 Manual Round 2R 验收矩阵 |
+| Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / AUTOMATED ACCEPTANCE PASSED | Tasks 1–8 已完成；RC 1.1.0-rc.2 已构建并行安装，等待 Manual Round 2R |
+| Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | AUTOMATED PASSED / MANUAL ROUND 2R PENDING | Authorization、Rollback、Runtime Routing、Stage F 已通过；Manual Round 2R 尚未执行 |
 
 ## 人工验收入口
 
@@ -54,7 +54,7 @@
 
 Maker 专用答案不得加入模拟项目或发送给被测 Agent。
 
-当前人工验收结论：Round 2 的 Capability 分析通过，但 Authority Boundary 失败；Round 2C 纠正通过。缺陷 `MULTI_CONTEXT_MUTATION_ORCHESTRATION_GAP` 保持 Release Blocking，Round 3 暂停。
+当前人工验收结论：Round 2 的 Capability 分析通过，但旧 RC 的 Authority Boundary 失败；Round 2C 纠正通过。缺陷 `MULTI_CONTEXT_MUTATION_ORCHESTRATION_GAP` 已完成自动化修复验证，仍需在已安装的 `1.1.0-rc.2` 上执行 Round 2R；原 Round 3 在此之前继续暂停。
 
 ## 当前 Source of Truth 解释
 
@@ -65,7 +65,7 @@ Maker 专用答案不得加入模拟项目或发送给被测 Agent。
 3. 活动层文档是当前实现依据，`_V1.0` 仅用于回归比较、迁移分析和历史追踪；
 4. 若下游实现与上游规格冲突，必须先登记并解决 Design Gap；
 5. RC 自包含打包、仓库外安装烟雾测试和 Maker 人工验收完成前，不创建 V1.1 发布归档，也不将当前活动规格标记为已发布。
-6. 四份增量规格已经 Maker 批准并成为 V1.1 RC remediation 的活动依据；两份 remediation Plan 获批前，不得修改 RC 产品行为或重新安装候选包。
+6. 四份增量规格与两份 remediation Plan 已经 Maker 批准并实施；自动化通过不替代 Maker 的 Round 2R 人工行为验收。
 
 ## V1.1 文档推进顺序
 

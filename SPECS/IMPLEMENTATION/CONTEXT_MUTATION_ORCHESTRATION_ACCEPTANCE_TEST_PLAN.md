@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Target | V1.1 RC Remediation / `1.1.0-rc.2` |
-| Status | DRAFT / REVIEW REQUIRED |
+| Status | AUTOMATED PASSED / MANUAL ROUND 2R PENDING |
 | Finding | `MULTI_CONTEXT_MUTATION_ORCHESTRATION_GAP` |
 | Implementation Plan | `SPECS/IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_IMPLEMENTATION_PLAN.md` |
 | Manual Baseline | Round 2 FAIL；Round 2C PASS |
@@ -113,6 +113,14 @@
 | F09 | Full Regression | 既有 Unit / Integration / E2E / V1.0 / V1.1 / Layer2 全部通过 |
 
 通过标准：F01–F09 全部通过。
+
+### 自动化执行结果
+
+- Stage A：6 / 6；Stage B：8 / 8；Stage C：7 / 7；Stage D：8 / 8；Stage E：8 / 8；Stage F：2 / 2。
+- 仓库 Unit / Integration / E2E：158 / 158；Layer 2：40 / 40。
+- RC 构建与安装后验证各 9 / 9；Installed Runtime 仓库外导入通过。
+- Stable V1.0 安装前后摘要一致。
+- 本结果只关闭自动化与打包部分；Manual Round 2R 保持 Pending。
 
 ## 9. Manual Round 2R
 
