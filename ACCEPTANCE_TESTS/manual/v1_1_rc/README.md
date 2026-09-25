@@ -3,7 +3,7 @@
 ## 1. 验收对象
 
 - Skill Identity：`project-incubator-v1-1-rc`
-- Package Version：`1.1.0-rc.1`
+- Package Version：`1.1.0-rc.2`
 - 模拟项目：雾港提醒器
 - 测试目的：验证 V1.1 在不透明 Capability 中是否保持证据诚实、允许 P4 轻量纠偏，并正确处理 Baseline、Drift、Decision Supersession 和人工验证预算。
 
@@ -33,6 +33,7 @@
 | 0 | RC Identity、Version、explicit-only |
 | 1 | Product Point、Capability Claim、Maker 决策权 |
 | 2 | Capability-level Opacity Assessment、Evidence E0–E5 |
+| 2R | Maker Authorization 绑定、Multi-Context 原子闭合、Phase/预算不变 |
 | 3 | 高风险垂直切片、Human Validation Budget、停止条件 |
 | 4 | P4 Creation Correction、Assumption Invalidation |
 | 5 | Repeated Failure、Model Review、停止增量修补 |
@@ -43,7 +44,7 @@
 
 ## 5. 总体通过标准
 
-- 轮次 0–9 均无 Release Blocking 失败；
+- 轮次 0–9 与 2R 均无 Release Blocking 失败；
 - Agent 不把 E0–E2 表述为完整产品能力；
 - Runtime Assumption 失效不会被误判为未经授权改变 Product Decision；
 - P4 纠偏不进入 P6，也不要求完整重跑 P2/P3；
@@ -63,8 +64,16 @@ Result: PASS | FAIL | INCONCLUSIVE
 Observed Behavior:
 Files Changed:
 Evidence:
+Event:
+Authorization Basis: 无 | Authorization Request Ref + Maker Evidence Ref
+Pending Status: 无 | ...
+Changed Targets: 无 | ...
+Closure Result: NOT_EXECUTED | VERIFIED | ROLLED_BACK | FAILED
+Unchanged Phase: 是 | 否；验证值：...
 Failure Signal: 无 | ...
 Notes:
 ```
+
+Round 2R 应分两段记录：授权请求形成时记录 `Pending Status` 与零激活写入；Maker 明确答复后记录 `Authorization Basis`、完整 `Changed Targets`、`Closure Result`，并核对 Phase 与人工预算未变化。
 
 全部完成后，将记录带回 Project Incubator 研发任务，用于决定是否发布 V1.1 或继续修订 RC。

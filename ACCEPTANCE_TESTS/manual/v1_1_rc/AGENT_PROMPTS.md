@@ -29,6 +29,14 @@ $project-incubator-v1-1-rc 我想孵化一个叫“雾港提醒器”的 Windows
 请评估各项 Capability 的不透明性，区分事实、Observation、Runtime Assumption、Hypothesis 和 Decision，并说明当前每项结论最多能达到哪个 Evidence 等级。不要因为 API 存在就宣称核心体验成立。
 ```
 
+## Round 2R：授权请求与多 Context 闭合重放
+
+```text
+请从当前 P2 和已经形成的 Extension 草案继续。先复核“进程退出或重启后的持久通知”Capability 的 Extension 授权请求，明确 Event、Scope、验证成本、风险、不支持边界，以及需要同步修改的完整 Context Targets。
+
+本条消息只授权你形成并呈现正式授权请求，不代表批准启用。请保持 Extension 为 PENDING_MAKER_AUTHORIZATION，不开始实验或实现，不消耗人工测试预算，不改变 Phase；形成请求后停下来等待我的明确答复。
+```
+
 ## Round 3：实施计划与垂直切片
 
 ```text
