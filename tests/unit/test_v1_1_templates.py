@@ -75,6 +75,59 @@ class V11TemplateTest(unittest.TestCase):
         self.assertIn("Capability 级", skill)
         self.assertNotIn("所有 Managed Project 必须创建 `CAPABILITY_SPIRAL_RECORD.md`", skill)
 
+    def test_skill_requires_explicit_authorization_and_multi_context_closure(self):
+        skill = self.read("SKILL.md")
+        for phrase in (
+            "Multi-Context Trigger",
+            "Mutation Set Summary",
+            "maker_statement_excerpt",
+            "Changed Targets",
+            "Closure Result",
+            "Unchanged Phase",
+        ):
+            self.assertIn(phrase, skill)
+        for ambiguous_phrase in ("评估", "提出请求", "继续", "风险确认"):
+            self.assertIn(f"`{ambiguous_phrase}`", skill)
+        self.assertIn("不得推断为 Maker Authorization", skill)
+        self.assertIn("PENDING_MAKER_AUTHORIZATION", skill)
+        self.assertIn("闭合验证通过后", skill)
+
+    def test_extension_fields_are_conditional_and_trace_authorization(self):
+        fields = (
+            "Extension Status",
+            "Authorization Request Ref",
+            "Authorization Evidence Ref",
+            "Mutation Set Ref",
+            "Closure Result Ref",
+        )
+        for template in (
+            "templates/context/PROJECT_STATE.template.md",
+            "templates/context/PROJECT_PLAN.template.md",
+            "templates/context/CAPABILITY_SPIRAL_RECORD.template.md",
+        ):
+            content = self.read(template)
+            with self.subTest(template=template):
+                for field_name in fields:
+                    self.assertIn(field_name, content)
+                self.assertIn("条件区块", content)
+                self.assertIn("透明", content)
+                self.assertIn("省略", content)
+
+    def test_codex_entry_requires_runtime_owned_multi_context_completion_report(self):
+        agents = self.read("templates/integrations/codex/AGENTS.template.md")
+        for phrase in (
+            "Multi-Context Trigger",
+            "Mutation Set Summary",
+            "Authorization Basis",
+            "Pending Status",
+            "Changed Targets",
+            "Closure Result",
+            "Unchanged Phase",
+        ):
+            self.assertIn(phrase, agents)
+        self.assertIn("Maker", agents)
+        self.assertIn("Runtime", agents)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,7 +2,10 @@
   "definition_id": "PROJECT_INCUBATOR_V1_CONTEXT_MODEL",
   "source_document": [
     "SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md",
-    "SPECS/CONTRACTS/CONTEXT_ACCESS_CONTRACT.md"
+    "SPECS/CONTRACTS/CONTEXT_ACCESS_CONTRACT.md",
+    "SPECS/DESIGN/CONTEXT_MUTATION_ORCHESTRATION_DESIGN.md",
+    "SPECS/CONTRACTS/CONTEXT_MUTATION_ORCHESTRATION_CONTRACT.md",
+    "SPECS/RUNTIME/CONTEXT_MUTATION_ORCHESTRATION_RUNTIME_SPEC.md"
   ],
   "definition_version": "v1.1-implementation-projection",
   "context_model": {
@@ -272,6 +275,72 @@
       "current_effective_lifecycle_plan": "PROJECT_PLAN.md",
       "maker_confirmed_decision_record": "PROJECT_DECISIONS.md",
       "project_type_specific_extension": "Corresponding Optional Context"
+    },
+    "multi_context_event_recipes": {
+      "OPAQUE_EXTENSION_RECOMMENDED": {
+        "authority_requirement": "NONE",
+        "required_targets": ["PROJECT_PLAN", "PROJECT_STATE"],
+        "allowed_targets": ["PROJECT_PLAN", "PROJECT_STATE"],
+        "commit_order": ["PROJECT_PLAN", "PROJECT_STATE"],
+        "allowed_status_transition": {"from": ["ABSENT"], "to": "PROPOSED"},
+        "closure_assertions": [
+          {"assertion_id": "state-proposed", "left_ref": "PROJECT_STATE.Extension Status", "operator": "EQUALS", "right_value_or_ref": "PROPOSED"},
+          {"assertion_id": "plan-proposed", "left_ref": "PROJECT_PLAN.Extension Status", "operator": "EQUALS", "right_value_or_ref": "PROPOSED"},
+          {"assertion_id": "phase-unchanged", "left_ref": "PROJECT_STATE.Current Phase", "operator": "UNCHANGED"}
+        ]
+      },
+      "OPAQUE_EXTENSION_AUTHORIZATION_REQUESTED": {
+        "authority_requirement": "NONE",
+        "required_targets": ["PROJECT_PLAN", "PROJECT_STATE"],
+        "allowed_targets": ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+        "commit_order": ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+        "allowed_status_transition": {"from": ["PROPOSED", "PENDING_MAKER_AUTHORIZATION"], "to": "PENDING_MAKER_AUTHORIZATION"},
+        "closure_assertions": [
+          {"assertion_id": "state-pending", "left_ref": "PROJECT_STATE.Extension Status", "operator": "EQUALS", "right_value_or_ref": "PENDING_MAKER_AUTHORIZATION"},
+          {"assertion_id": "plan-pending", "left_ref": "PROJECT_PLAN.Extension Status", "operator": "EQUALS", "right_value_or_ref": "PENDING_MAKER_AUTHORIZATION"},
+          {"assertion_id": "phase-unchanged", "left_ref": "PROJECT_STATE.Current Phase", "operator": "UNCHANGED"}
+        ]
+      },
+      "OPAQUE_EXTENSION_ACTIVATED": {
+        "authority_requirement": "MAKER",
+        "required_targets": ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+        "allowed_targets": ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+        "commit_order": ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+        "allowed_status_transition": {"from": ["PENDING_MAKER_AUTHORIZATION", "SUSPENDED"], "to": "ACTIVE"},
+        "closure_assertions": [
+          {"assertion_id": "spiral-active", "left_ref": "CAPABILITY_SPIRAL_RECORD.Extension Status", "operator": "EQUALS", "right_value_or_ref": "ACTIVE"},
+          {"assertion_id": "plan-active", "left_ref": "PROJECT_PLAN.Extension Status", "operator": "EQUALS", "right_value_or_ref": "ACTIVE"},
+          {"assertion_id": "state-active", "left_ref": "PROJECT_STATE.Extension Status", "operator": "EQUALS", "right_value_or_ref": "ACTIVE"},
+          {"assertion_id": "capability-match", "left_ref": "PROJECT_STATE.Capability ID", "operator": "EQUALS", "right_value_or_ref": "PROJECT_PLAN.Capability ID"},
+          {"assertion_id": "phase-unchanged", "left_ref": "PROJECT_STATE.Current Phase", "operator": "UNCHANGED"},
+          {"assertion_id": "budget-unchanged", "left_ref": "CAPABILITY_SPIRAL_RECORD.Human Validation Consumed", "operator": "UNCHANGED"}
+        ]
+      },
+      "OPAQUE_EXTENSION_DECLINED": {
+        "authority_requirement": "MAKER",
+        "required_targets": ["PROJECT_PLAN", "PROJECT_STATE"],
+        "allowed_targets": ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+        "commit_order": ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+        "allowed_status_transition": {"from": ["PENDING_MAKER_AUTHORIZATION"], "to": "DECLINED"},
+        "closure_assertions": [
+          {"assertion_id": "state-declined", "left_ref": "PROJECT_STATE.Extension Status", "operator": "EQUALS", "right_value_or_ref": "DECLINED"},
+          {"assertion_id": "plan-declined", "left_ref": "PROJECT_PLAN.Extension Status", "operator": "EQUALS", "right_value_or_ref": "DECLINED"},
+          {"assertion_id": "phase-unchanged", "left_ref": "PROJECT_STATE.Current Phase", "operator": "UNCHANGED"}
+        ]
+      },
+      "OPAQUE_EXTENSION_SUSPENDED": {
+        "authority_requirement": "EVIDENCE",
+        "required_targets": ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+        "allowed_targets": ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+        "commit_order": ["CAPABILITY_SPIRAL_RECORD", "PROJECT_PLAN", "PROJECT_STATE"],
+        "allowed_status_transition": {"from": ["ACTIVE"], "to": "SUSPENDED"},
+        "closure_assertions": [
+          {"assertion_id": "spiral-suspended", "left_ref": "CAPABILITY_SPIRAL_RECORD.Extension Status", "operator": "EQUALS", "right_value_or_ref": "SUSPENDED"},
+          {"assertion_id": "plan-suspended", "left_ref": "PROJECT_PLAN.Extension Status", "operator": "EQUALS", "right_value_or_ref": "SUSPENDED"},
+          {"assertion_id": "state-suspended", "left_ref": "PROJECT_STATE.Extension Status", "operator": "EQUALS", "right_value_or_ref": "SUSPENDED"},
+          {"assertion_id": "phase-unchanged", "left_ref": "PROJECT_STATE.Current Phase", "operator": "UNCHANGED"}
+        ]
+      }
     },
     "access_contract_boundary": {
       "source_document": "SPECS/CONTRACTS/CONTEXT_ACCESS_CONTRACT.md",

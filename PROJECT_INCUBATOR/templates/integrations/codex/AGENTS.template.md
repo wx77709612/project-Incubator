@@ -38,6 +38,14 @@
 
 不得绕过 Project Incubator Runtime 直接执行受控状态变化、自行推进 Workflow 或自行修改受保护 Context。
 
+## Multi-Context Trigger
+
+一个事件同时影响多个 Context 时，先形成 `Mutation Set Summary`，列出 Event、完整目标清单、提交顺序、Closure Assertions 与回滚边界，再交给 Runtime 一次执行。不得要求 Maker 逐份点名或由 Agent 逐文件补写。
+
+Extension 建议和风险讨论不是 Maker Authorization。授权缺失时只报告 `Pending Status`；只有 Maker 的明确授权与原文证据绑定 Pending Request 后，Runtime 才能执行激活。
+
+执行后的完成报告必须列出：Event、`Authorization Basis` 或 `Pending Status`、`Changed Targets`、`Closure Result`、回滚结果（如有）及 `Unchanged Phase`。
+
 ## Maker Boundary
 
 Maker 保留 Project Goal、Project Scope、Project Direction、重要 Decision，以及需要 Maker Authorization 的变更的最终决策权。

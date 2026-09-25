@@ -34,6 +34,7 @@ class RuntimeResultInput:
     correction_result_reference: Any | None = None
     correction_activity_state: Any | None = None
     advisory_output_reference: Any | None = None
+    mutation_orchestration_result_reference: Any | None = None
 
 
 @dataclass(frozen=True)
@@ -53,6 +54,7 @@ class RuntimeResult:
     correction_result_reference: Any | None = None
     correction_activity_state: Any | None = None
     advisory_output_reference: Any | None = None
+    mutation_orchestration_result_reference: Any | None = None
     result_reason: str = RUNTIME_RESULT_READY
 
 
@@ -84,6 +86,9 @@ class RuntimeResultCoordinator:
             correction_result_reference=result_input.correction_result_reference,
             correction_activity_state=result_input.correction_activity_state,
             advisory_output_reference=result_input.advisory_output_reference,
+            mutation_orchestration_result_reference=(
+                result_input.mutation_orchestration_result_reference
+            ),
         )
 
     def create_result(
@@ -103,6 +108,7 @@ class RuntimeResultCoordinator:
         correction_result_reference: Any | None = None,
         correction_activity_state: Any | None = None,
         advisory_output_reference: Any | None = None,
+        mutation_orchestration_result_reference: Any | None = None,
     ) -> RuntimeResult:
         return self.form_result(
             RuntimeResultInput(
@@ -121,6 +127,9 @@ class RuntimeResultCoordinator:
                 correction_result_reference=correction_result_reference,
                 correction_activity_state=correction_activity_state,
                 advisory_output_reference=advisory_output_reference,
+                mutation_orchestration_result_reference=(
+                    mutation_orchestration_result_reference
+                ),
             ),
         )
 

@@ -135,3 +135,19 @@ Agent 根据实际 Phase 数量增加或删除编号项。
 -->
 
 - 待填写
+
+## Extension Mutation Plan / Extension 变更计划（条件区块）
+
+<!--
+仅当某个不透明 Capability 已进入 Extension 建议、授权请求或执行规划时保留本条件区块。
+透明 Capability、未提出 Extension 的项目和无关项目必须省略整个区块。
+这里记录计划与授权等待状态，不得把未执行计划写成 PROJECT_STATE 的实际状态。
+-->
+
+- Capability ID：待填写
+- Extension Status：`PROPOSED` / `PENDING_MAKER_AUTHORIZATION` / `ACTIVE` / `DECLINED` / `SUSPENDED`
+- Authorization Request Ref：待填写
+- Authorization Evidence Ref：待填写；尚未授权时填写 `PENDING`
+- Mutation Set Ref：待填写
+- Changed Targets：待填写
+- Closure Result Ref：待填写；尚未执行时填写 `NOT_EXECUTED`

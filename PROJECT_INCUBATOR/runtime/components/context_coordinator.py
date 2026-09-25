@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
+import hashlib
+import json
 from pathlib import Path
 import re
 from typing import Any
@@ -11,9 +13,22 @@ from typing import Any
 from PROJECT_INCUBATOR.runtime.adapters.file_store import (
     FileStore,
     FileStoreError,
+    FileSnapshot,
     FileWriteResult,
 )
 from PROJECT_INCUBATOR.runtime.core.contracts import ContextAccessResultStatus
+from PROJECT_INCUBATOR.runtime.core.mutation_orchestration_types import (
+    AuthorityRequirement,
+    AuthorizationProvenance,
+    AuthorizationRequestRecord,
+    ClosureAssertion,
+    ClosureOperator,
+    ContextMutationSet,
+    MutationOrchestrationResult,
+    MutationSetStatus,
+    OrchestrationFailureCode,
+    authorization_statement_digest,
+)
 
 
 class AccessType(Enum):
@@ -184,6 +199,9 @@ class ContextCoordinator:
 
     def __init__(self, file_store: FileStore) -> None:
         self.file_store = file_store
+        self._orchestration_results: dict[
+            str, tuple[str, MutationOrchestrationResult]
+        ] = {}
 
     def handle(self, request: ContextAccessRequest) -> ContextAccessResult:
         if request.conflict_reference:
@@ -384,6 +402,728 @@ class ContextCoordinator:
             "decision history and active view persisted and verified",
             history_result=history_result,
             active_view_result=active_result,
+        )
+
+    def validate_authorization(
+        self,
+        pending_request: AuthorizationRequestRecord | None,
+        evidence: AuthorizationProvenance | AuthorizationEvidence | None,
+        mutation_set: ContextMutationSet,
+    ) -> OrchestrationFailureCode | None:
+        """Validate Maker authorization provenance for a protected mutation set."""
+
+        if pending_request is None:
+            return OrchestrationFailureCode.AUTHORIZATION_REQUIRED
+        if not isinstance(evidence, AuthorizationProvenance):
+            return OrchestrationFailureCode.AUTHORIZATION_INVALID
+        if pending_request.status != "PENDING":
+            return OrchestrationFailureCode.AUTHORIZATION_INVALID
+        if evidence.authorization_request_id != pending_request.authorization_request_id:
+            return OrchestrationFailureCode.AUTHORIZATION_INVALID
+        if (
+            evidence.source_actor != "MAKER"
+            or evidence.source_message_role != "MAKER"
+            or not evidence.source_message_ref
+            or not evidence.maker_statement_excerpt
+            or not evidence.confirmed_at
+            or evidence.statement_digest
+            != authorization_statement_digest(evidence.maker_statement_excerpt)
+        ):
+            return OrchestrationFailureCode.AUTHORIZATION_INVALID
+
+        if (
+            pending_request.event_type != mutation_set.event_type
+            or pending_request.event_ref != mutation_set.event_ref
+        ):
+            return OrchestrationFailureCode.AUTHORIZATION_SCOPE_MISMATCH
+
+        requested_scope = set(pending_request.requested_scope)
+        authorized_scope = set(evidence.authorized_scope)
+        target_types = {target.context_type for target in mutation_set.targets}
+        requested_targets = set(pending_request.requested_context_targets)
+        authorized_targets = set(evidence.authorized_context_targets)
+        if (
+            not requested_scope
+            or requested_scope != authorized_scope
+            or not target_types.issubset(requested_targets)
+            or not target_types.issubset(authorized_targets)
+            or not authorized_targets.issubset(requested_targets)
+        ):
+            return OrchestrationFailureCode.AUTHORIZATION_SCOPE_MISMATCH
+        return None
+
+    def execute_mutation_set(
+        self,
+        mutation_set: ContextMutationSet,
+        recipe: dict[str, Any],
+    ) -> MutationOrchestrationResult:
+        """Execute a recipe-bound Context Mutation Set as one recoverable unit."""
+
+        try:
+            execution_record = self._load_execution_record(mutation_set)
+            cached = self._orchestration_results.get(mutation_set.idempotency_key)
+            if execution_record is not None:
+                cached_digest = execution_record["payload_digest"]
+                cached_result = self._result_from_execution_record(execution_record)
+            elif cached is not None:
+                cached_digest, cached_result = cached
+            else:
+                cached_digest = None
+                cached_result = None
+        except (FileStoreError, KeyError, TypeError, ValueError):
+            return self._orchestration_result(
+                mutation_set,
+                MutationSetStatus.FAILED,
+                OrchestrationFailureCode.STAGE_FAILED,
+            )
+        if cached_result is not None and cached_digest is not None:
+            if cached_result.status is MutationSetStatus.VERIFIED:
+                if cached_digest == mutation_set.payload_digest:
+                    return cached_result
+                return self._orchestration_result(
+                    mutation_set,
+                    MutationSetStatus.REJECTED,
+                    OrchestrationFailureCode.IDEMPOTENCY_CONFLICT,
+                )
+            if cached_result.status is MutationSetStatus.FAILED:
+                return cached_result
+            if (
+                cached_result.status is not MutationSetStatus.AUTHORIZATION_PENDING
+                and cached_digest != mutation_set.payload_digest
+            ):
+                return self._orchestration_result(
+                    mutation_set,
+                    MutationSetStatus.REJECTED,
+                    OrchestrationFailureCode.IDEMPOTENCY_CONFLICT,
+                )
+
+        recipe_failure = self._validate_event_recipe(mutation_set, recipe)
+        if recipe_failure is not None:
+            return self._remember_orchestration(
+                mutation_set,
+                self._orchestration_result(
+                    mutation_set,
+                    MutationSetStatus.REJECTED,
+                    recipe_failure,
+                ),
+            )
+
+        if mutation_set.authority_requirement in {
+            AuthorityRequirement.MAKER,
+            AuthorityRequirement.MAKER_AND_EVIDENCE,
+        }:
+            if (
+                mutation_set.authorization_request is None
+                or mutation_set.authorization_provenance is None
+            ):
+                return self._remember_orchestration(
+                    mutation_set,
+                    self._orchestration_result(
+                        mutation_set,
+                        MutationSetStatus.AUTHORIZATION_PENDING,
+                        OrchestrationFailureCode.AUTHORIZATION_REQUIRED,
+                    ),
+                )
+            authorization_failure = self.validate_authorization(
+                mutation_set.authorization_request,
+                mutation_set.authorization_provenance,
+                mutation_set,
+            )
+            if authorization_failure is not None:
+                return self._remember_orchestration(
+                    mutation_set,
+                    self._orchestration_result(
+                        mutation_set,
+                        MutationSetStatus.REJECTED,
+                        authorization_failure,
+                    ),
+                )
+
+        if execution_record is not None and cached_result is not None:
+            if cached_result.status in {
+                MutationSetStatus.COMMITTING,
+                MutationSetStatus.FINALIZING_AUTHORIZATION,
+            }:
+                return self._recover_mutation_set(
+                    mutation_set,
+                    execution_record,
+                )
+
+        prepared: list[tuple[Any, AccessTarget, Path]] = []
+        snapshots: dict[str, Any] = {}
+        try:
+            for target_spec in mutation_set.ordered_targets:
+                context_type = ContextType(target_spec.context_type)
+                mutation_type = MutationType(target_spec.mutation_intent)
+                access_target = AccessTarget(
+                    context_type,
+                    context_reference=target_spec.context_reference,
+                )
+                path = self._target_path(access_target)
+                snapshot = self.file_store.snapshot(path)
+                snapshots[target_spec.context_type] = snapshot
+                if (
+                    target_spec.expected_before_digest is not None
+                    and snapshot.digest != target_spec.expected_before_digest
+                ):
+                    raise ValueError(f"before digest mismatch: {target_spec.context_type}")
+                if mutation_type is MutationType.CREATE_CONTEXT and snapshot.existed:
+                    raise ValueError(f"context already exists: {target_spec.context_type}")
+                if mutation_type is MutationType.UPDATE_CONTEXT and not snapshot.existed:
+                    raise ValueError(f"context does not exist: {target_spec.context_type}")
+                if context_type is ContextType.PROJECT_STATE:
+                    before_phase = self._field_value(
+                        snapshot.content or "",
+                        "Current Phase",
+                    )
+                    if before_phase != mutation_set.current_phase:
+                        raise ValueError("mutation set phase does not match PROJECT_STATE")
+                transition = recipe.get("allowed_status_transition", {})
+                if target_spec.context_type in set(recipe.get("required_targets", ())):
+                    before_status = self._field_value(
+                        snapshot.content or "",
+                        "Extension Status",
+                    ) or "ABSENT"
+                    after_status = self._field_value(
+                        target_spec.proposed_content,
+                        "Extension Status",
+                    )
+                    if (
+                        before_status not in set(transition.get("from", ()))
+                        or after_status != transition.get("to")
+                    ):
+                        raise ValueError(
+                            f"invalid extension status transition: {target_spec.context_type}"
+                        )
+                maker_authorization = None
+                if mutation_set.authorization_provenance is not None:
+                    maker_authorization = AuthorizationEvidence(
+                        source=RequestSource.MAKER,
+                        confirmed=True,
+                        reference=mutation_set.authorization_provenance.authorization_id,
+                    )
+                intent = MutationIntent(
+                    mutation_type=mutation_type,
+                    target_context=access_target,
+                    change_purpose=f"execute {mutation_set.event_type}",
+                    change_basis=(
+                        "RUNTIME_CONFIRMED_EXECUTION_FACT"
+                        if context_type is ContextType.PROJECT_STATE
+                        else "MULTI_CONTEXT_EVENT_RECIPE"
+                    ),
+                    proposed_content=target_spec.proposed_content,
+                    proposed_change_reference=mutation_set.event_ref,
+                    maker_authorization=maker_authorization,
+                )
+                request = ContextAccessRequest(
+                    request_id=f"{mutation_set.mutation_set_id}:{target_spec.context_type}:preflight",
+                    access_target=access_target,
+                    access_type=AccessType.REQUEST_MUTATION,
+                    request_source=(
+                        RequestSource.RUNTIME
+                        if mutation_set.requested_by == "RUNTIME"
+                        else RequestSource.AGENT
+                    ),
+                    access_purpose="preflight multi-context mutation",
+                    mutation_intent=intent,
+                    requirement_reference=mutation_set.event_type,
+                )
+                preflight = self.request_mutation(request)
+                if preflight.status is not ContextAccessResultStatus.ACCEPTED:
+                    raise ValueError(
+                        preflight.missing_requirement or preflight.decision_reason
+                    )
+                prepared.append((target_spec, access_target, path))
+        except (ValueError, FileStoreError):
+            return self._remember_orchestration(
+                mutation_set,
+                self._orchestration_result(
+                    mutation_set,
+                    MutationSetStatus.REJECTED,
+                    OrchestrationFailureCode.PRECONDITION_CONFLICT,
+                ),
+            )
+
+        committed: list[str] = []
+        failure_code: OrchestrationFailureCode | None = None
+        failed_target: str | None = None
+        verified_assertions: tuple[str, ...] = ()
+        authorization_status: str | None = None
+        try:
+            self._write_execution_record(
+                mutation_set,
+                MutationSetStatus.STAGED,
+                snapshots=snapshots,
+            )
+            self._write_execution_record(
+                mutation_set,
+                MutationSetStatus.COMMITTING,
+                snapshots=snapshots,
+            )
+            for target_spec, _, path in prepared:
+                self.file_store.atomic_write(path, target_spec.proposed_content)
+                if self.file_store.read_file(path) != target_spec.proposed_content:
+                    raise FileStoreError("context read-back mismatch")
+                committed.append(target_spec.context_type)
+                self._write_execution_record(
+                    mutation_set,
+                    MutationSetStatus.COMMITTING,
+                    snapshots=snapshots,
+                    committed_targets=tuple(committed),
+                )
+
+            verified_assertions = self._evaluate_closure(
+                mutation_set.closure_assertions,
+                prepared,
+                snapshots,
+            )
+            if len(verified_assertions) != len(mutation_set.closure_assertions):
+                failure_code = OrchestrationFailureCode.CONTEXT_CLOSURE_FAILED
+                raise FileStoreError("context closure failed")
+
+            self._write_execution_record(
+                mutation_set,
+                MutationSetStatus.FINALIZING_AUTHORIZATION,
+                snapshots=snapshots,
+                committed_targets=tuple(committed),
+                verified_assertions=verified_assertions,
+            )
+
+            if mutation_set.authorization_request is not None:
+                finalized = self._finalize_authorization_request(
+                    mutation_set.authorization_request
+                )
+                authorization_status = finalized.status
+        except FileStoreError:
+            if failure_code is None:
+                failure_code = OrchestrationFailureCode.COMMIT_FAILED
+            if len(committed) < len(prepared):
+                failed_target = prepared[len(committed)][0].context_type
+            rollback_failed_target = self._rollback_mutation_set(prepared, snapshots)
+            if rollback_failed_target is not None:
+                return self._remember_orchestration(
+                    mutation_set,
+                    self._orchestration_result(
+                        mutation_set,
+                        MutationSetStatus.FAILED,
+                        OrchestrationFailureCode.ROLLBACK_FAILED,
+                        committed_targets=tuple(committed),
+                        rollback_status="FAILED",
+                        failed_target=rollback_failed_target,
+                    ),
+                )
+            return self._remember_orchestration(
+                mutation_set,
+                self._orchestration_result(
+                    mutation_set,
+                    MutationSetStatus.ROLLED_BACK,
+                    failure_code,
+                    committed_targets=tuple(committed),
+                    rollback_status="RESTORED",
+                    failed_target=failed_target,
+                ),
+            )
+
+        return self._remember_orchestration(
+            mutation_set,
+            self._orchestration_result(
+                mutation_set,
+                MutationSetStatus.VERIFIED,
+                committed_targets=tuple(committed),
+                verified_assertions=verified_assertions,
+                authorization_request_status=authorization_status,
+            ),
+        )
+
+    @staticmethod
+    def _validate_event_recipe(
+        mutation_set: ContextMutationSet,
+        recipe: dict[str, Any],
+    ) -> OrchestrationFailureCode | None:
+        if recipe.get("authority_requirement") != mutation_set.authority_requirement.value:
+            return OrchestrationFailureCode.EVENT_RECIPE_MISMATCH
+        actual = [target.context_type for target in mutation_set.ordered_targets]
+        required = set(recipe.get("required_targets", ()))
+        allowed = set(recipe.get("allowed_targets", ()))
+        expected_order = [item for item in recipe.get("commit_order", ()) if item in actual]
+        if not required.issubset(actual) or not set(actual).issubset(allowed):
+            return OrchestrationFailureCode.EVENT_RECIPE_MISMATCH
+        if actual != expected_order:
+            return OrchestrationFailureCode.EVENT_RECIPE_MISMATCH
+        expected_assertions = tuple(
+            (
+                item.get("assertion_id"),
+                item.get("left_ref"),
+                item.get("operator"),
+                item.get("right_value_or_ref"),
+            )
+            for item in recipe.get("closure_assertions", ())
+        )
+        actual_assertions = tuple(
+            (
+                item.assertion_id,
+                item.left_ref,
+                item.operator.value,
+                item.right_value_or_ref,
+            )
+            for item in mutation_set.closure_assertions
+        )
+        if actual_assertions != expected_assertions:
+            return OrchestrationFailureCode.EVENT_RECIPE_MISMATCH
+        return None
+
+    def _evaluate_closure(
+        self,
+        assertions: tuple[ClosureAssertion, ...],
+        prepared: list[tuple[Any, AccessTarget, Path]],
+        snapshots: dict[str, Any],
+    ) -> tuple[str, ...]:
+        contents = {
+            target_spec.context_type: self.file_store.read_file(path)
+            for target_spec, _, path in prepared
+        }
+        verified: list[str] = []
+        for assertion in assertions:
+            left = self._resolve_context_ref(assertion.left_ref, contents)
+            right = assertion.right_value_or_ref
+            if right and "." in right and right.split(".", 1)[0] in contents:
+                right = self._resolve_context_ref(right, contents)
+            passed = False
+            if assertion.operator is ClosureOperator.EQUALS:
+                passed = left == right
+            elif assertion.operator is ClosureOperator.EXISTS:
+                passed = left is not None and left != ""
+            elif assertion.operator is ClosureOperator.ABSENT:
+                passed = left is None or left == ""
+            elif assertion.operator is ClosureOperator.COVERS:
+                passed = self._as_value_set(left).issuperset(self._as_value_set(right))
+            elif assertion.operator is ClosureOperator.UNCHANGED:
+                context_type, field_name = assertion.left_ref.split(".", 1)
+                snapshot = snapshots[context_type]
+                before = self._field_value(snapshot.content or "", field_name)
+                passed = left == before
+            if passed:
+                verified.append(assertion.assertion_id)
+        return tuple(verified)
+
+    @classmethod
+    def _resolve_context_ref(cls, reference: str, contents: dict[str, str]) -> str | None:
+        context_type, field_name = reference.split(".", 1)
+        return cls._field_value(contents.get(context_type, ""), field_name)
+
+    @staticmethod
+    def _field_value(content: str, field_name: str) -> str | None:
+        pattern = re.compile(
+            rf"^\s*(?:[-*]\s*)?(?:\*\*)?{re.escape(field_name)}(?:\*\*)?\s*:\s*(.*?)\s*$",
+            re.MULTILINE,
+        )
+        match = pattern.search(content)
+        return match.group(1).strip() if match else None
+
+    @staticmethod
+    def _as_value_set(value: str | None) -> set[str]:
+        if value is None:
+            return set()
+        return {item.strip() for item in value.split(",") if item.strip()}
+
+    @staticmethod
+    def _finalize_authorization_request(
+        pending_request: AuthorizationRequestRecord,
+    ) -> AuthorizationRequestRecord:
+        return replace(pending_request, status="AUTHORIZED")
+
+    def _rollback_mutation_set(
+        self,
+        prepared: list[tuple[Any, AccessTarget, Path]],
+        snapshots: dict[str, Any],
+    ) -> str | None:
+        for target_spec, _, _ in reversed(prepared):
+            try:
+                self.file_store.restore(snapshots[target_spec.context_type])
+            except FileStoreError:
+                return target_spec.context_type
+        return None
+
+    def _remember_orchestration(
+        self,
+        mutation_set: ContextMutationSet,
+        result: MutationOrchestrationResult,
+    ) -> MutationOrchestrationResult:
+        self._orchestration_results[mutation_set.idempotency_key] = (
+            mutation_set.payload_digest,
+            result,
+        )
+        self._write_execution_record(
+            mutation_set,
+            result.status,
+            committed_targets=result.committed_targets,
+            verified_assertions=result.verified_assertions,
+            result=result,
+        )
+        return result
+
+    def _recover_mutation_set(
+        self,
+        mutation_set: ContextMutationSet,
+        execution_record: dict[str, Any],
+    ) -> MutationOrchestrationResult:
+        prepared: list[tuple[Any, AccessTarget, Path]] = []
+        try:
+            for target_spec in mutation_set.ordered_targets:
+                access_target = AccessTarget(
+                    ContextType(target_spec.context_type),
+                    context_reference=target_spec.context_reference,
+                )
+                prepared.append((target_spec, access_target, self._target_path(access_target)))
+            snapshots = self._snapshots_from_execution_record(
+                execution_record,
+                prepared,
+            )
+        except (FileStoreError, KeyError, TypeError, ValueError):
+            return self._orchestration_result(
+                mutation_set,
+                MutationSetStatus.FAILED,
+                OrchestrationFailureCode.STAGE_FAILED,
+            )
+
+        try:
+            all_committed = all(
+                self.file_store.exists(path)
+                and self.file_store.read_file(path) == target_spec.proposed_content
+                for target_spec, _, path in prepared
+            )
+            if all_committed:
+                verified = self._evaluate_closure(
+                    mutation_set.closure_assertions,
+                    prepared,
+                    snapshots,
+                )
+                if len(verified) == len(mutation_set.closure_assertions):
+                    authorization_status = None
+                    if mutation_set.authorization_request is not None:
+                        finalized = self._finalize_authorization_request(
+                            mutation_set.authorization_request
+                        )
+                        authorization_status = finalized.status
+                    result = self._orchestration_result(
+                        mutation_set,
+                        MutationSetStatus.VERIFIED,
+                        committed_targets=tuple(
+                            target.context_type for target in mutation_set.ordered_targets
+                        ),
+                        verified_assertions=verified,
+                        authorization_request_status=authorization_status,
+                    )
+                    return self._remember_orchestration(mutation_set, result)
+        except (FileStoreError, KeyError, ValueError):
+            pass
+
+        rollback_failed_target = self._rollback_mutation_set(prepared, snapshots)
+        if rollback_failed_target is not None:
+            return self._remember_orchestration(
+                mutation_set,
+                self._orchestration_result(
+                    mutation_set,
+                    MutationSetStatus.FAILED,
+                    OrchestrationFailureCode.ROLLBACK_FAILED,
+                    rollback_status="FAILED",
+                    failed_target=rollback_failed_target,
+                ),
+            )
+        return self._remember_orchestration(
+            mutation_set,
+            self._orchestration_result(
+                mutation_set,
+                MutationSetStatus.ROLLED_BACK,
+                OrchestrationFailureCode.COMMIT_FAILED,
+                rollback_status="RESTORED",
+            ),
+        )
+
+    def _execution_record_path(self, mutation_set: ContextMutationSet) -> Path:
+        digest = hashlib.sha256(
+            mutation_set.idempotency_key.encode("utf-8")
+        ).hexdigest()
+        return Path(".project_incubator/runtime/mutation_sets") / f"{digest}.json"
+
+    def _load_execution_record(
+        self,
+        mutation_set: ContextMutationSet,
+    ) -> dict[str, Any] | None:
+        path = self._execution_record_path(mutation_set)
+        if not self.file_store.exists(path):
+            return None
+        try:
+            record = json.loads(self.file_store.read_file(path))
+        except (FileStoreError, json.JSONDecodeError) as exc:
+            raise FileStoreError("mutation execution record is unreadable") from exc
+        if not isinstance(record, dict) or record.get("idempotency_key") != mutation_set.idempotency_key:
+            raise FileStoreError("mutation execution record identity mismatch")
+        return record
+
+    def _write_execution_record(
+        self,
+        mutation_set: ContextMutationSet,
+        status: MutationSetStatus,
+        *,
+        snapshots: dict[str, FileSnapshot] | None = None,
+        committed_targets: tuple[str, ...] = (),
+        verified_assertions: tuple[str, ...] = (),
+        result: MutationOrchestrationResult | None = None,
+    ) -> None:
+        previous_snapshots: dict[str, Any] = {}
+        record_path = self._execution_record_path(mutation_set)
+        if snapshots is None and self.file_store.exists(record_path):
+            try:
+                previous = json.loads(self.file_store.read_file(record_path))
+                if isinstance(previous, dict) and isinstance(previous.get("snapshots"), dict):
+                    previous_snapshots = previous["snapshots"]
+            except (FileStoreError, json.JSONDecodeError):
+                previous_snapshots = {}
+        snapshot_values = (
+            {
+                context_type: {
+                    "path": str(snapshot.path),
+                    "existed": snapshot.existed,
+                    "content": snapshot.content,
+                    "digest": snapshot.digest,
+                }
+                for context_type, snapshot in snapshots.items()
+            }
+            if snapshots
+            else previous_snapshots
+        )
+        request = mutation_set.authorization_request
+        provenance = mutation_set.authorization_provenance
+        record: dict[str, Any] = {
+            "idempotency_key": mutation_set.idempotency_key,
+            "mutation_set_id": mutation_set.mutation_set_id,
+            "attempt_id": mutation_set.attempt_id,
+            "event_type": mutation_set.event_type,
+            "event_ref": mutation_set.event_ref,
+            "payload_digest": mutation_set.payload_digest,
+            "status": status.value,
+            "target_refs": [
+                {
+                    "context_type": target.context_type,
+                    "context_reference": target.context_reference,
+                }
+                for target in mutation_set.ordered_targets
+            ],
+            "authorization_refs": {
+                "request": request.authorization_request_id if request else None,
+                "evidence": provenance.authorization_id if provenance else None,
+            },
+            "before_digests": {
+                context_type: value.get("digest")
+                for context_type, value in snapshot_values.items()
+            },
+            "staged_digests": {
+                target.context_type: hashlib.sha256(
+                    target.proposed_content.encode("utf-8")
+                ).hexdigest()
+                for target in mutation_set.ordered_targets
+            },
+            "committed_targets": list(committed_targets),
+            "verified_assertions": list(verified_assertions),
+            "closure_result": {
+                "verified_assertions": list(verified_assertions),
+                "complete": len(verified_assertions) == len(mutation_set.closure_assertions),
+            },
+            "rollback_result": result.rollback_status if result is not None else None,
+            "snapshots": snapshot_values,
+        }
+        if result is not None:
+            record["result"] = {
+                "authorization_request_ref": result.authorization_request_ref,
+                "authorization_evidence_ref": result.authorization_evidence_ref,
+                "authorization_request_status": result.authorization_request_status,
+                "rollback_status": result.rollback_status,
+                "failure_code": (
+                    result.failure_code.value if result.failure_code is not None else None
+                ),
+                "failed_target": result.failed_target,
+            }
+        self.file_store.atomic_write(
+            record_path,
+            json.dumps(record, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        )
+
+    def _snapshots_from_execution_record(
+        self,
+        record: dict[str, Any],
+        prepared: list[tuple[Any, AccessTarget, Path]],
+    ) -> dict[str, FileSnapshot]:
+        raw_snapshots = record.get("snapshots")
+        if not isinstance(raw_snapshots, dict) or not raw_snapshots:
+            raise ValueError("execution record snapshots are missing")
+        expected_paths = {
+            target_spec.context_type: self.file_store.snapshot(path).path
+            for target_spec, _, path in prepared
+        }
+        if set(raw_snapshots) != set(expected_paths):
+            raise ValueError("execution record snapshot targets do not match mutation set")
+        snapshots = {}
+        for context_type, value in raw_snapshots.items():
+            content = value.get("content")
+            digest = value.get("digest")
+            if content is not None:
+                actual_digest = hashlib.sha256(content.encode("utf-8")).hexdigest()
+                if digest != actual_digest:
+                    raise ValueError("execution record snapshot digest mismatch")
+            snapshots[context_type] = FileSnapshot(
+                path=expected_paths[context_type],
+                existed=bool(value["existed"]),
+                content=content,
+                digest=digest,
+            )
+        return snapshots
+
+    @staticmethod
+    def _result_from_execution_record(
+        record: dict[str, Any],
+    ) -> MutationOrchestrationResult:
+        result = record.get("result") if isinstance(record.get("result"), dict) else {}
+        failure_value = result.get("failure_code")
+        return MutationOrchestrationResult(
+            mutation_set_id=record["mutation_set_id"],
+            attempt_id=record["attempt_id"],
+            status=MutationSetStatus(record["status"]),
+            committed_targets=tuple(record.get("committed_targets", ())),
+            verified_assertions=tuple(record.get("verified_assertions", ())),
+            authorization_request_ref=result.get("authorization_request_ref"),
+            authorization_evidence_ref=result.get("authorization_evidence_ref"),
+            authorization_request_status=result.get("authorization_request_status"),
+            rollback_status=result.get("rollback_status"),
+            failure_code=(
+                OrchestrationFailureCode(failure_value) if failure_value else None
+            ),
+            failed_target=result.get("failed_target"),
+            payload_digest=record.get("payload_digest"),
+        )
+
+    @staticmethod
+    def _orchestration_result(
+        mutation_set: ContextMutationSet,
+        status: MutationSetStatus,
+        failure_code: OrchestrationFailureCode | None = None,
+        **kwargs: Any,
+    ) -> MutationOrchestrationResult:
+        request = mutation_set.authorization_request
+        provenance = mutation_set.authorization_provenance
+        return MutationOrchestrationResult(
+            mutation_set_id=mutation_set.mutation_set_id,
+            attempt_id=mutation_set.attempt_id,
+            status=status,
+            authorization_request_ref=(
+                request.authorization_request_id if request is not None else None
+            ),
+            authorization_evidence_ref=(
+                provenance.authorization_id if provenance is not None else None
+            ),
+            failure_code=failure_code,
+            payload_digest=mutation_set.payload_digest,
+            **kwargs,
         )
 
     def check_mutation_authority(

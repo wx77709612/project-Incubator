@@ -133,6 +133,11 @@ class V11RegressionPackageAcceptance(unittest.TestCase):
             {state.value for state in RuntimeExecutionState},
         )
 
+    def test_e08_stage_f_mutation_orchestration_acceptance_passes(self):
+        files = sorted((ROOT / "ACCEPTANCE_TESTS/v1_1/stage_f").glob("test_*.py"))
+        self.assertEqual(1, len(files))
+        self.run_files(files)
+
 
 if __name__ == "__main__":
     unittest.main()

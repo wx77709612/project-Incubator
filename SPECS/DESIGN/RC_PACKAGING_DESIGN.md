@@ -1,9 +1,9 @@
 # Project Incubator RC Packaging Design
 
 > Specification Version: V1.1
-> Status: DRAFT / MAKER REVIEW REQUIRED
+> Status: APPROVED / IMPLEMENTED / PACKAGING ACCEPTED / MANUAL ACCEPTANCE READY
 > Scope: Release Candidate 打包、并行安装与隔离人工验收
-> Related Plan: `SPECS/IMPLEMENTATION/IMPLEMENTATION_PLAN.md`
+> Related Plan: `SPECS/IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md`
 > Related Acceptance Plan: `SPECS/IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md`
 
 ## 1. 背景
@@ -244,3 +244,18 @@ RC 安装不得修改 V1.0 文件，因此回滚只允许：
 4. 构建并安装 `project-incubator-v1-1-rc`；
 5. 执行仓库外 Installed Smoke Test；
 6. 再生成“雾港提醒器”模拟项目和 Maker 专用测试包。
+
+## 15. 实施证据
+
+2026-09-24 已完成以下实施与验证：
+
+- 生成 `project-incubator-v1-1-rc`，Package Version 为 `1.1.0-rc.1`；
+- Distribution Artifact 与 Installed RC 的九项隔离检查全部通过；
+- Runtime 实际加载路径来自 Installed RC，不依赖 Implementation Repository；
+- 五个确定性 Script 均返回 `COMPLETED`；
+- V1.0 全局 Skill 摘要在安装前后保持 `c01fe91e476e52b3f590e37b04f6bbd1208eeec3eded30a771f0bdaac6b41cf5`；
+- Maker 已在不加载 Implementation Repository 的新任务中显式发现 RC，并得到正确的 Identity、Version 与 explicit-only Policy；
+- 修订后的安装包只包含顶层一个 `SKILL.md`，不存在可绕过 explicit-only Policy 的嵌套发现入口。
+- RC Bootstrap 生成的 Managed Project `AGENTS.md` 与 Project Profile Template 均明确持久化 Required Skill、Required Version 与 explicit-only Policy，不会在后续任务回落到 V1.0。
+
+RC Packaging Gap 已关闭。该结论只证明候选包可发现、可隔离运行并且不会改写 V1.0，不替代“雾港提醒器”场景的人工行为验收，也不构成 V1.1 正式发布结论。

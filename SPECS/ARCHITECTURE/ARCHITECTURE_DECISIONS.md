@@ -2362,6 +2362,56 @@ ACTIVE — V1.1
 
 ---
 
+# Decision 012: Multi-Context Mutation Orchestration
+
+## Decision
+
+当同一业务事件需要修改两个或以上 Context、涉及 Maker Authorization、存在跨 Context 后置条件，或 Event Recipe 明确要求 Closure Check 时，必须使用 `Context Mutation Set`。
+
+Mutation Set 是有界 Runtime 执行对象，不是新的 Core Context。它必须声明触发事件、Authority Requirement、全部目标 Context、提交顺序、Closure Assertions 和回滚策略。
+
+涉及 `PROJECT_STATE.md` 时，该文件必须最后提交。只有全部目标 Read-back、Context Closure、Authorization Finalization 和 Final Closure 通过后，事件才能报告完成。
+
+Maker Authorization 必须绑定既有 Pending Authorization Request、Maker 输入引用、明确授权陈述、有效 Scope 和允许的 Context Targets。`source = MAKER` 与 `confirmed = true` 不能单独证明授权。
+
+Opaque Capability Extension 使用以下 Core 治理状态：
+
+- `PROPOSED`；
+- `PENDING_MAKER_AUTHORIZATION`；
+- `ACTIVE`；
+- `DECLINED`；
+- `SUSPENDED`。
+
+`ACTIVE` 只能由匹配 Pending Request 的有效 Maker Authorization 触发，不改变 Current Phase。
+
+## Reason
+
+V1.1 RC 人工验收 Round 2 证明，单个 Context Mutation 合法不等于跨 Context 业务状态闭合。Agent 曾把要求评估的语境误判为已授权，并在 State、Plan 与 Spiral Record 中同步保存错误状态；现有 Runtime 既不能验证授权来源与 Pending Request 的关系，也不能在多文件部分失败时整体回滚。
+
+## Boundary
+
+- Runtime 验证结构、引用、Scope、顺序和确定性闭合，不创作语义内容；
+- Agent 仍负责提出业务语义和从 Maker 原始输入中提取明确授权；
+- Maker 保留 Product、Architecture 和 Extension Activation 的最终 Authority；
+- 不新增 Core Phase、Transition、Gate Type 或 Runtime Execution State；
+- 单文件、无受保护 Authority 且无跨 Context 后置条件的 Mutation 保持原路径。
+
+## Impact
+
+- Context Mutation Orchestration Design；
+- Context Mutation Orchestration Contract；
+- Context Mutation Orchestration Runtime Specification；
+- Context Model Definition 与 Runtime Types；
+- Context Coordinator、Runtime Coordinator 与 File Store；
+- Skill Guidance、Templates、Unit / Integration / Acceptance Tests；
+- RC 人工验收重放。
+
+## Status
+
+ACTIVE — V1.1 RC Remediation，Maker 于 2026-09-24 批准
+
+---
+
 # 4. Decision Record Rules
 
 

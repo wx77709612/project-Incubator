@@ -56,6 +56,11 @@ from PROJECT_INCUBATOR.runtime.core.contracts import (
     WorkflowResultStatus,
 )
 from PROJECT_INCUBATOR.runtime.core.runtime_types import RuntimeExecutionState
+from PROJECT_INCUBATOR.runtime.core.mutation_orchestration_types import (
+    ContextMutationSet,
+    MutationOrchestrationResult,
+    MutationSetStatus,
+)
 from PROJECT_INCUBATOR.runtime.core.evidence_types import (
     CorrectionActivityState,
     CorrectionResult,
@@ -75,6 +80,7 @@ RUNTIME_DEPENDENCY_FAILURE = "RUNTIME_DEPENDENCY_FAILURE"
 SCRIPT_EXECUTION_NOT_COMPLETED = "SCRIPT_EXECUTION_NOT_COMPLETED"
 CORRECTION_RESUMED = "CORRECTION_RESUMED"
 CORRECTION_RESUME_INVALID = "CORRECTION_RESUME_INVALID"
+MUTATION_ROUTE_CONFLICT = "MUTATION_ROUTE_CONFLICT"
 
 
 class RuntimeCoordinatorError(Exception):
@@ -92,6 +98,7 @@ class RuntimeRequest:
     project_state_reference: str | Path = "PROJECT_STATE.md"
     phase_result: PhaseResult | None = None
     context_mutation_intents: tuple[MutationIntent, ...] = field(default_factory=tuple)
+    context_mutation_set: ContextMutationSet | None = None
     gate_trigger_event: str | None = None
     requested_gate_ids: tuple[str, ...] = field(default_factory=tuple)
     gate_evaluation_evidence: tuple[dict[str, Any], ...] = field(default_factory=tuple)
@@ -115,6 +122,7 @@ class RuntimeExecutionTrace:
     advisory_result: Any | None = None
     correction_result: CorrectionAssessmentResult | None = None
     correction_activity_state: CorrectionActivityState | None = None
+    mutation_orchestration_result: MutationOrchestrationResult | None = None
 
 
 class RuntimeCoordinator:
@@ -225,6 +233,14 @@ class RuntimeCoordinator:
             advisory_result = self.advisory_bridge.prepare(request.advisory_request)
             trace = replace(trace, advisory_result=advisory_result)
 
+        if request.context_mutation_set is not None:
+            return self._execute_context_mutation_set(
+                request,
+                current_phase,
+                trace,
+                context_coordinator,
+            )
+
         phase_input = None
         if current_phase is not None:
             phase_input = self.workflow_coordinator.prepare_phase_input(current_phase.phase_id)
@@ -321,6 +337,96 @@ class RuntimeCoordinator:
             completed_action_reference=completed_action,
             next_allowed_action=request.next_allowed_action,
         )
+
+    def _execute_context_mutation_set(
+        self,
+        request: RuntimeRequest,
+        current_phase: CurrentPhaseReference | None,
+        trace: RuntimeExecutionTrace,
+        context_coordinator: ContextCoordinator,
+    ) -> RuntimeResult:
+        mutation_set = request.context_mutation_set
+        assert mutation_set is not None
+        set_targets = {target.context_type for target in mutation_set.targets}
+        independent_targets = {
+            intent.target_context.context_type.value
+            for intent in request.context_mutation_intents
+        }
+        overlap = tuple(sorted(set_targets.intersection(independent_targets)))
+        if request.context_mutation_intents:
+            conflicting_targets = overlap or tuple(sorted(independent_targets))
+            return self._form_result(
+                request=request,
+                state=RuntimeExecutionState.SUSPENDED,
+                reason=MUTATION_ROUTE_CONFLICT,
+                current_phase_reference=current_phase,
+                trace=trace,
+                pending_requirement=conflicting_targets,
+            )
+
+        recipe = self.definition_resolver.context_event_recipe(mutation_set.event_type)
+        orchestration_result = context_coordinator.execute_mutation_set(
+            mutation_set,
+            recipe,
+        )
+        trace = replace(
+            trace,
+            mutation_orchestration_result=orchestration_result,
+        )
+        state = self._runtime_state_for_mutation_set(orchestration_result.status)
+        pending: tuple[Any, ...] = ()
+        maker_input: tuple[Any, ...] = ()
+        if orchestration_result.status is MutationSetStatus.AUTHORIZATION_PENDING:
+            maker_input = ("Maker Authorization Provenance",)
+        elif orchestration_result.status in {
+            MutationSetStatus.DRAFT,
+            MutationSetStatus.READY,
+            MutationSetStatus.STAGED,
+            MutationSetStatus.COMMITTING,
+            MutationSetStatus.FINALIZING_AUTHORIZATION,
+            MutationSetStatus.REJECTED,
+            MutationSetStatus.ROLLED_BACK,
+            MutationSetStatus.SUSPENDED,
+        }:
+            pending = (
+                orchestration_result.failure_code.value
+                if orchestration_result.failure_code is not None
+                else f"Resume Mutation Set {orchestration_result.mutation_set_id}",
+            )
+        elif orchestration_result.status is MutationSetStatus.FAILED:
+            pending = (
+                orchestration_result.failure_code.value
+                if orchestration_result.failure_code is not None
+                else "Mutation Set Recovery",
+            )
+
+        return self._form_result(
+            request=request,
+            state=state,
+            reason=f"CONTEXT_MUTATION_SET_{orchestration_result.status.value}",
+            current_phase_reference=current_phase,
+            trace=trace,
+            pending_requirement=pending,
+            required_maker_input=maker_input,
+            completed_action_reference=(
+                orchestration_result
+                if orchestration_result.status is MutationSetStatus.VERIFIED
+                else None
+            ),
+            next_allowed_action=request.next_allowed_action,
+        )
+
+    @staticmethod
+    def _runtime_state_for_mutation_set(
+        status: MutationSetStatus,
+    ) -> RuntimeExecutionState:
+        if status is MutationSetStatus.AUTHORIZATION_PENDING:
+            return RuntimeExecutionState.WAITING_FOR_MAKER
+        if status is MutationSetStatus.VERIFIED:
+            return RuntimeExecutionState.COMPLETED
+        if status is MutationSetStatus.FAILED:
+            return RuntimeExecutionState.FAILED
+        return RuntimeExecutionState.SUSPENDED
 
     def _execute_correction_assessment(
         self,
@@ -810,6 +916,9 @@ class RuntimeCoordinator:
             correction_result_reference=trace.correction_result,
             correction_activity_state=trace.correction_activity_state,
             advisory_output_reference=trace.advisory_result,
+            mutation_orchestration_result_reference=(
+                trace.mutation_orchestration_result
+            ),
         )
 
     def _gate_pending_requirements(

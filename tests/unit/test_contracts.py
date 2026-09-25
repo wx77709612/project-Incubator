@@ -1,4 +1,5 @@
 import unittest
+from dataclasses import fields
 
 from PROJECT_INCUBATOR.runtime.core.contracts import (
     ContextAccessResultStatus,
@@ -8,6 +9,7 @@ from PROJECT_INCUBATOR.runtime.core.contracts import (
     WorkflowResultStatus,
 )
 from PROJECT_INCUBATOR.runtime.core.runtime_types import RuntimeExecutionState
+from PROJECT_INCUBATOR.runtime.components.result_coordinator import RuntimeResult
 
 
 class ContractProjectionTest(unittest.TestCase):
@@ -70,6 +72,12 @@ class ContractProjectionTest(unittest.TestCase):
                 "VALIDATION_NOT_COMPLETED",
             },
             {result.value for result in ScriptValidationResult},
+        )
+
+    def test_runtime_result_exposes_mutation_orchestration_trace(self):
+        self.assertIn(
+            "mutation_orchestration_result_reference",
+            {item.name for item in fields(RuntimeResult)},
         )
 
 
