@@ -15,6 +15,7 @@ from PROJECT_INCUBATOR.runtime.components.context_coordinator import (
     MutationType,
     RequestSource,
 )
+from PROJECT_INCUBATOR.runtime.components.definition_resolver import DefinitionResolver
 from PROJECT_INCUBATOR.runtime.core.contracts import ContextAccessResultStatus
 from PROJECT_INCUBATOR.runtime.core.mutation_orchestration_types import (
     AuthorityRequirement,
@@ -23,6 +24,7 @@ from PROJECT_INCUBATOR.runtime.core.mutation_orchestration_types import (
     ClosureAssertion,
     ClosureOperator,
     ContextMutationSet,
+    MutationSetStatus,
     MutationTargetSpec,
     OrchestrationFailureCode,
     authorization_statement_digest,
@@ -367,12 +369,304 @@ class ContextCoordinatorTest(unittest.TestCase):
                 )
                 self.assertIs(OrchestrationFailureCode.AUTHORIZATION_INVALID, failure)
 
+    def activation_transaction_set(self, *, include_authorization=True):
+        recipe = DefinitionResolver().context_event_recipe("OPAQUE_EXTENSION_ACTIVATED")
+        assertions = tuple(
+            ClosureAssertion(
+                assertion_id=item["assertion_id"],
+                left_ref=item["left_ref"],
+                operator=ClosureOperator(item["operator"]),
+                right_value_or_ref=item.get("right_value_or_ref"),
+            )
+            for item in recipe["closure_assertions"]
+        )
+        base = ContextMutationSet(
+            mutation_set_id="ms-transaction",
+            event_type="OPAQUE_EXTENSION_ACTIVATED",
+            event_ref="capability:C-1",
+            current_phase="P2",
+            requested_by="AGENT",
+            authority_requirement=AuthorityRequirement.MAKER,
+            targets=(
+                MutationTargetSpec(
+                    context_type="CAPABILITY_SPIRAL_RECORD",
+                    mutation_intent="UPDATE_CONTEXT",
+                    proposed_content=(
+                        "Capability ID: C-1\nExtension Status: ACTIVE\n"
+                        "Authorization Request Ref: auth-request-1\n"
+                        "Human Validation Consumed: 0 / 4\n"
+                    ),
+                    commit_order=10,
+                ),
+                MutationTargetSpec(
+                    context_type="PROJECT_PLAN",
+                    mutation_intent="UPDATE_CONTEXT",
+                    proposed_content=(
+                        "Capability ID: C-1\nExtension Status: ACTIVE\n"
+                        "Authorization Request Ref: auth-request-1\n"
+                    ),
+                    commit_order=20,
+                ),
+                MutationTargetSpec(
+                    context_type="PROJECT_STATE",
+                    mutation_intent="UPDATE_CONTEXT",
+                    proposed_content=(
+                        "Current Phase: P2\nCapability ID: C-1\n"
+                        "Extension Status: ACTIVE\n"
+                        "Authorization Request Ref: auth-request-1\n"
+                    ),
+                    commit_order=30,
+                ),
+            ),
+            closure_assertions=assertions,
+        )
+        if not include_authorization:
+            return base
+        return replace(
+            base,
+            authorization_request=self.pending_request(),
+            authorization_provenance=self.provenance(),
+        )
+
+    def seed_pending_activation(self, *, include_spiral=True):
+        if include_spiral:
+            (self.root / "CAPABILITY_SPIRAL_RECORD.md").write_text(
+                "Capability ID: C-1\nExtension Status: PENDING_MAKER_AUTHORIZATION\n"
+                "Human Validation Consumed: 0 / 4\n",
+                encoding="utf-8",
+            )
+        (self.root / "PROJECT_PLAN.md").write_text(
+            "Capability ID: C-1\nExtension Status: PENDING_MAKER_AUTHORIZATION\n",
+            encoding="utf-8",
+        )
+        (self.root / "PROJECT_STATE.md").write_text(
+            "Current Phase: P2\nCapability ID: C-1\n"
+            "Extension Status: PENDING_MAKER_AUTHORIZATION\n",
+            encoding="utf-8",
+        )
+
+    def test_mutation_set_preflights_all_targets_before_any_write(self):
+        self.seed_pending_activation()
+        store = RecordingFileStore(self.root)
+        coordinator = ContextCoordinator(store)
+        mutation_set = self.activation_transaction_set()
+        invalid = replace(
+            mutation_set,
+            targets=(mutation_set.targets[0], replace(mutation_set.targets[1], mutation_intent="DELETE_CONTEXT"), mutation_set.targets[2]),
+        )
+
+        result = coordinator.execute_mutation_set(
+            invalid,
+            DefinitionResolver().context_event_recipe(invalid.event_type),
+        )
+
+        self.assertIs(MutationSetStatus.REJECTED, result.status)
+        self.assertIs(OrchestrationFailureCode.PRECONDITION_CONFLICT, result.failure_code)
+        self.assertEqual([], store.writes)
+
+    def test_mutation_set_commits_project_state_last_and_finalizes_authorization(self):
+        self.seed_pending_activation()
+        store = RecordingFileStore(self.root)
+        coordinator = ContextCoordinator(store)
+        mutation_set = self.activation_transaction_set()
+
+        result = coordinator.execute_mutation_set(
+            mutation_set,
+            DefinitionResolver().context_event_recipe(mutation_set.event_type),
+        )
+
+        self.assertIs(MutationSetStatus.VERIFIED, result.status)
+        self.assertEqual(
+            ["CAPABILITY_SPIRAL_RECORD.md", "PROJECT_PLAN.md", "PROJECT_STATE.md"],
+            store.writes,
+        )
+        self.assertEqual("AUTHORIZED", result.authorization_request_status)
+
+    def test_plan_and_state_commit_failures_restore_all_contexts(self):
+        for file_name in ("PROJECT_PLAN.md", "PROJECT_STATE.md"):
+            with self.subTest(file_name=file_name):
+                self.seed_pending_activation()
+                originals = self._context_contents()
+                coordinator = ContextCoordinator(FailingTargetFileStore(self.root, file_name))
+                mutation_set = self.activation_transaction_set()
+
+                result = coordinator.execute_mutation_set(
+                    mutation_set,
+                    DefinitionResolver().context_event_recipe(mutation_set.event_type),
+                )
+
+                self.assertIs(MutationSetStatus.ROLLED_BACK, result.status)
+                self.assertIs(OrchestrationFailureCode.COMMIT_FAILED, result.failure_code)
+                self.assertEqual(originals, self._context_contents())
+
+    def test_closure_or_authorization_finalization_failure_rolls_back(self):
+        cases = ("closure", "authorization")
+        for case in cases:
+            with self.subTest(case=case):
+                self.seed_pending_activation()
+                originals = self._context_contents()
+                mutation_set = self.activation_transaction_set()
+                coordinator = ContextCoordinator(FileStore(self.root))
+                if case == "closure":
+                    mutation_set = replace(
+                        mutation_set,
+                        closure_assertions=(
+                            ClosureAssertion(
+                                assertion_id="wrong-value",
+                                left_ref="PROJECT_STATE.Extension Status",
+                                operator=ClosureOperator.EQUALS,
+                                right_value_or_ref="WRONG",
+                            ),
+                        ),
+                    )
+                else:
+                    coordinator = FailingFinalizationCoordinator(FileStore(self.root))
+
+                result = coordinator.execute_mutation_set(
+                    mutation_set,
+                    DefinitionResolver().context_event_recipe(mutation_set.event_type),
+                )
+
+                self.assertIs(MutationSetStatus.ROLLED_BACK, result.status)
+                expected = (
+                    OrchestrationFailureCode.CONTEXT_CLOSURE_FAILED
+                    if case == "closure"
+                    else OrchestrationFailureCode.COMMIT_FAILED
+                )
+                self.assertIs(expected, result.failure_code)
+                self.assertEqual(originals, self._context_contents())
+
+    def test_new_spiral_record_is_removed_when_later_commit_fails(self):
+        self.seed_pending_activation(include_spiral=False)
+        mutation_set = self.activation_transaction_set()
+        mutation_set = replace(
+            mutation_set,
+            targets=(replace(mutation_set.targets[0], mutation_intent="CREATE_CONTEXT"),) + mutation_set.targets[1:],
+            closure_assertions=tuple(
+                item
+                for item in mutation_set.closure_assertions
+                if item.assertion_id != "budget-unchanged"
+            ),
+        )
+        coordinator = ContextCoordinator(FailingTargetFileStore(self.root, "PROJECT_PLAN.md"))
+
+        result = coordinator.execute_mutation_set(
+            mutation_set,
+            DefinitionResolver().context_event_recipe(mutation_set.event_type),
+        )
+
+        self.assertIs(MutationSetStatus.ROLLED_BACK, result.status)
+        self.assertFalse((self.root / "CAPABILITY_SPIRAL_RECORD.md").exists())
+
+    def test_rollback_failure_returns_failed_without_verified_status(self):
+        self.seed_pending_activation()
+        coordinator = ContextCoordinator(RollbackFailFileStore(self.root))
+        mutation_set = self.activation_transaction_set()
+
+        result = coordinator.execute_mutation_set(
+            mutation_set,
+            DefinitionResolver().context_event_recipe(mutation_set.event_type),
+        )
+
+        self.assertIs(MutationSetStatus.FAILED, result.status)
+        self.assertIs(OrchestrationFailureCode.ROLLBACK_FAILED, result.failure_code)
+        self.assertNotEqual(MutationSetStatus.VERIFIED, result.status)
+
+    def test_verified_mutation_set_is_idempotent_and_rejects_payload_conflict(self):
+        self.seed_pending_activation()
+        store = RecordingFileStore(self.root)
+        coordinator = ContextCoordinator(store)
+        mutation_set = self.activation_transaction_set()
+        recipe = DefinitionResolver().context_event_recipe(mutation_set.event_type)
+
+        first = coordinator.execute_mutation_set(mutation_set, recipe)
+        write_count = len(store.writes)
+        repeated = coordinator.execute_mutation_set(mutation_set, recipe)
+        changed = replace(
+            mutation_set,
+            targets=(replace(mutation_set.targets[0], proposed_content=mutation_set.targets[0].proposed_content + "Note: changed\n"),) + mutation_set.targets[1:],
+        )
+        conflict = coordinator.execute_mutation_set(changed, recipe)
+
+        self.assertIs(MutationSetStatus.VERIFIED, first.status)
+        self.assertEqual(first, repeated)
+        self.assertEqual(write_count, len(store.writes))
+        self.assertIs(MutationSetStatus.REJECTED, conflict.status)
+        self.assertIs(OrchestrationFailureCode.IDEMPOTENCY_CONFLICT, conflict.failure_code)
+
+    def test_authorization_pending_attempt_can_continue_after_maker_confirmation(self):
+        self.seed_pending_activation()
+        coordinator = ContextCoordinator(FileStore(self.root))
+        pending_set = self.activation_transaction_set(include_authorization=False)
+        recipe = DefinitionResolver().context_event_recipe(pending_set.event_type)
+
+        pending = coordinator.execute_mutation_set(pending_set, recipe)
+        authorized = coordinator.execute_mutation_set(
+            replace(
+                pending_set,
+                authorization_request=self.pending_request(),
+                authorization_provenance=self.provenance(),
+                attempt_id="attempt-2",
+            ),
+            recipe,
+        )
+
+        self.assertIs(MutationSetStatus.AUTHORIZATION_PENDING, pending.status)
+        self.assertIs(MutationSetStatus.VERIFIED, authorized.status)
+
+    def _context_contents(self):
+        return {
+            name: (self.root / name).read_text(encoding="utf-8")
+            for name in (
+                "CAPABILITY_SPIRAL_RECORD.md",
+                "PROJECT_PLAN.md",
+                "PROJECT_STATE.md",
+            )
+            if (self.root / name).exists()
+        }
+
 
 class FailingActiveViewFileStore(FileStore):
     def atomic_write(self, path, content):
         if Path(path).name == "PROJECT_DECISIONS.md":
             raise FileWriteError("injected active view failure")
         return super().atomic_write(path, content)
+
+
+class RecordingFileStore(FileStore):
+    def __init__(self, base_dir):
+        super().__init__(base_dir)
+        self.writes = []
+
+    def atomic_write(self, path, content):
+        self.writes.append(Path(path).name)
+        return super().atomic_write(path, content)
+
+
+class FailingTargetFileStore(FileStore):
+    def __init__(self, base_dir, target_name):
+        super().__init__(base_dir)
+        self.target_name = target_name
+
+    def atomic_write(self, path, content):
+        if Path(path).name == self.target_name and "Extension Status: ACTIVE" in content:
+            raise FileWriteError("injected target failure")
+        return super().atomic_write(path, content)
+
+
+class RollbackFailFileStore(FileStore):
+    def atomic_write(self, path, content):
+        name = Path(path).name
+        if name == "PROJECT_PLAN.md" and "Extension Status: ACTIVE" in content:
+            raise FileWriteError("injected commit failure")
+        if name == "CAPABILITY_SPIRAL_RECORD.md" and "PENDING_MAKER_AUTHORIZATION" in content:
+            raise FileWriteError("injected rollback failure")
+        return super().atomic_write(path, content)
+
+
+class FailingFinalizationCoordinator(ContextCoordinator):
+    def _finalize_authorization_request(self, pending_request):
+        raise FileWriteError("injected authorization finalization failure")
 
 
 if __name__ == "__main__":

@@ -187,6 +187,7 @@ class MutationOrchestrationResult:
     verified_assertions: tuple[str, ...] = field(default_factory=tuple)
     authorization_request_ref: str | None = None
     authorization_evidence_ref: str | None = None
+    authorization_request_status: str | None = None
     rollback_status: str | None = None
     failure_code: OrchestrationFailureCode | None = None
     failed_target: str | None = None
