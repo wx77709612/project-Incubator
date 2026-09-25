@@ -117,7 +117,7 @@
 ### 自动化执行结果
 
 - Stage A：6 / 6；Stage B：8 / 8；Stage C：7 / 7；Stage D：8 / 8；Stage E：8 / 8；Stage F：2 / 2。
-- 仓库 Unit / Integration / E2E：158 / 158；Layer 2：40 / 40。
+- 仓库 Unit / Integration / E2E：167 / 167；Layer 2：40 / 40。
 - RC 构建与安装后验证各 9 / 9；Installed Runtime 仓库外导入通过。
 - Stable V1.0 安装前后摘要一致。
 - 本结果只关闭自动化与打包部分；Manual Round 2R 保持 Pending。

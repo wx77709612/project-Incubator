@@ -250,12 +250,13 @@ self.assertIs(OrchestrationFailureCode.AUTHORIZATION_REQUIRED, failure)
 
 执行日期：2026-09-25。
 
-- Tasks 1–8 均已按 TDD 与任务级验证完成；实现提交范围为 `ce2e809` 至 `807a564`。
-- 仓库测试：158 / 158 通过，其中 Unit 123、Integration 32、E2E 3。
+- Tasks 1–8 均已按 TDD 与任务级验证完成；实现与审查修复提交范围为 `ce2e809` 至 `303be90`。
+- 仓库测试：167 / 167 通过，其中 Unit 132、Integration 32、E2E 3。
 - V1.1 Stage A–F：39 / 39 通过，其中 A=6、B=8、C=7、D=8、E=8、F=2。
 - Layer 2：40 / 40 通过，其中 A=15、B=5、C=8、D=9、E=3。
-- 合计执行 237 项自动化检查，0 失败；Stage E 内部回归重放不作为额外能力结论。
-- RC Package Version：`1.1.0-rc.2`；Build Identity：`679cda06aa68e8baa23efaed66249f9f5a2e11d4a20bb40233e0bc6f30a14f07`。
+- 合计执行 246 项自动化检查，0 失败；Stage E 内部回归重放不作为额外能力结论。
+- RC Package Version：`1.1.0-rc.2`；Build Identity：`bb51b0fa19f62a0000ba24e3a88ccfee4c55af5b76c67a1a400c9760ed7e6e19`。
 - 构建包九项验证与安装后九项验证均通过；安装前后 Stable V1.0 Digest 均为 `c01fe91e476e52b3f590e37b04f6bbd1208eeec3eded30a771f0bdaac6b41cf5`。
 - 从仓库外临时目录导入 Installed Runtime 成功，Definition Resolution=`COMPLETED`，仓库路径未出现在 `sys.path`。
+- 整分支审查修复了持久 Execution Record、跨 Runtime 恢复、Recipe Closure 防弱化、授权 Scope/Targets 防扩张、状态转换前置条件、Phase 前置条件与混合路由静默忽略问题；相关测试均先失败后通过。
 - Manual Round 2R 尚未执行，因此本计划不声明人工验收完成，也不解除 Round 3 的人工流程暂停。
