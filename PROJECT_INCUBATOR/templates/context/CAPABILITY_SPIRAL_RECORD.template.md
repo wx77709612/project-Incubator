@@ -6,6 +6,20 @@
 
 本记录保存能力级 Claim、Candidate Model、Evidence 和 Baseline 细节；不得复制 Current Phase、Project Goal 或 Active Maker Decision，也不得覆盖任何 Core Context Authority。
 
+## Extension Mutation Trace（条件区块）
+
+<!--
+本文件本身只为高不透明 Capability 创建；只有形成 Extension 建议或后续状态变化时填写本条件区块。
+如果记录仅用于不透明度草拟且尚未提出 Extension，可省略整个区块。透明 Capability 不创建本文件。
+-->
+
+- Extension Status：`PROPOSED` / `PENDING_MAKER_AUTHORIZATION` / `ACTIVE` / `DECLINED` / `SUSPENDED`
+- Authorization Request Ref：待填写
+- Authorization Evidence Ref：待填写；尚未授权时填写 `PENDING`
+- Mutation Set Ref：待填写
+- Changed Targets：待填写
+- Closure Result Ref：待填写；尚未执行时填写 `NOT_EXECUTED`
+
 ## 能力声明
 
 - `capability_id`：待填写

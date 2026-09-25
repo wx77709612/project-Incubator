@@ -41,3 +41,17 @@
 <!-- 使用 Markdown 无序列表；一个已经实际发生的状态变化一个列表项。Agent 可以按照实际数量增加或删除列表项。无需要记录的最近状态变化时填写：- 无。 -->
 
 - 待填写
+
+## Extension Mutation Trace / Extension 变更追踪（条件区块）
+
+<!--
+仅当本项目存在已提出、待授权、已启用、已拒绝或已暂停的不透明 Capability Extension 时保留本条件区块。
+透明 Capability、未启用 Extension 的项目和无关项目必须省略整个区块。
+本区块只记录已由 Runtime 验证的当前实际状态；建议或草稿不得写成 ACTIVE。
+-->
+
+- Extension Status：待填写
+- Authorization Request Ref：待填写
+- Authorization Evidence Ref：待填写；尚未授权时填写 `PENDING`
+- Mutation Set Ref：待填写
+- Closure Result Ref：待填写；尚未执行时填写 `NOT_EXECUTED`

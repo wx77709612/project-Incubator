@@ -107,6 +107,27 @@ Agent 不得因为某个 Core Context 文件被更新，就将其视为对应 Ph
 
 Runtime 支持由 `runtime/` 下的包提供。Runtime 实现细节由冻结的 Runtime Specification 和 Implementation Plan 定义。
 
+## Multi-Context Trigger 与授权闭合
+
+当一个语义事件会同时改变两个或更多 Context，或一个 Context 的状态只有与其他 Context 一致时才成立，Agent 必须先识别 `Multi-Context Trigger`，不得逐文件临时修改。典型事件包括 Extension 建议、授权请求、启用、拒绝、暂停，以及需要同步更新 Plan、State 与 Capability Spiral Record 的能力边界变化。
+
+写入前，Agent 必须形成 `Mutation Set Summary`，至少列明：
+
+- Event 与 Event Ref；
+- 当前 Phase；
+- Authority Requirement；
+- 目标 Context 的完整 `Changed Targets` 列表与提交顺序；
+- 每个目标的预期变化；
+- Closure Assertions；
+- 授权缺失时的 Pending Status；
+- 失败时的回滚边界。
+
+Agent 必须把“建议启用”和“已授权启用”分开。Maker 仅要求`评估`、`提出请求`、`继续`，或只做`风险确认`，均不得推断为 Maker Authorization。授权必须绑定既存 Pending Request，并保留 Maker 消息引用、未经改写的 `maker_statement_excerpt`、授权 Scope、授权 Targets、确认时间与摘要。缺少这些证据时，Extension Status 只能是 `PENDING_MAKER_AUTHORIZATION`，不得写成 `ACTIVE`。
+
+Maker 明确授权后，Agent 应一次性把完整 Mutation Set 交给 Runtime。只有所有目标写入、回读、Closure Assertions 与授权最终化均成功，才可在闭合验证通过后声明 `ACTIVE`；任一步失败都不得保留部分激活状态。
+
+完成报告必须明确列出：Event、Authorization Basis 或 Pending Status、`Changed Targets`、`Closure Result`、回滚结果（如有）和 `Unchanged Phase`。不得仅报告“文件已更新”或把 Mutation Set 草稿表述为已执行事实。
+
 ## Host Environment Bootstrap
 
 当 Project Incubator 初始化新的 Managed Project、第一次在已有 Managed Project 中建立协作上下文，或 Maker 明确请求宿主环境集成时，Agent 应先解析 Host Environment。
