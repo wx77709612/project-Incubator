@@ -353,14 +353,15 @@ class RuntimeCoordinator:
             for intent in request.context_mutation_intents
         }
         overlap = tuple(sorted(set_targets.intersection(independent_targets)))
-        if overlap:
+        if request.context_mutation_intents:
+            conflicting_targets = overlap or tuple(sorted(independent_targets))
             return self._form_result(
                 request=request,
                 state=RuntimeExecutionState.SUSPENDED,
                 reason=MUTATION_ROUTE_CONFLICT,
                 current_phase_reference=current_phase,
                 trace=trace,
-                pending_requirement=overlap,
+                pending_requirement=conflicting_targets,
             )
 
         recipe = self.definition_resolver.context_event_recipe(mutation_set.event_type)

@@ -33,6 +33,7 @@ class MutationOrchestrationFlowTest(unittest.TestCase):
         shutil.rmtree(self.root, ignore_errors=True)
 
     def seed_pending(self):
+        shutil.rmtree(self.root / ".project_incubator", ignore_errors=True)
         (self.root / "CAPABILITY_SPIRAL_RECORD.md").write_text(
             "Capability ID: C-PERSIST\nExtension Status: PENDING_MAKER_AUTHORIZATION\n"
             "Authorization Request Ref: auth-request-persist\n"
@@ -203,17 +204,7 @@ class MutationOrchestrationFlowTest(unittest.TestCase):
                 mutation_set = self.activation_set(authorized=True)
                 store = ActivationFailingStore(self.root, failure)
                 if failure == "closure":
-                    mutation_set = replace(
-                        mutation_set,
-                        closure_assertions=(
-                            ClosureAssertion(
-                                "state-active",
-                                "PROJECT_STATE.Extension Status",
-                                ClosureOperator.EQUALS,
-                                "WRONG",
-                            ),
-                        ),
-                    )
+                    store = ClosureMismatchStore(self.root)
                 result = ContextCoordinator(store).execute_mutation_set(mutation_set, recipe)
                 self.assertIs(MutationSetStatus.ROLLED_BACK, result.status)
                 self.assertIn(
@@ -235,6 +226,20 @@ class ActivationFailingStore(FileStore):
         if Path(path).name == self.failing_name and "Extension Status: ACTIVE" in content:
             raise FileWriteError("injected activation failure")
         return super().atomic_write(path, content)
+
+
+class ClosureMismatchStore(FileStore):
+    def __init__(self, base_dir):
+        super().__init__(base_dir)
+        self.state_reads = 0
+
+    def read_file(self, path):
+        content = super().read_file(path)
+        if Path(path).name == "PROJECT_STATE.md":
+            self.state_reads += 1
+            if self.state_reads >= 3 and "Extension Status: ACTIVE" in content:
+                return content.replace("Extension Status: ACTIVE", "Extension Status: WRONG")
+        return content
 
 
 if __name__ == "__main__":

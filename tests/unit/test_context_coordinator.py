@@ -1,3 +1,4 @@
+import json
 import shutil
 import unittest
 from dataclasses import replace
@@ -342,11 +343,34 @@ class ContextCoordinatorTest(unittest.TestCase):
                 pending,
                 replace(evidence, authorized_scope=("capability:C-1",)),
             ),
+            "scope broader than request": (
+                pending,
+                replace(
+                    evidence,
+                    authorized_scope=(
+                        "capability:C-1",
+                        "environment:windows11",
+                        "environment:all",
+                    ),
+                ),
+            ),
             "targets too small": (
                 pending,
                 replace(
                     evidence,
                     authorized_context_targets=("PROJECT_PLAN", "PROJECT_STATE"),
+                ),
+            ),
+            "targets broader than request": (
+                pending,
+                replace(
+                    evidence,
+                    authorized_context_targets=(
+                        "CAPABILITY_SPIRAL_RECORD",
+                        "PROJECT_PLAN",
+                        "PROJECT_STATE",
+                        "PROJECT_PROFILE",
+                    ),
                 ),
             ),
         }
@@ -429,6 +453,7 @@ class ContextCoordinatorTest(unittest.TestCase):
         )
 
     def seed_pending_activation(self, *, include_spiral=True):
+        shutil.rmtree(self.root / ".project_incubator", ignore_errors=True)
         if include_spiral:
             (self.root / "CAPABILITY_SPIRAL_RECORD.md").write_text(
                 "Capability ID: C-1\nExtension Status: PENDING_MAKER_AUTHORIZATION\n"
@@ -462,7 +487,7 @@ class ContextCoordinatorTest(unittest.TestCase):
 
         self.assertIs(MutationSetStatus.REJECTED, result.status)
         self.assertIs(OrchestrationFailureCode.PRECONDITION_CONFLICT, result.failure_code)
-        self.assertEqual([], store.writes)
+        self.assertEqual([], [name for name in store.writes if name.endswith(".md")])
 
     def test_mutation_set_commits_project_state_last_and_finalizes_authorization(self):
         self.seed_pending_activation()
@@ -478,7 +503,7 @@ class ContextCoordinatorTest(unittest.TestCase):
         self.assertIs(MutationSetStatus.VERIFIED, result.status)
         self.assertEqual(
             ["CAPABILITY_SPIRAL_RECORD.md", "PROJECT_PLAN.md", "PROJECT_STATE.md"],
-            store.writes,
+            [name for name in store.writes if name.endswith(".md")],
         )
         self.assertEqual("AUTHORIZED", result.authorization_request_status)
 
@@ -522,6 +547,10 @@ class ContextCoordinatorTest(unittest.TestCase):
                 else:
                     coordinator = FailingFinalizationCoordinator(FileStore(self.root))
 
+                if case == "closure":
+                    mutation_set = self.activation_transaction_set()
+                    coordinator = ContextCoordinator(ClosureMismatchFileStore(self.root))
+
                 result = coordinator.execute_mutation_set(
                     mutation_set,
                     DefinitionResolver().context_event_recipe(mutation_set.event_type),
@@ -536,23 +565,103 @@ class ContextCoordinatorTest(unittest.TestCase):
                 self.assertIs(expected, result.failure_code)
                 self.assertEqual(originals, self._context_contents())
 
+    def test_recipe_closure_cannot_be_removed_or_weakened(self):
+        self.seed_pending_activation()
+        store = RecordingFileStore(self.root)
+        coordinator = ContextCoordinator(store)
+        mutation_set = self.activation_transaction_set()
+        weakened = replace(
+            mutation_set,
+            closure_assertions=(mutation_set.closure_assertions[0],),
+        )
+
+        result = coordinator.execute_mutation_set(
+            weakened,
+            DefinitionResolver().context_event_recipe(weakened.event_type),
+        )
+
+        self.assertIs(MutationSetStatus.REJECTED, result.status)
+        self.assertIs(OrchestrationFailureCode.EVENT_RECIPE_MISMATCH, result.failure_code)
+        self.assertEqual([], [name for name in store.writes if name.endswith(".md")])
+
+    def test_recipe_status_transition_cannot_skip_pending_state(self):
+        self.seed_pending_activation()
+        for name in (
+            "CAPABILITY_SPIRAL_RECORD.md",
+            "PROJECT_PLAN.md",
+            "PROJECT_STATE.md",
+        ):
+            path = self.root / name
+            path.write_text(
+                path.read_text(encoding="utf-8").replace(
+                    "PENDING_MAKER_AUTHORIZATION",
+                    "PROPOSED",
+                ),
+                encoding="utf-8",
+            )
+        store = RecordingFileStore(self.root)
+        mutation_set = self.activation_transaction_set()
+
+        result = ContextCoordinator(store).execute_mutation_set(
+            mutation_set,
+            DefinitionResolver().context_event_recipe(mutation_set.event_type),
+        )
+
+        self.assertIs(MutationSetStatus.REJECTED, result.status)
+        self.assertIs(OrchestrationFailureCode.PRECONDITION_CONFLICT, result.failure_code)
+        self.assertEqual([], [name for name in store.writes if name.endswith(".md")])
+
+    def test_mutation_set_phase_must_match_project_state_before_commit(self):
+        self.seed_pending_activation()
+        state = self.root / "PROJECT_STATE.md"
+        state.write_text(
+            state.read_text(encoding="utf-8").replace("Current Phase: P2", "Current Phase: P3"),
+            encoding="utf-8",
+        )
+        store = RecordingFileStore(self.root)
+        mutation_set = self.activation_transaction_set()
+
+        result = ContextCoordinator(store).execute_mutation_set(
+            mutation_set,
+            DefinitionResolver().context_event_recipe(mutation_set.event_type),
+        )
+
+        self.assertIs(MutationSetStatus.REJECTED, result.status)
+        self.assertIs(OrchestrationFailureCode.PRECONDITION_CONFLICT, result.failure_code)
+        self.assertEqual([], [name for name in store.writes if name.endswith(".md")])
+
     def test_new_spiral_record_is_removed_when_later_commit_fails(self):
         self.seed_pending_activation(include_spiral=False)
         mutation_set = self.activation_transaction_set()
         mutation_set = replace(
             mutation_set,
-            targets=(replace(mutation_set.targets[0], mutation_intent="CREATE_CONTEXT"),) + mutation_set.targets[1:],
+            targets=(
+                replace(mutation_set.targets[0], mutation_intent="CREATE_CONTEXT"),
+            )
+            + mutation_set.targets[1:],
             closure_assertions=tuple(
                 item
                 for item in mutation_set.closure_assertions
                 if item.assertion_id != "budget-unchanged"
             ),
         )
+        recipe = dict(
+            DefinitionResolver().context_event_recipe(mutation_set.event_type)
+        )
+        recipe["allowed_status_transition"] = {
+            "from": ["ABSENT", "PENDING_MAKER_AUTHORIZATION", "SUSPENDED"],
+            "to": "ACTIVE",
+        }
+        recipe["closure_assertions"] = [
+            item
+            for item in recipe["closure_assertions"]
+            if item["assertion_id"] != "budget-unchanged"
+        ]
         coordinator = ContextCoordinator(FailingTargetFileStore(self.root, "PROJECT_PLAN.md"))
 
         result = coordinator.execute_mutation_set(
             mutation_set,
-            DefinitionResolver().context_event_recipe(mutation_set.event_type),
+            recipe,
         )
 
         self.assertIs(MutationSetStatus.ROLLED_BACK, result.status)
@@ -614,6 +723,110 @@ class ContextCoordinatorTest(unittest.TestCase):
         self.assertIs(MutationSetStatus.AUTHORIZATION_PENDING, pending.status)
         self.assertIs(MutationSetStatus.VERIFIED, authorized.status)
 
+    def test_verified_idempotency_survives_coordinator_restart(self):
+        self.seed_pending_activation()
+        mutation_set = self.activation_transaction_set()
+        recipe = DefinitionResolver().context_event_recipe(mutation_set.event_type)
+        first = ContextCoordinator(FileStore(self.root)).execute_mutation_set(
+            mutation_set,
+            recipe,
+        )
+        store = RecordingFileStore(self.root)
+
+        repeated = ContextCoordinator(store).execute_mutation_set(mutation_set, recipe)
+
+        self.assertIs(MutationSetStatus.VERIFIED, first.status)
+        self.assertEqual(first, repeated)
+        self.assertEqual([], [name for name in store.writes if name.endswith(".md")])
+
+    def test_crash_after_state_commit_recovers_final_closure(self):
+        self.seed_pending_activation()
+        mutation_set = self.activation_transaction_set()
+        recipe = DefinitionResolver().context_event_recipe(mutation_set.event_type)
+        crashing = ContextCoordinator(
+            CrashAfterTargetFileStore(self.root, "PROJECT_STATE.md")
+        )
+
+        with self.assertRaises(SimulatedCrash):
+            crashing.execute_mutation_set(mutation_set, recipe)
+
+        recovery_store = RecordingFileStore(self.root)
+        recovered = ContextCoordinator(recovery_store).execute_mutation_set(
+            mutation_set,
+            recipe,
+        )
+        self.assertIs(MutationSetStatus.VERIFIED, recovered.status)
+        self.assertEqual("AUTHORIZED", recovered.authorization_request_status)
+        self.assertIn("Extension Status: ACTIVE", self._context_contents()["PROJECT_STATE.md"])
+        self.assertEqual([], [name for name in recovery_store.writes if name.endswith(".md")])
+
+    def test_crash_after_partial_commit_restores_snapshots_on_restart(self):
+        self.seed_pending_activation()
+        before = self._context_contents()
+        mutation_set = self.activation_transaction_set()
+        recipe = DefinitionResolver().context_event_recipe(mutation_set.event_type)
+        crashing = ContextCoordinator(
+            CrashAfterTargetFileStore(self.root, "PROJECT_PLAN.md")
+        )
+
+        with self.assertRaises(SimulatedCrash):
+            crashing.execute_mutation_set(mutation_set, recipe)
+
+        recovered = ContextCoordinator(FileStore(self.root)).execute_mutation_set(
+            mutation_set,
+            recipe,
+        )
+        self.assertIs(MutationSetStatus.ROLLED_BACK, recovered.status)
+        self.assertEqual(before, self._context_contents())
+
+    def test_execution_record_contains_required_recovery_and_audit_fields(self):
+        self.seed_pending_activation()
+        mutation_set = self.activation_transaction_set()
+        coordinator = ContextCoordinator(FileStore(self.root))
+        coordinator.execute_mutation_set(
+            mutation_set,
+            DefinitionResolver().context_event_recipe(mutation_set.event_type),
+        )
+        records = list(
+            (self.root / ".project_incubator/runtime/mutation_sets").glob("*.json")
+        )
+
+        self.assertEqual(1, len(records))
+        record = json.loads(records[0].read_text(encoding="utf-8"))
+        for field_name in (
+            "mutation_set_id",
+            "attempt_id",
+            "event_type",
+            "target_refs",
+            "authorization_refs",
+            "before_digests",
+            "staged_digests",
+            "committed_targets",
+            "closure_result",
+            "rollback_result",
+        ):
+            self.assertIn(field_name, record)
+
+    def test_corrupt_execution_record_fails_closed_without_context_rewrites(self):
+        self.seed_pending_activation()
+        mutation_set = self.activation_transaction_set()
+        recipe = DefinitionResolver().context_event_recipe(mutation_set.event_type)
+        with self.assertRaises(SimulatedCrash):
+            ContextCoordinator(
+                CrashAfterTargetFileStore(self.root, "PROJECT_PLAN.md")
+            ).execute_mutation_set(mutation_set, recipe)
+        record = next(
+            (self.root / ".project_incubator/runtime/mutation_sets").glob("*.json")
+        )
+        record.write_text("{corrupt", encoding="utf-8")
+        store = RecordingFileStore(self.root)
+
+        result = ContextCoordinator(store).execute_mutation_set(mutation_set, recipe)
+
+        self.assertIs(MutationSetStatus.FAILED, result.status)
+        self.assertIs(OrchestrationFailureCode.STAGE_FAILED, result.failure_code)
+        self.assertEqual([], [name for name in store.writes if name.endswith(".md")])
+
     def _context_contents(self):
         return {
             name: (self.root / name).read_text(encoding="utf-8")
@@ -667,6 +880,42 @@ class RollbackFailFileStore(FileStore):
 class FailingFinalizationCoordinator(ContextCoordinator):
     def _finalize_authorization_request(self, pending_request):
         raise FileWriteError("injected authorization finalization failure")
+
+
+class SimulatedCrash(BaseException):
+    pass
+
+
+class CrashAfterTargetFileStore(FileStore):
+    def __init__(self, base_dir, target_name):
+        super().__init__(base_dir)
+        self.target_name = target_name
+        self.crashed = False
+
+    def atomic_write(self, path, content):
+        result = super().atomic_write(path, content)
+        if (
+            not self.crashed
+            and Path(path).name == self.target_name
+            and "Extension Status: ACTIVE" in content
+        ):
+            self.crashed = True
+            raise SimulatedCrash("injected process crash")
+        return result
+
+
+class ClosureMismatchFileStore(FileStore):
+    def __init__(self, base_dir):
+        super().__init__(base_dir)
+        self.state_reads = 0
+
+    def read_file(self, path):
+        content = super().read_file(path)
+        if Path(path).name == "PROJECT_STATE.md":
+            self.state_reads += 1
+            if self.state_reads >= 3 and "Extension Status: ACTIVE" in content:
+                return content.replace("Extension Status: ACTIVE", "Extension Status: WRONG")
+        return content
 
 
 if __name__ == "__main__":

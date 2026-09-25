@@ -369,6 +369,30 @@ class RuntimeCoordinatorTest(unittest.TestCase):
         self.assertIs(RuntimeExecutionState.SUSPENDED, result.runtime_execution_state)
         self.assertEqual(0, instances[0].execute_calls)
 
+    def test_disjoint_legacy_intent_is_not_silently_ignored(self):
+        self.write_state("P2")
+        coordinator, _, instances = self.runtime_with_orchestration_status(MutationSetStatus.VERIFIED)
+        independent = MutationIntent(
+            mutation_type=MutationType.UPDATE_CONTEXT,
+            target_context=AccessTarget(ContextType.PROJECT_DECISIONS),
+            change_purpose="independent decision mutation",
+            change_basis="MAKER_DECISION",
+            proposed_content="Decision D-1: ACTIVE\n",
+        )
+
+        result = coordinator.execute(
+            RuntimeRequest(
+                request_id="disjoint-routes",
+                requested_action="mutate contexts",
+                project_root=self.root,
+                context_mutation_set=self.mutation_set(),
+                context_mutation_intents=(independent,),
+            )
+        )
+
+        self.assertIs(RuntimeExecutionState.SUSPENDED, result.runtime_execution_state)
+        self.assertEqual(0, instances[0].execute_calls)
+
     def test_interrupted_orchestration_attempts_are_suspended_for_recovery(self):
         self.write_state("P2")
         for status in (
