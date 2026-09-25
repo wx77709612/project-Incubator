@@ -183,7 +183,7 @@ class DefinitionResolverTest(unittest.TestCase):
         config = json.loads(
             (self.root / "PROJECT_INCUBATOR/runtime/config.json").read_text(encoding="utf-8")
         )
-        self.assertEqual("1.1", config["package_version"])
+        self.assertEqual("1.1.0-rc.2", config["package_version"])
         self.assertEqual(
             "templates/context/CAPABILITY_SPIRAL_RECORD.template.md",
             config["template_locations"]["capability_spiral_record_template"],
