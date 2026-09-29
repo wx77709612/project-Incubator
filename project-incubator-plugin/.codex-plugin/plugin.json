@@ -1,0 +1,19 @@
+{
+  "name": "project-incubator-plugin",
+  "version": "0.1.0",
+  "description": "Project Incubator Plugin plugin",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Project Incubator Plugin",
+    "shortDescription": "Use Project Incubator Plugin in Codex.",
+    "longDescription": "Project Incubator Plugin adds a local Codex plugin scaffold.",
+    "developerName": "Local developer",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Help me use Project Incubator Plugin."
+  },
+  "mcpServers": "./.mcp.json"
+}
