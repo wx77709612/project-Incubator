@@ -18,7 +18,7 @@ const registrySchema = z.object({
     receipt: z.literal("REQUIRED"),
   }).strict(),
   child_skills: z.array(z.object({ id, skill_path: relativePath }).strict()).max(100),
-  project_types: z.array(z.object({ id, child_skill_id: id }).strict()).max(100),
+  project_types: z.array(z.object({ id, child_skill_id: id, profile_path: relativePath.optional() }).strict()).max(100),
   host_profiles: z.array(z.object({
     id, project_type_id: id, profile_path: relativePath,
     kernel_constraints: constraints.default({}),

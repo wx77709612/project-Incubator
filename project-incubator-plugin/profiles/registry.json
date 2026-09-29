@@ -14,7 +14,8 @@
   "project_types": [
     {
       "id": "mod",
-      "child_skill_id": "mod-incubator"
+      "child_skill_id": "mod-incubator",
+      "profile_path": "profiles/project-types/mod.json"
     }
   ],
   "host_profiles": []

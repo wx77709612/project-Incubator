@@ -62,7 +62,7 @@ const projectStateSchema = z.object({
   boundary: z.object({ objective: text, supported: boundedTextList, excluded: boundedTextList }).strict(),
   workflow: z.object({
     stage: id, status: z.enum(["NOT_STARTED", "ACTIVE", "BLOCKED", "AWAITING_GATE", "COMPLETED"]),
-    completed: boundedTextList, allowed_next: z.array(id).max(20),
+    completed: boundedTextList, allowed_next: z.array(id).max(20), return_stage: id.nullable().optional(),
   }).strict(),
   capabilities: z.array(capabilitySchema).max(100),
   decisions: z.object({ active: z.array(decisionSchema).max(100), archive_ref: shortText.nullable() }).strict(),

@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "project_type_id": "mod",
+  "child_skill_id": "mod-incubator",
+  "stages": [
+    "M0_BOUNDARY",
+    "M1_RISK_MODEL",
+    "M2_VERTICAL_SLICE",
+    "M3_BUILD_PACKAGE",
+    "M4_TARGET_VALIDATION",
+    "M5_EXPAND_RELEASE"
+  ],
+  "subflows": ["MODEL_REVIEW"],
+  "evidence_levels": ["E0", "E1", "E2", "E3", "E4", "E5"],
+  "human_validation_default": "UNSET"
+}
