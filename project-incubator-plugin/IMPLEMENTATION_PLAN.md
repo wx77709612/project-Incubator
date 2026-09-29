@@ -16,7 +16,7 @@
 - 新产品代码只进入 `project-incubator-plugin/`；Spike 只能作为宿主能力证据，不能复制其宽松状态解析。
 - Managed Project 核心状态仅包含 `.project-incubator/activation.json`、`state.json`、`latest-receipt.json`。
 - `state.json` 是唯一项目状态 Source of Truth；Markdown、聊天记录和 Runtime 临时数据均不得覆盖它。
-- 未激活项目中，所有 Hooks 必须无副作用放行，尤其不得保存 Maker Prompt。
+- 未激活且没有路径严格匹配的有效 Pending Activation Bootstrap 时，所有 Hooks 必须无副作用放行；Bootstrap 只存在于 Plugin Runtime Data，不得创建项目状态。
 - 状态、Schema、Receipt 或授权证据损坏时必须 fail closed，不得自动当作空状态恢复。
 - Maker Authorization 只能来自当前项目、当前 Pending Request 对应的 Maker Prompt。
 - Prompt 临时记录位于 Plugin Runtime Data，不属于 Managed Project；按 project/session/turn 隔离，授权消费或过期后删除。
@@ -31,6 +31,7 @@
 - `latest-receipt.json` 的 ID 正确但状态哈希或 revision 不一致时，`inspect_project` 和 `Stop` 都应报告不可验证。
 - 从子目录、软链接、`..`、大小写差异或相似目录名访问时，受保护路径判断不能被绕过。
 - 旧 Prompt、其他项目 Prompt、Agent 文本或已消费 Prompt 不能授权当前 Pending Request。
+- Pending Activation 必须绑定项目规范路径、request、scope、session 与当前授权 turn；消费或 24 小时过期后删除，且不得成为第四份项目权威状态。
 - 新增项目类型或 Host Profile 只能通过注册表扩展，不能修改 Kernel 的状态、授权或 Receipt 规则。
 
 ---
@@ -233,7 +234,7 @@
 - Consumes: Tasks 1-3 schemas, state transaction and authorization APIs.
 - Produces: `loadRegistry(pluginRoot: string): Promise<Registry>`
 - Produces: `resolveRoute(registry: Registry, projectTypeId: string, hostProfileId?: string): RouteResolution`
-- Produces MCP tools: `propose_route`、`prepare_change`、`initialize_project`、`get_project_state`、`commit_change`、`verify_receipt`.
+- Produces MCP tools: `propose_route`、`prepare_activation`、`prepare_change`、`initialize_project`、`get_project_state`、`commit_change`、`verify_receipt`.
 
 - [ ] **Step 1: Write failing registry tests**
 
@@ -241,7 +242,7 @@
 
 - [ ] **Step 2: Write failing Router/MCP tests**
 
-  断言 `propose_route` 不修改状态，未经 Maker 授权不能初始化或迁移项目类型，MCP 错误使用稳定错误码而不是成功文本。
+  断言 `propose_route` 不修改状态；`prepare_activation` 只创建有界 Runtime 候选请求；普通未激活项目仍零副作用；未经 Maker 授权不能初始化或迁移项目类型；MCP 错误使用稳定错误码而不是成功文本。
 
 - [ ] **Step 3: Verify tests fail**
 
@@ -251,7 +252,7 @@
 
 - [ ] **Step 4: Implement registry-driven routing and MCP server**
 
-  Router Skill 只负责识别候选类型、说明依据和请求 Maker 确认；Kernel 只有收到有效 AuthorizationRef 才写入 route。
+  Router Skill 只负责识别候选类型、说明依据和请求 Maker 确认。首次激活通过短期 Pending Activation Bootstrap 捕获下一轮 Maker Prompt；Kernel 只有校验 request、scope、项目路径、session、turn 和批准语义后才创建三个权威文件。Bootstrap 消费或 24 小时过期后删除。
 
 - [ ] **Step 5: Verify tests and plugin manifest pass**
 

@@ -1,6 +1,6 @@
 # Project Incubator Plugin 架构契约
 
-状态：`APPROVED`（Maker 于 2026-09-29 确认）
+状态：`APPROVED`（Maker 于 2026-09-29 确认；Pending Activation Bootstrap 修正于同日确认）
 
 ## 1. 目标
 
@@ -50,14 +50,23 @@ Mod Incubator Skill + Sims 4 Host Profile
 .project-incubator/activation.json
 ```
 
-只有满足以下全部条件时，Hooks 才执行管理逻辑：
+正常管理逻辑只有满足以下全部条件时才执行：
 
 1. 当前工作目录位于该项目根目录内；
 2. `activation.json` 结构合法；
 3. `status` 为 `ACTIVE`；
 4. `plugin_id` 与当前插件一致。
 
-否则所有 Hooks 必须直接返回 `continue`，不得保存 Prompt、修改文件或阻止任务。
+首次激活采用唯一的受限例外 `Pending Activation Bootstrap`：
+
+1. `prepare_activation` 只能在 Plugin Runtime Data 中建立绑定项目规范路径、随机 `request_id`、`scope_digest` 与失效时间的短期候选请求；
+2. 它不得创建 `.project-incubator/`、不得修改项目文件，也不构成已激活状态；
+3. `UserPromptSubmit` 在未激活项目中只可查询是否存在与当前项目规范路径严格匹配的有效候选请求；没有候选请求时必须零副作用放行；
+4. 存在候选请求时，只捕获下一轮对应 Maker Prompt，用于校验当前 request、scope、project、session 与 turn；
+5. 明确批准后 Kernel 才原子创建三个权威文件；批准、拒绝、消费或超过 24 小时后，候选请求与 Prompt 临时记录立即删除；
+6. Bootstrap Runtime Data 不是第四份项目状态，不能用于恢复项目、推进 Workflow 或覆盖三个权威文件。
+
+除已激活项目和上述有效 Bootstrap 候选外，所有 Hooks 必须直接返回 `continue`，不得保存 Prompt、修改文件或阻止任务。
 
 插件更新导致 Hook 定义哈希变化时，需要重新审查信任；新增普通项目或任务不需要重新审查。
 
@@ -151,7 +160,7 @@ Kernel 对任何状态变更执行：
 prepare_change
 -> 返回 request_id、scope_digest、变更摘要和明确确认问题
 Maker 回复
--> UserPromptSubmit 仅在激活项目中保存本轮原始 Prompt 与哈希
+-> UserPromptSubmit 在激活项目中，或仅对路径严格匹配的 Pending Activation Bootstrap，保存本轮原始 Prompt 与哈希
 commit_change
 -> 校验 request_id、scope_digest、Prompt 来源、明确批准语义和时效
 ```
