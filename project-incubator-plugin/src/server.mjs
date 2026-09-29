@@ -10,6 +10,7 @@ import { z } from "zod";
 import { authorizePreparedChange, prepareChange } from "./kernel/authorization.mjs";
 import { hashJson } from "./kernel/canonical-json.mjs";
 import { findPromptRef } from "./kernel/prompt-events.mjs";
+import { buildProjectSummary, renderProjectSummary, writeProjectOverview } from "./kernel/project-summary.mjs";
 import { loadRegistry, resolveRoute } from "./kernel/registry.mjs";
 import {
   consumeActivationRequest,
@@ -185,6 +186,28 @@ export async function createKernelService(options = {}) {
     async verify_receipt(args) {
       return verifyLatestReceipt(args.project_root, args.receipt_id);
     },
+
+    async inspect_project(args) {
+      const snapshot = await readProjectSnapshot(args.project_root);
+      const receipt = await verifyLatestReceipt(args.project_root);
+      if (!receipt.verified) throw new Error("RECEIPT_UNVERIFIABLE");
+      const summary = buildProjectSummary(snapshot, receipt);
+      return { summary, markdown: renderProjectSummary(summary) };
+    },
+
+    async export_project_overview(args, context) {
+      const snapshot = await readProjectSnapshot(args.project_root);
+      const receipt = await verifyLatestReceipt(args.project_root);
+      if (!receipt.verified) throw new Error("RECEIPT_UNVERIFIABLE");
+      const promptRef = await findPromptRef(runtimeDataRoot, {
+        project_id: snapshot.state.project_id, session_id: args.session_id, turn_id: args.turn_id,
+      });
+      const summary = buildProjectSummary(snapshot, receipt);
+      const projection = await writeProjectOverview(args.project_root, summary, promptRef, {
+        now: context.now ?? new Date(),
+      });
+      return { summary, markdown: renderProjectSummary(summary), projection };
+    },
   };
 
   return {
@@ -227,6 +250,10 @@ export async function createMcpServer(options = {}) {
     },
     get_project_state: { project_root: z.string() },
     verify_receipt: { project_root: z.string(), receipt_id: z.string().optional() },
+    inspect_project: { project_root: z.string() },
+    export_project_overview: {
+      project_root: z.string(), session_id: z.string(), turn_id: z.string(),
+    },
   };
   for (const [name, inputSchema] of Object.entries(definitions)) {
     server.registerTool(name, { description: `Project Incubator ${name}`, inputSchema },

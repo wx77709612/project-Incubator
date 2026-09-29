@@ -13,6 +13,15 @@ description: 当 Maker 要创建、孵化、恢复或判断一个长期项目应
 4. 只有 Maker 在下一轮明确批准该请求后，才调用 `initialize_project`。
 5. 项目已激活后，转交注册表指定的 Child Skill；不得自行替代其领域流程。
 
+## 项目状态查询
+
+Maker 询问“项目状态”“当前进度”“下一步做什么”“有什么阻塞”“需要我决定什么”或语义等价问题时，必须调用 `inspect_project`，并按其返回的固定摘要回答。
+
+- `inspect_project` 是只读查询，不得顺便推进阶段或修改状态。
+- 权威状态或 Receipt 不可验证时必须报告错误，不得依据聊天记忆猜测或补全。
+- 不默认生成 `PROJECT_OVERVIEW.md`。只有 Maker 当轮明确要求导出项目状态概览时，才调用 `export_project_overview`。
+- 展示顺序遵循 [状态摘要契约](references/status-summary.md)。
+
 ## 强制边界
 
 - `ROUTE_PROPOSED` 不是路由已确认。
