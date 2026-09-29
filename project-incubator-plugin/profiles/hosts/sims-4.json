@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "host_profile_id": "sims-4",
+  "project_type_id": "mod",
+  "skill_id": "sims-4-host-profile",
+  "required_context": ["game_version", "patch_version", "mod_types"],
+  "always_verify": [
+    "build_artifact_contents",
+    "mods_install_structure",
+    "loading_logs",
+    "exceptions"
+  ],
+  "conditional_checks": {
+    "ui": "ui_observation",
+    "interaction": "interaction_observation",
+    "persistence": "save_compatibility",
+    "version_sensitive": "cross_version_matrix"
+  },
+  "kernel_constraints": {
+    "maker_authorization": "REQUIRED",
+    "state_mutation": "MCP_ONLY",
+    "receipt": "REQUIRED"
+  }
+}

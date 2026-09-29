@@ -18,5 +18,16 @@
       "profile_path": "profiles/project-types/mod.json"
     }
   ],
-  "host_profiles": []
+  "host_profiles": [
+    {
+      "id": "sims-4",
+      "project_type_id": "mod",
+      "profile_path": "profiles/hosts/sims-4.json",
+      "kernel_constraints": {
+        "maker_authorization": "REQUIRED",
+        "state_mutation": "MCP_ONLY",
+        "receipt": "REQUIRED"
+      }
+    }
+  ]
 }
