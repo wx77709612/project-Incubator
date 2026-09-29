@@ -1,0 +1,37 @@
+{
+  "description": "仅在已激活项目中保护 Project Incubator 权威状态与 Receipt 闭环。",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"import(require('node:url').pathToFileURL(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','user-prompt-submit.mjs')).href).then(m=>m.runCli())\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"import(require('node:url').pathToFileURL(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','pre-tool-use.mjs')).href).then(m=>m.runCli())\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"import(require('node:url').pathToFileURL(require('node:path').join(process.env.PLUGIN_ROOT,'hooks','stop.mjs')).href).then(m=>m.runCli())\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
