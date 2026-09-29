@@ -29,6 +29,10 @@ async function canonicalizePossiblyMissing(candidatePath) {
   }
 }
 
+export async function canonicalProjectPath(candidatePath) {
+  return canonicalizePossiblyMissing(candidatePath);
+}
+
 async function readActivation(root) {
   try {
     const raw = await readFile(path.join(root, CONTROL_DIR, ACTIVATION_FILE), "utf8");

@@ -1,0 +1,128 @@
+import assert from "node:assert/strict";
+import { access, mkdtemp, readdir, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import test from "node:test";
+
+import { handleUserPromptSubmit } from "../../hooks/user-prompt-submit.mjs";
+import { createKernelService } from "../../src/server.mjs";
+
+const approvalTime = "2026-09-29T09:01:00.000Z";
+
+function initialState() {
+  return {
+    schema_version: "1.0", project_id: "project-1", revision: 0,
+    boundary: { objective: "验证一个 Mod 产品点", supported: ["单一能力"], excluded: [] },
+    workflow: { stage: "M0_BOUNDARY", status: "ACTIVE", completed: [], allowed_next: ["M1_RISK_MODEL"] },
+    capabilities: [], decisions: { active: [], archive_ref: null }, assumptions: [],
+    plan: { current_action: "确认边界", next_action: "风险建模", completion_conditions: ["Maker 确认"] },
+    gates: [], risks: [], pending_requests: [], baselines: [],
+    human_validation: { limit: "UNSET", consumed: 0 },
+    last_change: { operation: "INITIALIZE_PROJECT", changed_at: approvalTime, summary: "首次激活" },
+    archive_refs: [],
+  };
+}
+
+async function fixture(t) {
+  const projectRoot = await mkdtemp(path.join(os.tmpdir(), "incubator-router-project-"));
+  const runtimeDataRoot = await mkdtemp(path.join(os.tmpdir(), "incubator-router-runtime-"));
+  const codexHome = path.dirname(path.dirname(runtimeDataRoot));
+  t.after(() => rm(projectRoot, { recursive: true, force: true }));
+  t.after(() => rm(runtimeDataRoot, { recursive: true, force: true }));
+  const pluginRoot = path.resolve(import.meta.dirname, "../..");
+  return {
+    projectRoot, runtimeDataRoot, codexHome,
+    service: await createKernelService({ pluginRoot, runtimeDataRoot }),
+  };
+}
+
+test("propose_route is read-only and MCP failures use stable error codes", async (t) => {
+  const { projectRoot, service } = await fixture(t);
+  const proposal = await service.callTool("propose_route", {
+    project_root: projectRoot, project_type_id: "mod",
+  });
+  assert.equal(proposal.isError, undefined);
+  assert.equal(proposal.structuredContent.event, "ROUTE_PROPOSED");
+  await assert.rejects(() => access(path.join(projectRoot, ".project-incubator")), /ENOENT/);
+
+  const failure = await service.callTool("propose_route", {
+    project_root: projectRoot, project_type_id: "unknown",
+  });
+  assert.equal(failure.isError, true);
+  assert.equal(failure.structuredContent.error.code, "PROJECT_TYPE_NOT_FOUND");
+});
+
+test("initialization is denied without a verified Maker prompt", async (t) => {
+  const { projectRoot, service } = await fixture(t);
+  const prepared = await service.callTool("prepare_activation", {
+    project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
+    session_id: "session-1", summary: "激活 Mod 孵化器", state: initialState(),
+  });
+  const request = prepared.structuredContent;
+  const result = await service.callTool("initialize_project", {
+    project_root: projectRoot, request_id: request.request_id,
+    scope_digest: request.scope_digest, session_id: "session-1", turn_id: "turn-2",
+    state: initialState(),
+  });
+  assert.equal(result.isError, true);
+  assert.equal(result.structuredContent.error.code, "PROMPT_NOT_FOUND");
+  await assert.rejects(() => access(path.join(projectRoot, ".project-incubator")), /ENOENT/);
+});
+
+test("pending activation captures one scoped Maker approval and initializes atomically", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  const prepared = await service.callTool("prepare_activation", {
+    project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
+    session_id: "session-1", summary: "激活 Mod 孵化器", state: initialState(),
+  });
+  const request = prepared.structuredContent;
+  const hook = await handleUserPromptSubmit({
+    cwd: projectRoot, session_id: "session-1", turn_id: "turn-2", timestamp: approvalTime,
+    prompt: `我明确批准 ${request.request_id}，scope_digest: ${request.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(approvalTime) });
+  assert.deepEqual(hook, { continue: true });
+
+  const initialized = await service.callTool("initialize_project", {
+    project_root: projectRoot, request_id: request.request_id,
+    scope_digest: request.scope_digest, session_id: "session-1", turn_id: "turn-2",
+    state: initialState(),
+  }, { now: new Date(approvalTime) });
+  assert.equal(initialized.isError, undefined);
+  assert.equal(initialized.structuredContent.receipt.new_revision, 0);
+  const state = await service.callTool("get_project_state", { project_root: projectRoot });
+  assert.equal(state.structuredContent.state.project_id, "project-1");
+  assert.equal(state.structuredContent.activation.project_type_id, "mod");
+  assert.deepEqual(await readdir(runtimeDataRoot), []);
+});
+
+test("route migration cannot be committed without Maker authorization", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  const prepared = await service.callTool("prepare_activation", {
+    project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
+    session_id: "session-1", summary: "激活 Mod 孵化器", state: initialState(),
+  });
+  const request = prepared.structuredContent;
+  await handleUserPromptSubmit({
+    cwd: projectRoot, session_id: "session-1", turn_id: "turn-2", timestamp: approvalTime,
+    prompt: `我明确批准 ${request.request_id}，scope_digest: ${request.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(approvalTime) });
+  await service.callTool("initialize_project", {
+    project_root: projectRoot, request_id: request.request_id, scope_digest: request.scope_digest,
+    session_id: "session-1", turn_id: "turn-2", state: initialState(),
+  }, { now: new Date(approvalTime) });
+
+  const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });
+  const proposedState = structuredClone(snapshot.structuredContent.state);
+  proposedState.last_change = { operation: "MIGRATE_ROUTE", changed_at: approvalTime, summary: "迁移路由" };
+  const pending = await service.callTool("prepare_change", {
+    project_root: projectRoot, operation: "MIGRATE_ROUTE", change_kind: "PRODUCT_DECISION",
+    session_id: "session-1", proposed_state: proposedState,
+  });
+  const denied = await service.callTool("commit_change", {
+    project_root: projectRoot, request_id: pending.structuredContent.request_id,
+    scope_digest: pending.structuredContent.scope_digest,
+    session_id: "session-1", turn_id: "turn-3",
+  });
+  assert.equal(denied.isError, true);
+  assert.equal(denied.structuredContent.error.code, "PROMPT_NOT_FOUND");
+});

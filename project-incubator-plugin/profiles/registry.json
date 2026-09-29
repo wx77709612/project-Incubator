@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "kernel_constraints": {
+    "maker_authorization": "REQUIRED",
+    "state_mutation": "MCP_ONLY",
+    "receipt": "REQUIRED"
+  },
+  "child_skills": [
+    {
+      "id": "mod-incubator",
+      "skill_path": "skills/mod-incubator/SKILL.md"
+    }
+  ],
+  "project_types": [
+    {
+      "id": "mod",
+      "child_skill_id": "mod-incubator"
+    }
+  ],
+  "host_profiles": []
+}

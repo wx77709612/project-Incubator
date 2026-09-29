@@ -32,11 +32,8 @@ async function cleanupExpired(runtimeDataRoot, now) {
     }));
 }
 
-export async function recordMakerPrompt(event, runtimeDataRoot, options = {}) {
-  const activation = parseActivation(event.activation);
-  if (activation.status !== "ACTIVE") return null;
+async function recordScopedPrompt(event, runtimeDataRoot, options = {}) {
   if (event.role !== "maker") throw new Error("MAKER_PROMPT_REQUIRED");
-  if (event.project_id !== activation.project_id) throw new Error("PROMPT_PROJECT_MISMATCH");
   for (const field of ["project_id", "session_id", "turn_id", "text", "captured_at"]) {
     if (typeof event[field] !== "string" || event[field].length === 0) {
       throw new Error(`PROMPT_${field.toUpperCase()}_REQUIRED`);
@@ -68,6 +65,53 @@ export async function recordMakerPrompt(event, runtimeDataRoot, options = {}) {
     turn_id: event.turn_id,
     prompt_digest: promptDigest,
   };
+}
+
+export async function recordMakerPrompt(event, runtimeDataRoot, options = {}) {
+  const activation = parseActivation(event.activation);
+  if (activation.status !== "ACTIVE") return null;
+  if (event.project_id !== activation.project_id) throw new Error("PROMPT_PROJECT_MISMATCH");
+  return recordScopedPrompt(event, runtimeDataRoot, options);
+}
+
+export async function recordBootstrapPrompt(event, request, runtimeDataRoot, options = {}) {
+  if (request.status !== "PENDING") throw new Error("ACTIVATION_REQUEST_NOT_PENDING");
+  if (event.project_id !== request.project_id || event.session_id !== request.session_id) {
+    throw new Error("PROMPT_CONTEXT_MISMATCH");
+  }
+  return recordScopedPrompt(event, runtimeDataRoot, options);
+}
+
+export async function findPromptRef(runtimeDataRoot, context) {
+  let entries;
+  try {
+    entries = await readdir(runtimeDataRoot, { withFileTypes: true });
+  } catch (error) {
+    if (error?.code === "ENOENT") throw new Error("PROMPT_NOT_FOUND");
+    throw error;
+  }
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith(".json")
+      || entry.name.startsWith("activation-") || entry.name.startsWith("turn-")) continue;
+    const filePath = path.join(runtimeDataRoot, entry.name);
+    let stored;
+    try {
+      stored = JSON.parse(await readFile(filePath, "utf8"));
+    } catch {
+      continue;
+    }
+    if (stored.project_id === context.project_id
+      && stored.session_id === context.session_id
+      && stored.turn_id === context.turn_id
+      && typeof stored.prompt_digest === "string") {
+      return {
+        event_id: path.basename(entry.name, ".json"), file_path: filePath,
+        project_id: stored.project_id, session_id: stored.session_id,
+        turn_id: stored.turn_id, prompt_digest: stored.prompt_digest,
+      };
+    }
+  }
+  throw new Error("PROMPT_NOT_FOUND");
 }
 
 export async function readPrompt(promptRef) {

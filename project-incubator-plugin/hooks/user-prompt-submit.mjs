@@ -4,8 +4,9 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { findActivatedProjectRoot } from "../src/kernel/project-root.mjs";
-import { recordMakerPrompt } from "../src/kernel/prompt-events.mjs";
+import { recordBootstrapPrompt, recordMakerPrompt } from "../src/kernel/prompt-events.mjs";
 import { resolveRuntimeDataRoot } from "../src/kernel/runtime-paths.mjs";
+import { findPendingActivation } from "../src/kernel/router.mjs";
 import { readProjectSnapshot } from "../src/kernel/state-store.mjs";
 
 function turnKey(projectId, sessionId, turnId) {
@@ -18,10 +19,25 @@ export function turnMarkerPath(runtimeDataRoot, projectId, sessionId, turnId) {
 
 export async function handleUserPromptSubmit(event, options = {}) {
   const root = await findActivatedProjectRoot(event.cwd ?? ".");
-  if (!root) return { continue: true };
-  const snapshot = await readProjectSnapshot(root);
-  const runtimeDataRoot = resolveRuntimeDataRoot(options.env ?? process.env);
+  const runtimeDataRoot = options.runtimeDataRoot
+    ?? (options.env?.CODEX_HOME || process.env.CODEX_HOME
+      ? resolveRuntimeDataRoot(options.env ?? process.env)
+      : null);
   const timestamp = event.timestamp ?? new Date().toISOString();
+  if (!root) {
+    if (!runtimeDataRoot) return { continue: true };
+    const pending = await findPendingActivation(
+      runtimeDataRoot, event.cwd ?? ".", event.session_id, options.now ?? new Date(timestamp),
+    );
+    if (!pending) return { continue: true };
+    await recordBootstrapPrompt({
+      role: "maker", project_id: pending.project_id, session_id: event.session_id,
+      turn_id: event.turn_id, text: event.prompt, captured_at: timestamp,
+    }, pending, runtimeDataRoot, { now: options.now ?? new Date(timestamp) });
+    return { continue: true };
+  }
+  const snapshot = await readProjectSnapshot(root);
+  if (!runtimeDataRoot) throw new Error("CODEX_HOME_REQUIRED");
   await recordMakerPrompt({
     activation: snapshot.activation,
     role: "maker",
