@@ -276,7 +276,7 @@
 - Modify: `project-incubator-plugin/skills/project-incubator-router/SKILL.md`
 
 **Interfaces:**
-- Consumes: Task 2 `readProjectSnapshot` and `verifyLatestReceipt`.
+- Consumes: Task 2 `readProjectSnapshot` and `verifyLatestReceipt`; Task 3 Prompt provenance for explicit overview export.
 - Produces: `buildProjectSummary(snapshot: ProjectSnapshot, receipt: ReceiptVerification): ProjectSummary`
 - Produces: `renderProjectSummary(summary: ProjectSummary): string`
 - Produces: `writeProjectOverview(root: string, summary: ProjectSummary, promptRef: PromptRef): Promise<ProjectionResult>`
