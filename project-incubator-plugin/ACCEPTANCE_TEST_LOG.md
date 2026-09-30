@@ -28,4 +28,5 @@
 - Maker 已信任当前 Plugin 的 UserPromptSubmit、PreToolUse 与 Stop Hook；CLI 确认三个 Hook 均存在对应 `trusted_hash`。
 - CLI 对照检查发现带引号的相对路径可绕过旧版 PreToolUse 匹配；已新增回归测试并收紧命令文本中的权威路径边界识别。
 - 自动化验证：Plugin 测试 `70/70` 通过，Plugin 结构校验与三个 Skill 校验均通过。
-- 待办：安装新的缓存版本；Maker 审阅变化后的 Hook 哈希，再重放直接写入拦截。
+- 修复版已安装为 `0.1.0+codex.20260930064453`；CLI 对 `apply_patch` 与带引号 PowerShell 路径均返回 `deny`。Hook 配置定义未变化，既有三条信任记录继续有效。
+- 待办：在重新加载插件的新测试会话中重放直接写入拦截。
