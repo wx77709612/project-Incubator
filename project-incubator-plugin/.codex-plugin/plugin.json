@@ -1,19 +1,19 @@
 {
   "name": "project-incubator-plugin",
   "version": "0.1.0",
-  "description": "Project Incubator Plugin plugin",
+  "description": "通过 Router、强制 Kernel 与项目类型子孵化器，受控推进长期项目。",
   "author": {
     "name": "Local developer"
   },
   "skills": "./skills/",
   "interface": {
-    "displayName": "Project Incubator Plugin",
-    "shortDescription": "Use Project Incubator Plugin in Codex.",
-    "longDescription": "Project Incubator Plugin adds a local Codex plugin scaffold.",
+    "displayName": "Project Incubator",
+    "shortDescription": "按项目类型路由并以机器状态和 Receipt 受控推进。",
+    "longDescription": "提供项目类型路由、Maker 授权、机器权威状态、Receipt 闭环，以及 Mod 与 Sims 4 领域孵化流程。",
     "developerName": "Local developer",
     "category": "Productivity",
-    "capabilities": [],
-    "defaultPrompt": "Help me use Project Incubator Plugin."
+    "capabilities": ["Project routing", "Controlled state", "Mod incubation"],
+    "defaultPrompt": "使用 Project Incubator 判断这个项目的类型，并说明下一步需要我确认什么。"
   },
   "mcpServers": "./.mcp.json"
 }

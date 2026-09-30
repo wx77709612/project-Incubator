@@ -17,7 +17,7 @@ export async function handleStop(event, options = {}) {
     const snapshot = await readProjectSnapshot(root);
     const verified = await verifyLatestReceipt(root);
     if (!verified.verified) return block(`Receipt 校验失败（${verified.reason}）`);
-    const runtimeDataRoot = resolveRuntimeDataRoot(options.env ?? process.env);
+    const runtimeDataRoot = options.runtimeDataRoot ?? resolveRuntimeDataRoot(options.env ?? process.env);
     const markerRaw = await readFile(turnMarkerPath(
       runtimeDataRoot, snapshot.state.project_id, event.session_id, event.turn_id,
     ), "utf8");
