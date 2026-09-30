@@ -38,3 +38,5 @@
 - 修复版已安装为 `0.1.0+codex.20260930115950`；安装缓存烟雾测试确认无 `CODEX_HOME` 时 UserPromptSubmit 与 Stop 均返回 `continue: true`，所有运行目录变量缺失且 `stop_hook_active=true` 时只输出警告并允许结束。
 - Round 7S 已完成：PreToolUse 写保护、权威状态完整性和 Stop 闭合均通过，原 `CODEX_HOME_REQUIRED` 循环缺陷关闭。
 - Round 7S 会话记录同时证明两次只读检查被误拒绝：组合 `Get-FileHash/Get-Content` 与单独 `Get-FileHash`。根因是当前 PreToolUse 只按命令文本是否包含权威路径拒绝，尚未区分只读与写入语义；该问题不推翻 Round 7S 的写保护与 Stop 结论，但应作为下一项独立缺陷处理。
+- 只读误拦截修复：PreToolUse 先识别权威路径，再仅放行明确的结构化只读工具与受限 PowerShell 只读命令链；写命令、读写混合命令、嵌套脚本、重定向及未知命令继续默认拒绝。
+- 自动化验证：Plugin 测试 `73/73` 通过。下一轮 Round 8 只验证 `Get-FileHash` / `Get-Content` 可读、`Set-Content` 仍被拒绝、权威状态与 Receipt 不变。

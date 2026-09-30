@@ -96,6 +96,41 @@ test("activated projects block shell writes when the protected path is quoted", 
   assert.equal(result.hookSpecificOutput?.permissionDecision, "deny");
 });
 
+test("activated projects allow explicit read-only access to authority files", async (t) => {
+  const { root } = await workspace(t);
+  await initialize(root);
+  const cases = [
+    "Get-FileHash -Algorithm SHA256 -LiteralPath '.project-incubator\\state.json'",
+    "Get-Content -Raw -LiteralPath '.project-incubator\\state.json' | ConvertFrom-Json | Select-Object revision",
+  ];
+  for (const command of cases) {
+    assert.deepEqual(await handlePreToolUse({
+      cwd: root, tool_name: "Bash", tool_input: { command },
+    }), {});
+  }
+  assert.deepEqual(await handlePreToolUse({
+    cwd: root,
+    tool_name: "read_file",
+    tool_input: { path: path.join(root, ".project-incubator", "state.json") },
+  }), {});
+});
+
+test("activated projects deny mixed or unknown shell access to authority files", async (t) => {
+  const { root } = await workspace(t);
+  await initialize(root);
+  const cases = [
+    "Get-Content -Raw '.project-incubator\\state.json'; Set-Content '.project-incubator\\state.json' '{}'",
+    "Write-Output $(Set-Content '.project-incubator\\state.json' '{}')",
+    "python -c \"open('.project-incubator/state.json','w').write('{}')\"",
+  ];
+  for (const command of cases) {
+    const result = await handlePreToolUse({
+      cwd: root, tool_name: "Bash", tool_input: { command },
+    });
+    assert.equal(result.hookSpecificOutput?.permissionDecision, "deny");
+  }
+});
+
 test("read-only turns do not require a new receipt", async (t) => {
   const { root, env } = await workspace(t);
   await initialize(root);
