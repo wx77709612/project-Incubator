@@ -156,7 +156,7 @@
 
 - [ ] **Step 2: Write failing Prompt lifecycle tests**
 
-  断言未激活项目不写入 Runtime Data；激活项目只保存 session、turn、project、hash 和最小必要原文；Runtime Data 固定解析到 `$CODEX_HOME/project-incubator-plugin/runtime-events/`，缺少 `CODEX_HOME` 时 fail closed；消费后立即删除，超过 24 小时的孤立记录在下次访问时清理。
+  断言未激活项目不写入 Runtime Data；激活项目只保存 session、turn、project、hash 和最小必要原文；Plugin 运行时优先解析到官方提供的 `$PLUGIN_DATA/runtime-events/`，并保留 `$CODEX_HOME/project-incubator-plugin/runtime-events/` 作为非 Plugin 运行与测试兼容回退；两者均不存在时 fail closed；消费后立即删除，超过 24 小时的孤立记录在下次访问时清理。Stop 首次闭合失败可继续本轮一次，但 `stop_hook_active=true` 时必须停止重复阻断并输出警告，避免不可终止循环。
 
 - [ ] **Step 3: Verify tests fail**
 

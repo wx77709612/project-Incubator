@@ -34,12 +34,16 @@ async function tempRoot(t) {
   return root;
 }
 
-test("runtime data root is fixed below CODEX_HOME and missing home fails closed", () => {
+test("runtime data root prefers plugin writable data and keeps CODEX_HOME fallback", () => {
+  assert.equal(
+    resolveRuntimeDataRoot({ PLUGIN_DATA: "C:\\PluginData", CODEX_HOME: "C:\\CodexHome" }),
+    path.resolve("C:\\PluginData", "runtime-events"),
+  );
   assert.equal(
     resolveRuntimeDataRoot({ CODEX_HOME: "C:\\CodexHome" }),
     path.resolve("C:\\CodexHome", "project-incubator-plugin", "runtime-events"),
   );
-  assert.throws(() => resolveRuntimeDataRoot({}), /CODEX_HOME_REQUIRED/);
+  assert.throws(() => resolveRuntimeDataRoot({}), /RUNTIME_DATA_ROOT_REQUIRED/);
 });
 
 test("inactive projects do not create runtime data", async (t) => {

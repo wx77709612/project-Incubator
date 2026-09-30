@@ -19,9 +19,10 @@ export function turnMarkerPath(runtimeDataRoot, projectId, sessionId, turnId) {
 
 export async function handleUserPromptSubmit(event, options = {}) {
   const root = await findActivatedProjectRoot(event.cwd ?? ".");
+  const runtimeEnv = options.env ?? process.env;
   const runtimeDataRoot = options.runtimeDataRoot
-    ?? (options.env?.CODEX_HOME || process.env.CODEX_HOME
-      ? resolveRuntimeDataRoot(options.env ?? process.env)
+    ?? (runtimeEnv.PLUGIN_DATA || runtimeEnv.CLAUDE_PLUGIN_DATA || runtimeEnv.CODEX_HOME
+      ? resolveRuntimeDataRoot(runtimeEnv)
       : null);
   const timestamp = event.timestamp ?? new Date().toISOString();
   if (!root) {
@@ -37,7 +38,7 @@ export async function handleUserPromptSubmit(event, options = {}) {
     return { continue: true };
   }
   const snapshot = await readProjectSnapshot(root);
-  if (!runtimeDataRoot) throw new Error("CODEX_HOME_REQUIRED");
+  if (!runtimeDataRoot) throw new Error("RUNTIME_DATA_ROOT_REQUIRED");
   await recordMakerPrompt({
     activation: snapshot.activation,
     role: "maker",

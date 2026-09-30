@@ -11,6 +11,7 @@
 | 5 | 空白根目录 Activation Request | PASS | Request 绑定新根目录；六项 Product Decision 与激活后 revision 0 状态进入 `scope_digest`；权威文件仍为空 | Maker 授权初始化并验证 Active Decision View |
 | 6 | Project Initialization 重放 | PASS | Revision 0、六项 Active Product Decision、真实 Authorization、状态摘要与 Receipt 均独立验证一致 | 验证直接写入拦截 |
 | 7 | 权威文件直接写入拦截 | FAIL | `apply_patch` 未被 PreToolUse 拒绝，仅因补丁上下文不匹配而失败；三份权威文件、Revision 与 Receipt 均未改变 | 信任当前 Plugin Hook 后重放 |
+| 7R | 信任 Hook 后重放直接写入拦截 | FAIL | PreToolUse 已在命令执行前拒绝直接写入，状态与 Receipt 未变化；但 Stop Hook 因缺少 `CODEX_HOME` 重复返回 `decision: block`，形成不可终止循环 | 改用 Plugin Data 契约并增加 Stop 二次触发熔断 |
 
 ## 失败原因与修复状态
 
@@ -30,3 +31,8 @@
 - 自动化验证：Plugin 测试 `70/70` 通过，Plugin 结构校验与三个 Skill 校验均通过。
 - 修复版已安装为 `0.1.0+codex.20260930064453`；CLI 对 `apply_patch` 与带引号 PowerShell 路径均返回 `deny`。Hook 配置定义未变化，既有三条信任记录继续有效。
 - 待办：在重新加载插件的新测试会话中重放直接写入拦截。
+- Round 7R 已证明 PreToolUse 的直接写入保护生效，但暴露 Stop Hook 对非保证环境变量 `CODEX_HOME` 的错误依赖，以及未处理 `stop_hook_active` 的循环缺陷。
+- 修复策略：Plugin 运行时优先使用 `PLUGIN_DATA`，保留 `CODEX_HOME` 兼容回退；Stop 已经继续过一次时不再阻断，只报告闭合警告。
+- 自动化验证：Plugin 测试 `71/71` 通过，Plugin 结构校验与三个 Skill 校验均通过。
+- 修复版已安装为 `0.1.0+codex.20260930115950`；安装缓存烟雾测试确认无 `CODEX_HOME` 时 UserPromptSubmit 与 Stop 均返回 `continue: true`，所有运行目录变量缺失且 `stop_hook_active=true` 时只输出警告并允许结束。
+- 待办：在重新加载插件的新测试会话中执行 Round 7S，联合验证 PreToolUse 拒绝、Stop 正常结束及权威状态不变。

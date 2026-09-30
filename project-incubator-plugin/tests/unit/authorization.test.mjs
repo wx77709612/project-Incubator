@@ -100,7 +100,10 @@ test("agent text and ambiguous Maker text cannot authorize", async (t) => {
     /MAKER_PROMPT_REQUIRED/,
   );
   const ambiguous = await recordMakerPrompt(activeEvent(`request-1 看起来可以，scope_digest: ${scopeDigest}`), root);
-  await assert.rejects(() => authorizePreparedChange(prepared, ambiguous), /EXPLICIT_APPROVAL_REQUIRED/);
+  await assert.rejects(
+    () => authorizePreparedChange(prepared, ambiguous, { now: new Date(now) }),
+    /EXPLICIT_APPROVAL_REQUIRED/,
+  );
 });
 
 test("authorization rejects expired prompts and cannot be consumed twice", async (t) => {

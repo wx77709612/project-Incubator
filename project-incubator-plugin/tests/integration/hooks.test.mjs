@@ -105,6 +105,20 @@ test("read-only turns do not require a new receipt", async (t) => {
   }, { env }), { continue: true });
 });
 
+test("Stop never blocks twice when a previous Stop already continued the turn", async (t) => {
+  const { root } = await workspace(t);
+  await initialize(root);
+  const result = await handleStop({
+    cwd: root,
+    session_id: "session-1",
+    turn_id: "turn-1",
+    stop_hook_active: true,
+    last_assistant_message: "再次尝试结束",
+  }, { env: {} });
+  assert.equal(result.continue, true);
+  assert.match(result.systemMessage, /RUNTIME_DATA_ROOT_REQUIRED/);
+});
+
 test("a changed state requires the current verified receipt in the final message", async (t) => {
   const { root, env } = await workspace(t);
   await initialize(root);
