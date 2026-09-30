@@ -9,7 +9,7 @@ description: 当 Maker 要创建、孵化、恢复或判断一个长期项目应
 
 1. 调用 `propose_route` 查询注册表中的候选项目类型与 Host Profile。
 2. 用简体中文说明候选路由、适用依据和不适用边界。
-3. Maker 决定首次激活时，调用 `prepare_activation` 形成短期请求，并完整展示 `request_id`、`scope_digest`、范围和确认问题。
+3. Maker 决定首次激活时，调用 `prepare_activation` 形成短期请求，并完整展示 `request_id`、`scope_digest`、范围、将写入 Active Decision View 的 Product Decision 和确认问题。
 4. 只有 Maker 在下一轮明确批准该请求后，才调用 `initialize_project`。
 5. 项目已激活后，转交注册表指定的 Child Skill；不得自行替代其领域流程。
 
@@ -29,4 +29,6 @@ Maker 询问“项目状态”“当前进度”“下一步做什么”“有�
 - 不得从聊天记忆伪造 PromptRef、AuthorizationRef 或 Receipt。
 - 不得直接编辑 `.project-incubator/` 中的任何权威文件。
 - 普通未激活项目不得留下 Prompt 或运行时记录；只有有效 Pending Activation 可以捕获一次对应 Maker 回复。
+- `prepare_activation.state` 必须描述激活完成后的 revision 0 状态：当前行动和完成条件不得继续要求授权或初始化，`last_change.operation` 必须为 `INITIALIZE_PROJECT`，且不得包含 `ACTIVATION_DRAFT`、等待激活或尚未激活叙述。
+- 激活前已确认且由本次激活范围覆盖的 Product Decision 必须通过 `product_decisions` 传入；不得伪造 `authorization_ref`。Runtime 在 Maker 批准该 `request_id` 与 `scope_digest` 后绑定真实 Authorization 并写入 `decisions.active`。
 - MCP 返回错误时，必须报告其稳定错误码，不得改写成成功叙述。

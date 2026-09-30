@@ -59,7 +59,7 @@ Mod Incubator Skill + Sims 4 Host Profile
 
 首次激活采用唯一的受限例外 `Pending Activation Bootstrap`：
 
-1. `prepare_activation` 只能在 Plugin Runtime Data 中建立绑定项目规范路径、随机 `request_id`、`scope_digest` 与失效时间的短期候选请求；
+1. `prepare_activation` 只能在 Plugin Runtime Data 中建立绑定项目规范路径、随机 `request_id`、`scope_digest` 与失效时间的短期候选请求；请求必须绑定激活完成后的 revision 0 状态和 Product Decision，不得把申请阶段叙述作为权威初始状态；
 2. 它不得创建 `.project-incubator/`、不得修改项目文件，也不构成已激活状态；
 3. `UserPromptSubmit` 在未激活项目中只可查询是否存在与当前项目规范路径严格匹配的有效候选请求；没有候选请求时必须零副作用放行；
 4. 存在候选请求时，只捕获下一轮对应 Maker Prompt，用于校验当前 request、scope、project、session 与 turn；

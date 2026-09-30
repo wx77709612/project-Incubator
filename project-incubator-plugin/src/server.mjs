@@ -19,7 +19,11 @@ import {
   proposeRoute,
 } from "./kernel/router.mjs";
 import { resolveRuntimeDataRoot } from "./kernel/runtime-paths.mjs";
-import { parseProjectState } from "./kernel/schemas.mjs";
+import {
+  parseActivationProductDecisions,
+  parsePostActivationInitialState,
+  parseProjectState,
+} from "./kernel/schemas.mjs";
 import {
   commitProjectState,
   initializeProjectState,
@@ -62,14 +66,15 @@ export async function createKernelService(options = {}) {
 
     async prepare_activation(args, context) {
       const route = resolveRoute(registry, args.project_type_id, args.host_profile_id ?? null);
-      const state = parseProjectState(args.state);
+      const state = parsePostActivationInitialState(args.state);
+      const productDecisions = parseActivationProductDecisions(args.product_decisions);
       if (state.project_id !== args.project_id || state.revision !== 0) {
         throw new Error("INITIAL_STATE_ID_OR_REVISION_INVALID");
       }
       const request = await prepareActivationRequest({
         runtimeDataRoot, projectRoot: args.project_root, projectId: args.project_id,
         route, sessionId: args.session_id, summary: args.summary,
-        initialState: state, now: context.now ?? new Date(),
+        initialState: state, productDecisions, now: context.now ?? new Date(),
       });
       return {
         event: "ACTIVATION_PREPARED",
@@ -77,6 +82,7 @@ export async function createKernelService(options = {}) {
         scope_digest: request.scope_digest,
         route,
         summary: request.summary,
+        product_decisions: request.product_decisions,
         expires_at: request.expires_at,
       };
     },
@@ -99,6 +105,7 @@ export async function createKernelService(options = {}) {
         host_profile_id: request.route.host_profile_id,
       };
       const state = parseProjectState(request.initial_state);
+      const productDecisions = parseActivationProductDecisions(request.product_decisions);
       const pending = {
         request_id: request.request_id, operation: request.operation,
         scope_digest: request.scope_digest, status: "PENDING",
@@ -113,9 +120,28 @@ export async function createKernelService(options = {}) {
         project_id: request.project_id, session_id: args.session_id, turn_id: args.turn_id,
       });
       const authorizationRef = await authorizePreparedChange(prepared, promptRef, { now });
-      const receipt = await initializeProjectState(args.project_root, activation, {
-        ...state, pending_requests: [],
-      }, authorizationRef);
+      const initializedState = {
+        ...state,
+        decisions: {
+          ...state.decisions,
+          active: productDecisions.map((decision) => ({
+            ...decision,
+            kind: "PRODUCT",
+            status: "ACTIVE",
+            authorization_ref: authorizationRef.authorization_id,
+            confirmed_at: now.toISOString(),
+          })),
+        },
+        pending_requests: [],
+        last_change: {
+          operation: "INITIALIZE_PROJECT",
+          changed_at: now.toISOString(),
+          summary: "项目已按 Maker 授权完成初始化。",
+        },
+      };
+      const receipt = await initializeProjectState(
+        args.project_root, activation, initializedState, authorizationRef,
+      );
       await consumeActivationRequest(request);
       return { activation, receipt };
     },
@@ -235,6 +261,9 @@ export async function createMcpServer(options = {}) {
       project_root: z.string(), project_id: z.string(), project_type_id: z.string(),
       host_profile_id: z.string().nullable().optional(), session_id: z.string(), summary: z.string(),
       state: z.record(z.unknown()),
+      product_decisions: z.array(z.object({
+        decision_id: z.string(), statement: z.string(),
+      }).strict()).min(1).max(100),
     },
     initialize_project: {
       project_root: z.string(), request_id: z.string(), scope_digest: z.string(),

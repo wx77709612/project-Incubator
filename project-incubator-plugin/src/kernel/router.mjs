@@ -41,13 +41,14 @@ export function proposeRoute(registry, input) {
 }
 
 export async function prepareActivationRequest({
-  runtimeDataRoot, projectRoot, projectId, route, sessionId, summary, initialState, now = new Date(),
+  runtimeDataRoot, projectRoot, projectId, route, sessionId, summary, initialState,
+  productDecisions, now = new Date(),
 }) {
   const canonicalRoot = await canonicalProjectPath(projectRoot);
   const requestId = `activation-${randomUUID()}`;
   const payload = {
     project_root: canonicalRoot, project_id: projectId, route,
-    summary, initial_state: initialState,
+    summary, initial_state: initialState, product_decisions: productDecisions,
   };
   const request = {
     request_id: requestId,
@@ -59,6 +60,7 @@ export async function prepareActivationRequest({
     summary,
     route,
     initial_state: initialState,
+    product_decisions: productDecisions,
     created_at: now.toISOString(),
     expires_at: new Date(now.getTime() + MAX_BOOTSTRAP_AGE_MS).toISOString(),
     status: "PENDING",

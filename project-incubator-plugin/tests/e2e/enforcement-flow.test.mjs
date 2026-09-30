@@ -28,6 +28,7 @@ test("Maker-approved activation, protected writes, Receipt and Stop close end to
   const prepared = (await service.callTool("prepare_activation", {
     project_root: root, project_id: "e2e-project", project_type_id: "mod", host_profile_id: "sims-4",
     session_id: "s1", summary: "激活", state: initialState(),
+    product_decisions: [{ decision_id: "e2e-boundary", statement: "批准端到端 Mod 产品边界。" }],
   }, { now: new Date(now) })).structuredContent;
   await handleUserPromptSubmit({
     cwd: root, session_id: "s1", turn_id: "t1", timestamp: now,
@@ -39,6 +40,11 @@ test("Maker-approved activation, protected writes, Receipt and Stop close end to
   }, { now: new Date(now) });
   assert.equal(initialized.isError, undefined);
   const receiptId = initialized.structuredContent.receipt.receipt_id;
+  const state = await service.callTool("get_project_state", { project_root: root });
+  assert.equal(state.structuredContent.state.decisions.active.length, 1);
+  const summary = await service.callTool("inspect_project", { project_root: root });
+  assert.equal(summary.structuredContent.summary.actions.current, "确认边界");
+  assert.equal(summary.structuredContent.summary.last_change.operation, "INITIALIZE_PROJECT");
   const denied = await handlePreToolUse({
     cwd: root, tool_name: "apply_patch", tool_input: { patch: "*** Update File: .project-incubator/state.json" },
   });

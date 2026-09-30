@@ -23,6 +23,13 @@ function initialState() {
   };
 }
 
+function productDecisions() {
+  return [{
+    decision_id: "product-boundary-1",
+    statement: "仅孵化一个由 Maker 确认的 Mod 产品点。",
+  }];
+}
+
 async function fixture(t) {
   const projectRoot = await mkdtemp(path.join(os.tmpdir(), "incubator-router-project-"));
   const runtimeDataRoot = await mkdtemp(path.join(os.tmpdir(), "incubator-router-runtime-"));
@@ -57,6 +64,7 @@ test("initialization is denied without a verified Maker prompt", async (t) => {
   const prepared = await service.callTool("prepare_activation", {
     project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
     session_id: "session-1", summary: "激活 Mod 孵化器", state: initialState(),
+    product_decisions: productDecisions(),
   });
   const request = prepared.structuredContent;
   const result = await service.callTool("initialize_project", {
@@ -74,6 +82,7 @@ test("pending activation captures one scoped Maker approval and initializes atom
   const prepared = await service.callTool("prepare_activation", {
     project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
     session_id: "session-1", summary: "激活 Mod 孵化器", state: initialState(),
+    product_decisions: productDecisions(),
   });
   const request = prepared.structuredContent;
   const hook = await handleUserPromptSubmit({
@@ -92,7 +101,42 @@ test("pending activation captures one scoped Maker approval and initializes atom
   const state = await service.callTool("get_project_state", { project_root: projectRoot });
   assert.equal(state.structuredContent.state.project_id, "project-1");
   assert.equal(state.structuredContent.activation.project_type_id, "mod");
+  assert.deepEqual(state.structuredContent.state.decisions.active.map((decision) => ({
+    decision_id: decision.decision_id,
+    kind: decision.kind,
+    status: decision.status,
+    statement: decision.statement,
+  })), [{
+    decision_id: "product-boundary-1",
+    kind: "PRODUCT",
+    status: "ACTIVE",
+    statement: "仅孵化一个由 Maker 确认的 Mod 产品点。",
+  }]);
+  assert.match(state.structuredContent.state.decisions.active[0].authorization_ref, /^authorization-/);
+  assert.equal(state.structuredContent.state.decisions.active[0].confirmed_at, approvalTime);
+  assert.equal(state.structuredContent.state.last_change.operation, "INITIALIZE_PROJECT");
+  assert.equal(state.structuredContent.state.plan.current_action, "确认边界");
   assert.deepEqual(await readdir(runtimeDataRoot), []);
+});
+
+test("prepare_activation rejects an activation-draft narrative as authoritative initial state", async (t) => {
+  const { projectRoot, service } = await fixture(t);
+  const stale = initialState();
+  stale.plan.current_action = "等待 Maker 对 Activation Request 作出明确授权。";
+  stale.plan.completion_conditions = ["随后调用 initialize_project 完成激活"];
+  stale.last_change = {
+    operation: "ACTIVATION_DRAFT",
+    changed_at: approvalTime,
+    summary: "形成待授权状态；尚未激活。",
+  };
+  const result = await service.callTool("prepare_activation", {
+    project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
+    session_id: "session-1", summary: "激活 Mod 孵化器", state: stale,
+    product_decisions: productDecisions(),
+  });
+  assert.equal(result.isError, true);
+  assert.equal(result.structuredContent.error.code, "INITIAL_STATE_NOT_POST_ACTIVATION");
+  await assert.rejects(() => access(path.join(projectRoot, ".project-incubator")), /ENOENT/);
 });
 
 test("route migration cannot be committed without Maker authorization", async (t) => {
@@ -100,6 +144,7 @@ test("route migration cannot be committed without Maker authorization", async (t
   const prepared = await service.callTool("prepare_activation", {
     project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
     session_id: "session-1", summary: "激活 Mod 孵化器", state: initialState(),
+    product_decisions: productDecisions(),
   });
   const request = prepared.structuredContent;
   await handleUserPromptSubmit({

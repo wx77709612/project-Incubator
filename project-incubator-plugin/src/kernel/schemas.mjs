@@ -29,6 +29,11 @@ const decisionSchema = z.object({
   statement: text, authorization_ref: id, confirmed_at: timestamp,
 }).strict();
 
+const activationProductDecisionSchema = z.object({
+  decision_id: id,
+  statement: text,
+}).strict();
+
 const assumptionSchema = z.object({
   assumption_id: id, statement: text,
   status: z.enum(["ACTIVE", "SUPPORTED", "INVALIDATED"]),
@@ -94,6 +99,27 @@ const receiptSchema = z.object({
 export function parseActivation(value) { return activationSchema.parse(value); }
 export function parseProjectState(value) { return projectStateSchema.parse(value); }
 export function parseReceipt(value) { return receiptSchema.parse(value); }
+export function parseActivationProductDecisions(value) {
+  return z.array(activationProductDecisionSchema).min(1).max(100).parse(value);
+}
+
+const preActivationNarrative = /(?:ACTIVATION_DRAFT|initialize_project|activation request|not yet activated|awaiting activation|pending activation|等待.{0,30}(?:激活|Activation)|尚未激活|激活前)/iu;
+
+export function parsePostActivationInitialState(value) {
+  const state = parseProjectState(value);
+  const narrative = [
+    state.plan.current_action,
+    ...state.plan.completion_conditions,
+    state.last_change.summary,
+  ].join("\n");
+  if (
+    state.last_change.operation !== "INITIALIZE_PROJECT"
+    || state.pending_requests.length !== 0
+    || state.decisions.active.length !== 0
+    || preActivationNarrative.test(narrative)
+  ) throw new Error("INITIAL_STATE_NOT_POST_ACTIVATION");
+  return state;
+}
 
 export const schemas = Object.freeze({
   activation: activationSchema, projectState: projectStateSchema, receipt: receiptSchema,
