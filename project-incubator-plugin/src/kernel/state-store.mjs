@@ -85,6 +85,17 @@ function parseJson(raw, label) {
   }
 }
 
+export async function assertProjectUninitialized(root) {
+  const files = controlPaths(root);
+  const existing = await Promise.all([
+    readOptional(files.activation), readOptional(files.state), readOptional(files.receipt),
+  ]);
+  const present = existing.filter((value) => value !== null).length;
+  if (present === 0) return;
+  if (present === existing.length) throw new Error("PROJECT_ALREADY_INITIALIZED");
+  throw new Error("PROJECT_CONTROL_STATE_INCOMPLETE");
+}
+
 export function createStateStore(hooks = {}) {
   async function readProjectSnapshot(root) {
     const files = controlPaths(root);

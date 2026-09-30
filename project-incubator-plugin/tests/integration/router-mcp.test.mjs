@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { access, mkdtemp, readdir, rm } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
 import { handleUserPromptSubmit } from "../../hooks/user-prompt-submit.mjs";
 import { createKernelService } from "../../src/server.mjs";
+import { initializeProjectState } from "../../src/kernel/state-store.mjs";
 
 const approvalTime = "2026-09-29T09:01:00.000Z";
 
@@ -137,6 +138,41 @@ test("prepare_activation rejects an activation-draft narrative as authoritative 
   assert.equal(result.isError, true);
   assert.equal(result.structuredContent.error.code, "INITIAL_STATE_NOT_POST_ACTIVATION");
   await assert.rejects(() => access(path.join(projectRoot, ".project-incubator")), /ENOENT/);
+});
+
+test("prepare_activation rejects a project that already has complete authority state", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  await initializeProjectState(projectRoot, {
+    schema_version: "1.0", project_id: "project-1",
+    plugin_id: "project-incubator-plugin", plugin_version: "0.1.0", status: "ACTIVE",
+    project_type_id: "mod", child_skill_id: "mod-incubator", host_profile_id: null,
+  }, initialState(), {
+    authorization_id: "authorization-existing", request_id: "activation-existing",
+    prompt_digest: "a".repeat(64),
+  });
+  const result = await service.callTool("prepare_activation", {
+    project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
+    session_id: "session-1", summary: "重复激活", state: initialState(),
+    product_decisions: productDecisions(),
+  });
+  assert.equal(result.isError, true);
+  assert.equal(result.structuredContent.error.code, "PROJECT_ALREADY_INITIALIZED");
+  assert.deepEqual(await readdir(runtimeDataRoot), []);
+});
+
+test("prepare_activation fails closed when only part of the authority state exists", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  const control = path.join(projectRoot, ".project-incubator");
+  await mkdir(control);
+  await writeFile(path.join(control, "state.json"), "{}\n", "utf8");
+  const result = await service.callTool("prepare_activation", {
+    project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
+    session_id: "session-1", summary: "损坏状态下激活", state: initialState(),
+    product_decisions: productDecisions(),
+  });
+  assert.equal(result.isError, true);
+  assert.equal(result.structuredContent.error.code, "PROJECT_CONTROL_STATE_INCOMPLETE");
+  assert.deepEqual(await readdir(runtimeDataRoot), []);
 });
 
 test("route migration cannot be committed without Maker authorization", async (t) => {

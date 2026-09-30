@@ -25,6 +25,7 @@ import {
   parseProjectState,
 } from "./kernel/schemas.mjs";
 import {
+  assertProjectUninitialized,
   commitProjectState,
   initializeProjectState,
   readProjectSnapshot,
@@ -65,6 +66,7 @@ export async function createKernelService(options = {}) {
     },
 
     async prepare_activation(args, context) {
+      await assertProjectUninitialized(args.project_root);
       const route = resolveRoute(registry, args.project_type_id, args.host_profile_id ?? null);
       const state = parsePostActivationInitialState(args.state);
       const productDecisions = parseActivationProductDecisions(args.product_decisions);
