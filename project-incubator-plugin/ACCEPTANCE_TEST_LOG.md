@@ -13,6 +13,7 @@
 | 7 | 权威文件直接写入拦截 | FAIL | `apply_patch` 未被 PreToolUse 拒绝，仅因补丁上下文不匹配而失败；三份权威文件、Revision 与 Receipt 均未改变 | 信任当前 Plugin Hook 后重放 |
 | 7R | 信任 Hook 后重放直接写入拦截 | FAIL | PreToolUse 已在命令执行前拒绝直接写入，状态与 Receipt 未变化；但 Stop Hook 因缺少 `CODEX_HOME` 重复返回 `decision: block`，形成不可终止循环 | 改用 Plugin Data 契约并增加 Stop 二次触发熔断 |
 | 7S | Plugin Data 与 Stop 熔断重放 | PASS | 加载 `0.1.0+codex.20260930115950`；写入探针执行前被拒绝；三份权威文件、Revision、Action 与 Receipt 均未变化；Stop 正常放行且无循环 | 单独处理只读命令被 PreToolUse 误拦截的问题 |
+| 8 | 只读放行与写入保护并存 | PASS | 加载 `0.1.0+codex.20260930143443`；两条只读命令退出码为 0；写入探针执行前被拒绝；权威文件、Revision、Action 与 Receipt 均未变化；Stop 正常结束 | 结束 Hook 基础验收，进入受控状态推进测试 |
 
 ## 失败原因与修复状态
 
@@ -41,3 +42,4 @@
 - 只读误拦截修复：PreToolUse 先识别权威路径，再仅放行明确的结构化只读工具与受限 PowerShell 只读命令链；写命令、读写混合命令、嵌套脚本、重定向及未知命令继续默认拒绝。
 - 自动化验证：Plugin 测试 `73/73` 通过。下一轮 Round 8 只验证 `Get-FileHash` / `Get-Content` 可读、`Set-Content` 仍被拒绝、权威状态与 Receipt 不变。
 - 修复版已安装为 `0.1.0+codex.20260930143443`；安装缓存烟雾验证中 `Get-FileHash` 返回放行、`Set-Content` 返回拒绝，缓存 Hook 与测试源码 SHA-256 一致，模拟项目三份权威文件哈希未变化。
+- Round 8 已通过人工重放：Hook 面板记录 `16` 次运行、`1` 次阻止、`0` 次失败；唯一阻止对应写入探针，两条只读命令均完成，Stop 未形成续写循环。独立哈希复核与 Round 6 基线一致。
