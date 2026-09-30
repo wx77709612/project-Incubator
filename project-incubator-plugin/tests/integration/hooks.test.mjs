@@ -83,6 +83,19 @@ test("activated projects block direct writes through shell, patch and editor too
   }), {});
 });
 
+test("activated projects block shell writes when the protected path is quoted", async (t) => {
+  const { root } = await workspace(t);
+  await initialize(root);
+  const result = await handlePreToolUse({
+    cwd: root,
+    tool_name: "Bash",
+    tool_input: {
+      command: "Set-Content -LiteralPath '.project-incubator\\state.json' -Value 'blocked'",
+    },
+  });
+  assert.equal(result.hookSpecificOutput?.permissionDecision, "deny");
+});
+
 test("read-only turns do not require a new receipt", async (t) => {
   const { root, env } = await workspace(t);
   await initialize(root);

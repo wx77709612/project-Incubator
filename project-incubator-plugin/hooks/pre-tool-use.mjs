@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url";
 
 import { findActivatedProjectRoot, isProtectedProjectPath } from "../src/kernel/project-root.mjs";
 
-const CONTROL_PATTERN = /(?:^|[\s\\/])\.project-incubator[\\/](?:activation|state|latest-receipt)\.json(?:$|[\s'"`])/iu;
+const CONTROL_PATTERN = /(?:^|[^a-z0-9_.-])\.project-incubator[\\/](?:activation|state|latest-receipt)\.json(?=$|[^a-z0-9_.-])/iu;
 const KERNEL_TOOL_PREFIXES = ["mcp__project_incubator__", "mcp__project-incubator-plugin__"];
 
 function strings(value, key = "") {
