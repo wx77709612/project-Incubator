@@ -9,6 +9,8 @@ description: 用于已由 Project Incubator Router 确认为 mod 类型的 Manag
 
 - 开始前调用 `get_project_state`，确认 `project_type_id` 为 `mod`。
 - 所有状态变化通过 Kernel MCP 的 `prepare_change` 与 `commit_change`；不得直接编辑 `.project-incubator/`。
+- 发现 Pending Request 内容错误、过时或不应获批时，必须请求 Maker 明确拒绝，并使用 `decline_change` 精确匹配 `request_id` 与 `scope_digest`；不得提交后再补救，也不得直接清理状态文件。
+- 新增或修改 Decision 时，在拟议状态中写明新的有效声明；真实 `authorization_ref` 与 `confirmed_at` 由 Runtime 在 Commit 时绑定，Agent 不得伪造。
 - Product Boundary、架构决定、人工测试预算和支持范围由 Maker 确认。
 - API 可用性、局部调用和自动化测试不得表述为完整宿主语义成立。
 

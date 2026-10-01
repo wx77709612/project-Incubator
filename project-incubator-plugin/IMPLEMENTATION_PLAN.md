@@ -484,6 +484,27 @@
 - [x] **Step 5: 运行完整 Plugin、结构与安装缓存验证**
 - [x] **Step 6: 安装新候选版本并执行 Round 9 非法跳级宿主走查**
 
+### Correction Task: Pending Request Recovery 与 Decision Authorization Binding
+
+**Files:**
+- Modify: `project-incubator-plugin/src/kernel/authorization.mjs`
+- Modify: `project-incubator-plugin/src/server.mjs`
+- Modify: `project-incubator-plugin/tests/unit/authorization.test.mjs`
+- Modify: `project-incubator-plugin/tests/integration/router-mcp.test.mjs`
+- Modify: `project-incubator-plugin/skills/mod-incubator/SKILL.md`
+
+**Contract:**
+- `decline_change` 只处理精确匹配的 Pending Request，并要求当前拒绝 Prompt 属于同一项目、精确匹配请求 ID 与 Digest 且包含 Maker 明确拒绝；允许从新会话恢复并拒绝旧请求；
+- 拒绝成功后只移除目标 Pending Request，生成带真实 Authorization 的 `DECLINE_CHANGE` Receipt，不应用拟议业务状态；
+- 被拒绝的 Request 后续不能提交；
+- `commit_change` 对新增或内容发生变化的 Decision 覆盖绑定本次真实 Authorization 与确认时间；
+- 未变化的 Decision 保留原授权与确认时间。
+
+- [x] **Step 1: 编写并运行失败测试，覆盖拒绝恢复与 Decision 授权重绑定**
+- [x] **Step 2: 实现最小 Authorization 与 Runtime Tool 变更**
+- [x] **Step 3: 更新 Mod Skill 调用规则并运行完整测试**
+- [ ] **Step 4: 打包安装修复版，拒绝 Round 10A 错误请求并重放**
+
 ## 完成判定
 
 只有以下事实全部有实际证据时，才能声明 MVP 完成：

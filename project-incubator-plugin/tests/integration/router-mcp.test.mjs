@@ -44,13 +44,13 @@ async function fixture(t) {
   };
 }
 
-async function activatedFixture(t) {
+async function activatedFixture(t, state = initialState()) {
   const value = await fixture(t);
   await initializeProjectState(value.projectRoot, {
     schema_version: "1.0", project_id: "project-1",
     plugin_id: "project-incubator-plugin", plugin_version: "0.1.0", status: "ACTIVE",
     project_type_id: "mod", child_skill_id: "mod-incubator", host_profile_id: "sims-4",
-  }, initialState(), {
+  }, state, {
     authorization_id: "authorization-existing", request_id: "activation-existing",
     prompt_digest: "a".repeat(64),
   });
@@ -305,6 +305,85 @@ test("a legal M0 to M1 transition commits only after scoped Maker authorization"
   assert.equal(after.structuredContent.state.workflow.stage, "M1_RISK_MODEL");
   assert.deepEqual(after.structuredContent.state.workflow.allowed_next, ["M2_VERTICAL_SLICE"]);
   assert.deepEqual(after.structuredContent.state.pending_requests, []);
+});
+
+test("Maker can decline one exact pending change without applying its proposed state", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await activatedFixture(t);
+  const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });
+  const proposedState = structuredClone(snapshot.structuredContent.state);
+  proposedState.plan.current_action = "不应被应用";
+
+  const prepared = await service.callTool("prepare_change", {
+    project_root: projectRoot, operation: "UPDATE_PLAN", change_kind: "PRODUCT_DECISION",
+    session_id: "session-1", proposed_state: proposedState,
+  }, { now: new Date(approvalTime) });
+  const request = prepared.structuredContent;
+  await handleUserPromptSubmit({
+    cwd: projectRoot, session_id: "session-2", turn_id: "turn-decline", timestamp: approvalTime,
+    prompt: `我明确拒绝 ${request.request_id}，scope_digest: ${request.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(approvalTime) });
+
+  const declined = await service.callTool("decline_change", {
+    project_root: projectRoot, request_id: request.request_id, scope_digest: request.scope_digest,
+    session_id: "session-2", turn_id: "turn-decline",
+  }, { now: new Date(approvalTime) });
+
+  assert.equal(declined.isError, undefined);
+  assert.equal(declined.structuredContent.event, "CHANGE_DECLINED");
+  assert.equal(declined.structuredContent.receipt.operation, "DECLINE_CHANGE");
+  assert.match(declined.structuredContent.receipt.authorization_ref.authorization_id, /^authorization-/);
+  const after = await service.callTool("get_project_state", { project_root: projectRoot });
+  assert.equal(after.structuredContent.state.plan.current_action, "确认边界");
+  assert.deepEqual(after.structuredContent.state.pending_requests, []);
+  const cannotCommit = await service.callTool("commit_change", {
+    project_root: projectRoot, request_id: request.request_id, scope_digest: request.scope_digest,
+    session_id: "session-2", turn_id: "turn-decline",
+  });
+  assert.equal(cannotCommit.structuredContent.error.code, "PENDING_REQUEST_NOT_FOUND");
+});
+
+test("commit rebinds changed Decisions and preserves unchanged Decision authorization", async (t) => {
+  const state = initialState();
+  state.decisions.active = [
+    {
+      decision_id: "version-policy", kind: "PRODUCT", status: "ACTIVE",
+      statement: "版本待 Maker 提供。", authorization_ref: "authorization-old-version",
+      confirmed_at: "2026-09-28T09:01:00.000Z",
+    },
+    {
+      decision_id: "package-policy", kind: "PRODUCT", status: "ACTIVE",
+      statement: "优先使用 Package。", authorization_ref: "authorization-old-package",
+      confirmed_at: "2026-09-28T09:01:00.000Z",
+    },
+  ];
+  const { projectRoot, runtimeDataRoot, service } = await activatedFixture(t, state);
+  const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });
+  const proposedState = structuredClone(snapshot.structuredContent.state);
+  proposedState.decisions.active[0].statement = "Maker 已提供目标版本 1.126.73.1030。";
+
+  const prepared = await service.callTool("prepare_change", {
+    project_root: projectRoot, operation: "UPDATE_VERSION_DECISION", change_kind: "PRODUCT_DECISION",
+    session_id: "session-1", proposed_state: proposedState,
+  }, { now: new Date(approvalTime) });
+  const request = prepared.structuredContent;
+  await handleUserPromptSubmit({
+    cwd: projectRoot, session_id: "session-1", turn_id: "turn-decision", timestamp: approvalTime,
+    prompt: `我明确批准 ${request.request_id}，scope_digest: ${request.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(approvalTime) });
+
+  const committed = await service.callTool("commit_change", {
+    project_root: projectRoot, request_id: request.request_id, scope_digest: request.scope_digest,
+    session_id: "session-1", turn_id: "turn-decision",
+  }, { now: new Date(approvalTime) });
+
+  assert.equal(committed.isError, undefined);
+  const authorizationId = committed.structuredContent.receipt.authorization_ref.authorization_id;
+  const after = await service.callTool("get_project_state", { project_root: projectRoot });
+  const [changed, unchanged] = after.structuredContent.state.decisions.active;
+  assert.equal(changed.authorization_ref, authorizationId);
+  assert.equal(changed.confirmed_at, approvalTime);
+  assert.equal(unchanged.authorization_ref, "authorization-old-package");
+  assert.equal(unchanged.confirmed_at, "2026-09-28T09:01:00.000Z");
 });
 
 test("prepare_change enforces the Mod MODEL_REVIEW entry contract", async (t) => {

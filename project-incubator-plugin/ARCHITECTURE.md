@@ -180,6 +180,10 @@ commit_change
 -> 校验 request_id、scope_digest、Prompt 来源、明确批准语义和时效
 ```
 
+错误或过时的 Pending Request 不得通过直接编辑权威文件清理。Maker 可以使用 `decline_change`，按 `request_id` 与 `scope_digest` 明确拒绝同一请求；Runtime 验证当前 Prompt 属于同一项目、包含明确拒绝语义并精确匹配请求范围后，移除该 Pending Request，并以 `DECLINE_CHANGE` Receipt 记录受控恢复。拒绝可以在新的 Agent 会话中执行，以支持 Plugin 更新、任务中断或上下文恢复后的清理。
+
+`commit_change` 若发现拟议状态新增了 Decision，或改变了既有 Decision 的声明、类型或状态，必须由 Runtime 将这些 Decision 绑定到本次 Commit 的真实 Authorization 与确认时间。内容未变化的 Decision 保留原授权。Agent 不得自行生成或沿用授权标识来证明一次新的 Decision Mutation。
+
 以下操作必须获得 Maker Authorization：
 
 - 激活或停用 Project Incubator；

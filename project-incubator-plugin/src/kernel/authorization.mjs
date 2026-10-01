@@ -44,7 +44,11 @@ function hasExplicitApproval(text) {
   return /(?:明确批准|正式批准|明确同意|\b(?:approve|approved|authorize|authorized)\b)/iu.test(text);
 }
 
-export async function authorizePreparedChange(prepared, promptRef, options = {}) {
+function hasExplicitDecline(text) {
+  return /(?:明确拒绝|正式拒绝|明确撤回|正式撤回|拒绝批准|明确不同意|\b(?:reject|rejected|decline|declined|withdraw|withdrawn)\b)/iu.test(text);
+}
+
+async function authorizePreparedPrompt(prepared, promptRef, options, intentMatches, errorCode) {
   if (!prepared.requires_authorization) throw new Error("AUTHORIZATION_NOT_REQUIRED");
   const stored = await readPrompt(promptRef);
   if (
@@ -61,7 +65,7 @@ export async function authorizePreparedChange(prepared, promptRef, options = {})
   if (!stored.excerpt.includes(prepared.request_id) || !stored.excerpt.includes(prepared.scope_digest)) {
     throw new Error("PROMPT_SCOPE_NOT_CONFIRMED");
   }
-  if (!hasExplicitApproval(stored.excerpt)) throw new Error("EXPLICIT_APPROVAL_REQUIRED");
+  if (!intentMatches(stored.excerpt)) throw new Error(errorCode);
 
   const authorization = Object.freeze({
     authorization_id: `authorization-${randomUUID()}`,
@@ -70,4 +74,16 @@ export async function authorizePreparedChange(prepared, promptRef, options = {})
   });
   await consumePrompt(promptRef);
   return authorization;
+}
+
+export async function authorizePreparedChange(prepared, promptRef, options = {}) {
+  return authorizePreparedPrompt(
+    prepared, promptRef, options, hasExplicitApproval, "EXPLICIT_APPROVAL_REQUIRED",
+  );
+}
+
+export async function authorizePreparedDecline(prepared, promptRef, options = {}) {
+  return authorizePreparedPrompt(
+    prepared, promptRef, options, hasExplicitDecline, "EXPLICIT_DECLINE_REQUIRED",
+  );
 }

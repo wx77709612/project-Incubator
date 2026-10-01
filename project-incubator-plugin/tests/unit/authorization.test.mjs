@@ -6,6 +6,7 @@ import test from "node:test";
 
 import {
   authorizePreparedChange,
+  authorizePreparedDecline,
   prepareChange,
 } from "../../src/kernel/authorization.mjs";
 import { recordMakerPrompt } from "../../src/kernel/prompt-events.mjs";
@@ -126,6 +127,39 @@ test("authorization rejects expired prompts and cannot be consumed twice", async
     () => authorizePreparedChange(prepared, fresh, { now: new Date(now) }),
     /PROMPT_NOT_FOUND|PROMPT_ALREADY_CONSUMED/,
   );
+});
+
+test("decline authorization requires an exact explicit Maker rejection", async (t) => {
+  const root = await runtimeRoot(t);
+  const prepared = prepareChange(snapshot(), proposal());
+  const approval = await recordMakerPrompt(activeEvent(
+    `我明确批准 request-1，scope_digest: ${scopeDigest}`,
+  ), root);
+  await assert.rejects(
+    () => authorizePreparedDecline(prepared, approval, { now: new Date(now) }),
+    /EXPLICIT_DECLINE_REQUIRED/,
+  );
+
+  const ambiguous = await recordMakerPrompt(activeEvent(
+    `request-1 先不要处理，scope_digest: ${scopeDigest}`,
+    { turn_id: "turn-3" },
+  ), root);
+  await assert.rejects(
+    () => authorizePreparedDecline(
+      { ...prepared, turn_id: "turn-3" }, ambiguous, { now: new Date(now) },
+    ),
+    /EXPLICIT_DECLINE_REQUIRED/,
+  );
+
+  const rejected = await recordMakerPrompt(activeEvent(
+    `我明确拒绝 request-1，scope_digest: ${scopeDigest}`,
+    { turn_id: "turn-4" },
+  ), root);
+  const authorization = await authorizePreparedDecline(
+    { ...prepared, turn_id: "turn-4" }, rejected, { now: new Date(now) },
+  );
+  assert.equal(authorization.request_id, "request-1");
+  assert.equal(authorization.prompt_digest, rejected.prompt_digest);
 });
 
 test("decision mutations require authorization but evidence may invalidate an assumption", () => {

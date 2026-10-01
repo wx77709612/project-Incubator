@@ -7,7 +7,11 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { authorizePreparedChange, prepareChange } from "./kernel/authorization.mjs";
+import {
+  authorizePreparedChange,
+  authorizePreparedDecline,
+  prepareChange,
+} from "./kernel/authorization.mjs";
 import { hashJson } from "./kernel/canonical-json.mjs";
 import { findPromptRef } from "./kernel/prompt-events.mjs";
 import { buildProjectSummary, renderProjectSummary, writeProjectOverview } from "./kernel/project-summary.mjs";
@@ -56,6 +60,28 @@ function failure(error) {
 
 function sameValues(left, right) {
   return hashJson(left) === hashJson(right);
+}
+
+function decisionMeaning(decision) {
+  return {
+    decision_id: decision.decision_id,
+    kind: decision.kind,
+    status: decision.status,
+    statement: decision.statement,
+  };
+}
+
+function bindChangedDecisions(currentDecisions, proposedDecisions, authorizationRef, confirmedAt) {
+  const currentById = new Map(currentDecisions.map((decision) => [decision.decision_id, decision]));
+  return proposedDecisions.map((decision) => {
+    const current = currentById.get(decision.decision_id);
+    if (current && sameValues(decisionMeaning(current), decisionMeaning(decision))) return decision;
+    return {
+      ...decision,
+      authorization_ref: authorizationRef.authorization_id,
+      confirmed_at: confirmedAt,
+    };
+  });
 }
 
 function assertWorkflowShape(proposed, evaluated) {
@@ -228,6 +254,7 @@ export async function createKernelService(options = {}) {
     },
 
     async commit_change(args, context) {
+      const now = context.now ?? new Date();
       const snapshot = await readProjectSnapshot(args.project_root);
       const pending = snapshot.state.pending_requests.find((item) => item.request_id === args.request_id);
       if (!pending || pending.status !== "PENDING") throw new Error("PENDING_REQUEST_NOT_FOUND");
@@ -243,7 +270,7 @@ export async function createKernelService(options = {}) {
         requires_authorization: pending.payload.requires_authorization,
       });
       const authorizationRef = await authorizePreparedChange(prepared, promptRef, {
-        now: context.now ?? new Date(),
+        now,
       });
       const proposedState = parseProjectState(pending.payload.proposed_state);
       validateWorkflowTransition(
@@ -256,11 +283,50 @@ export async function createKernelService(options = {}) {
         operation: pending.operation, expectedRevision: snapshot.state.revision, authorizationRef,
         mutate(current) {
           const next = structuredClone(proposedState);
+          next.decisions.active = bindChangedDecisions(
+            current.decisions.active,
+            next.decisions.active,
+            authorizationRef,
+            now.toISOString(),
+          );
           next.pending_requests = current.pending_requests.filter((item) => item.request_id !== args.request_id);
           return next;
         },
       });
       return { receipt };
+    },
+
+    async decline_change(args, context) {
+      const now = context.now ?? new Date();
+      const snapshot = await readProjectSnapshot(args.project_root);
+      const pending = snapshot.state.pending_requests.find((item) => item.request_id === args.request_id);
+      if (!pending || pending.status !== "PENDING") throw new Error("PENDING_REQUEST_NOT_FOUND");
+      if (pending.scope_digest !== args.scope_digest) throw new Error("SCOPE_DIGEST_MISMATCH");
+      const promptRef = await findPromptRef(runtimeDataRoot, {
+        project_id: snapshot.state.project_id, session_id: args.session_id, turn_id: args.turn_id,
+      });
+      const prepared = prepareChange(snapshot, {
+        request_id: args.request_id, scope_digest: args.scope_digest,
+        operation: pending.operation, change_kind: pending.payload.change_kind,
+        project_id: snapshot.state.project_id, session_id: args.session_id, turn_id: args.turn_id,
+        requires_authorization: true,
+      });
+      const authorizationRef = await authorizePreparedDecline(prepared, promptRef, { now });
+      const receipt = await commitProjectState(args.project_root, {
+        operation: "DECLINE_CHANGE", expectedRevision: snapshot.state.revision, authorizationRef,
+        mutate(current) {
+          current.pending_requests = current.pending_requests.filter(
+            (item) => item.request_id !== args.request_id,
+          );
+          current.last_change = {
+            operation: "DECLINE_CHANGE",
+            changed_at: now.toISOString(),
+            summary: `Maker 已拒绝变更：${pending.operation}`,
+          };
+          return current;
+        },
+      });
+      return { event: "CHANGE_DECLINED", request_id: args.request_id, receipt };
     },
 
     async get_project_state(args) {
@@ -336,6 +402,10 @@ export async function createMcpServer(options = {}) {
       }).strict().optional(),
     },
     commit_change: {
+      project_root: z.string(), request_id: z.string(), scope_digest: z.string(),
+      session_id: z.string(), turn_id: z.string(),
+    },
+    decline_change: {
       project_root: z.string(), request_id: z.string(), scope_digest: z.string(),
       session_id: z.string(), turn_id: z.string(),
     },
