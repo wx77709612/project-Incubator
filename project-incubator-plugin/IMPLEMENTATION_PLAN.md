@@ -503,7 +503,26 @@
 - [x] **Step 1: 编写并运行失败测试，覆盖拒绝恢复与 Decision 授权重绑定**
 - [x] **Step 2: 实现最小 Authorization 与 Runtime Tool 变更**
 - [x] **Step 3: 更新 Mod Skill 调用规则并运行完整测试**
-- [ ] **Step 4: 打包安装修复版，拒绝 Round 10A 错误请求并重放**
+- [x] **Step 4: 打包安装修复版，拒绝 Round 10A 错误请求并重放**
+
+### Correction Task: Structured Prompt Authorization Evidence
+
+**Files:**
+- Modify: `project-incubator-plugin/src/kernel/prompt-events.mjs`
+- Modify: `project-incubator-plugin/src/kernel/authorization.mjs`
+- Modify: `project-incubator-plugin/tests/unit/prompt-events.test.mjs`
+- Modify: `project-incubator-plugin/tests/unit/authorization.test.mjs`
+
+**Contract:**
+- 继续只保存完整 Prompt 哈希和最多 240 字符的 `excerpt`，不保存完整 Prompt；
+- 从完整 Prompt 提取唯一 Request ID、唯一 Scope Digest 与 `APPROVE` / `DECLINE` / `AMBIGUOUS` / `NONE` 意图；
+- 授权校验优先使用结构化证据，授权令牌位于 240 字符之后时仍可正常闭合；
+- 同时出现批准与拒绝、多个 Request 或多个 Digest 时不得形成可用授权声明；
+- 旧 Prompt Record 缺少结构化字段时继续使用 `excerpt` 校验。
+
+- [x] **Step 1: 编写长 Prompt 失败测试并确认当前实现返回 `PROMPT_SCOPE_NOT_CONFIRMED`**
+- [x] **Step 2: 实现有界结构化授权证据提取与兼容读取**
+- [ ] **Step 3: 运行完整测试、打包、安装并执行长 Prompt 宿主重放**
 
 ## 完成判定
 

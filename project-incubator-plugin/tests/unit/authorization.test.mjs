@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, utimes, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -127,6 +127,30 @@ test("authorization rejects expired prompts and cannot be consumed twice", async
     () => authorizePreparedChange(prepared, fresh, { now: new Date(now) }),
     /PROMPT_NOT_FOUND|PROMPT_ALREADY_CONSUMED/,
   );
+});
+
+test("authorization uses structured scope evidence beyond the excerpt boundary", async (t) => {
+  const root = await runtimeRoot(t);
+  const prepared = prepareChange(snapshot(), proposal());
+  const longPrompt = `${"审批背景。".repeat(80)}\n我明确批准 request-1，scope_digest: ${scopeDigest}`;
+  const ref = await recordMakerPrompt(activeEvent(longPrompt), root);
+  const authorization = await authorizePreparedChange(prepared, ref, { now: new Date(now) });
+  assert.equal(authorization.request_id, "request-1");
+  assert.equal(authorization.prompt_digest, ref.prompt_digest);
+});
+
+test("authorization keeps excerpt fallback for legacy prompt records", async (t) => {
+  const root = await runtimeRoot(t);
+  const prepared = prepareChange(snapshot(), proposal());
+  const ref = await recordMakerPrompt(activeEvent(
+    `我明确批准 request-1，scope_digest: ${scopeDigest}`,
+  ), root);
+  const stored = JSON.parse(await readFile(ref.file_path, "utf8"));
+  delete stored.authorization_claim;
+  await writeFile(ref.file_path, `${JSON.stringify(stored)}\n`, "utf8");
+  await utimes(ref.file_path, new Date(now), new Date(now));
+  const authorization = await authorizePreparedChange(prepared, ref, { now: new Date(now) });
+  assert.equal(authorization.request_id, "request-1");
 });
 
 test("decline authorization requires an exact explicit Maker rejection", async (t) => {

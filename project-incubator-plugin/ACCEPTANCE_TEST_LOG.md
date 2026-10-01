@@ -17,6 +17,9 @@
 | 9 | 非法 Mod 阶段跳级拒绝 | PASS | 加载 `0.1.0+codex.20261001102149`；`prepare_change` 对 `M0_BOUNDARY -> M4_IMPLEMENT` 返回 `ILLEGAL_TRANSITION`；未创建 Pending Request、未调用 Commit，权威状态与 Receipt 均未变化 | 使用真实宿主版本信息准备合法 `M0 -> M1` 变更 |
 | 10A | 合法 `M0 -> M1` 变更准备 | FAIL | `prepare_change` 闭环正确并生成 Pending Request，但拟议状态仍将“精确版本待 Maker 提供”保留为 Active Decision，与已记录版本 `1.126.73.1030` 冲突；Runtime 也没有拒绝或撤回错误 Pending Request 的受控入口 | 不批准 Commit；补齐 Pending Request 拒绝路径和 Decision 授权绑定后重放 |
 | 10A Cleanup | 错误 Pending Request 受控拒绝 | PASS | 加载 `0.1.0+codex.20261001212236`；`decline_change` 跨会话精确拒绝目标 Request；Revision `1 -> 2`、Pending `1 -> 0`，业务状态未应用，Receipt 为 `DECLINE_CHANGE` 且授权可验证 | 重放修正后的合法 `M0 -> M1` 变更准备 |
+| 10A Replay | 修正后的合法 `M0 -> M1` 变更准备 | PASS | Revision `2 -> 3`、当前阶段仍为 M0、Pending `0 -> 1`；完整 Payload 已更新版本 Decision、Boundary、Gate、Risk 与 M1 Plan，未提前应用业务状态 | Maker 精确批准 Request 后执行 Round 10B Commit |
+| 10B | 长授权 Prompt 提交 | FAIL | 唯一一次 `commit_change` 返回 `PROMPT_SCOPE_NOT_CONFIRMED`；Hook 只保存前 240 字符，Request ID 在 excerpt 内而 Digest 被截断；状态与 Receipt 未变化 | 使用短授权恢复当前 Request，并修复结构化授权证据 |
+| 10B Retry | 短授权 Prompt 提交 | PASS | Revision `3 -> 4`、M0 进入 M1、Pending `1 -> 0`；变更 Decision 绑定新 Authorization，其他 Decision 保留旧 Authorization；Receipt 验证通过 | 修复长 Prompt 授权截断并独立重放 |
 
 ## 失败原因与修复状态
 
@@ -59,3 +62,7 @@
 - 当前 Codex 安装中的旧 `plugin-creator/validate_plugin.py` 已不存在；`skill-creator/quick_validate.py` 在系统 Python 与 bundled Python 中均因缺少 PyYAML 无法启动。本轮不将验证器环境错误表述为 Skill 失败，继续使用完整测试、Manifest 解析、候选包和安装缓存烟雾测试验证。
 - 修复候选已打包并安装为 `0.1.0+codex.20261001212236`。仓库外候选与全局安装缓存均成功启动 Kernel，返回 `ROUTE_PROPOSED`，且 `decline_change` 已实际注册；安装缓存中的 `server.mjs`、`authorization.mjs` 与 `mod-incubator/SKILL.md` 哈希和源码一致。
 - Round 10A Cleanup 已通过人工重放与独立回读：Revision 为 `2`、阶段仍为 `M0_BOUNDARY / ACTIVE`、Pending Request 为 `0`，Receipt 为 `receipt-9146dd5e-f3d1-415d-8577-f79b341460e2` 且 operation 为 `DECLINE_CHANGE`。Boundary 未出现版本 `1.126.73.1030`，Active Decision 仍保留清理前原值，证明被拒绝 Request 的拟议业务状态未泄漏。
+- Round 10A Replay 已通过：Request `request-98d771b6-c3cb-41f4-bf7a-698aa615bdf3` 的 Payload 经独立回读，版本、安装边界、修正后的 Decision、M0 Gate、风险集合与 M1 Plan 一致；准备后仅控制状态发生变化。
+- Round 10B 首次提交安全失败：完整 Prompt 哈希存在，但授权检查只读取 240 字符 `excerpt`，导致位于截断边界后的 Scope Digest 不可见。Revision、M0 阶段、Pending Request 与 PREPARE_CHANGE Receipt 均保持不变。
+- Round 10B Retry 使用令牌前置的短 Prompt 成功提交。独立回读确认 Revision `4`、阶段 `M1_RISK_MODEL / ACTIVE`、Pending `0`、Receipt `receipt-f725bc5c-381e-4f1c-a6de-4fb41cb73550`；变更 Decision 的授权等于 Receipt Authorization，其余五项 Decision 保留原授权，Evidence 为 `E0`，人工预算仍为 `UNSET / 0`。
+- 长 Prompt 授权修复已实现：Prompt Record 继续仅保存完整哈希、240 字符 excerpt 与有界结构化 Claim；Claim 从完整 Prompt 提取唯一 Request ID、唯一 Scope Digest 和明确意图。歧义意图或多令牌不形成可用授权，旧记录继续使用 excerpt 回退。失败测试先复现 `PROMPT_SCOPE_NOT_CONFIRMED`，修复后完整 Plugin 套件 `86/86` 通过。

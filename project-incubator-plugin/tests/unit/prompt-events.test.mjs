@@ -58,10 +58,45 @@ test("active prompt stores only bounded provenance fields", async (t) => {
   const ref = await recordMakerPrompt(event({ text: `我明确批准 ${"x".repeat(500)}` }), root);
   const stored = JSON.parse(await readFile(ref.file_path, "utf8"));
   assert.deepEqual(Object.keys(stored).sort(), [
-    "excerpt", "project_id", "prompt_digest", "session_id", "turn_id",
+    "authorization_claim", "excerpt", "project_id", "prompt_digest", "session_id", "turn_id",
   ]);
   assert.ok(stored.excerpt.length <= 240);
   assert.equal(stored.project_id, "project-1");
+});
+
+test("authorization claim is extracted from the full prompt beyond the excerpt boundary", async (t) => {
+  const root = await tempRoot(t);
+  const scopeDigest = "a".repeat(64);
+  const text = `${"背景说明。".repeat(80)}\n我明确批准 request-1，scope_digest: ${scopeDigest}`;
+  const ref = await recordMakerPrompt(event({ text }), root);
+  const stored = JSON.parse(await readFile(ref.file_path, "utf8"));
+  assert.equal(stored.excerpt.includes(scopeDigest), false);
+  assert.deepEqual(stored.authorization_claim, {
+    intent: "APPROVE", request_id: "request-1", scope_digest: scopeDigest,
+  });
+  assert.equal(JSON.stringify(stored).includes(text), false);
+});
+
+test("ambiguous intent and multiple scope tokens do not produce an authorization claim", async (t) => {
+  const root = await tempRoot(t);
+  const digestA = "a".repeat(64);
+  const digestB = "b".repeat(64);
+  const ambiguous = await recordMakerPrompt(event({
+    text: `我明确批准但也明确拒绝 request-1，scope_digest: ${digestA}`,
+  }), root);
+  const ambiguousStored = JSON.parse(await readFile(ambiguous.file_path, "utf8"));
+  assert.deepEqual(ambiguousStored.authorization_claim, {
+    intent: "AMBIGUOUS", request_id: "request-1", scope_digest: digestA,
+  });
+
+  const multiple = await recordMakerPrompt(event({
+    turn_id: "turn-multiple",
+    text: `我明确批准 request-1 和 request-2，scope_digest: ${digestA}，scope_digest: ${digestB}`,
+  }), root);
+  const multipleStored = JSON.parse(await readFile(multiple.file_path, "utf8"));
+  assert.deepEqual(multipleStored.authorization_claim, {
+    intent: "APPROVE", request_id: null, scope_digest: null,
+  });
 });
 
 test("consumePrompt deletes the prompt immediately", async (t) => {

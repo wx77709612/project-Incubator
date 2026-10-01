@@ -184,6 +184,8 @@ commit_change
 
 `commit_change` 若发现拟议状态新增了 Decision，或改变了既有 Decision 的声明、类型或状态，必须由 Runtime 将这些 Decision 绑定到本次 Commit 的真实 Authorization 与确认时间。内容未变化的 Decision 保留原授权。Agent 不得自行生成或沿用授权标识来证明一次新的 Decision Mutation。
 
+UserPromptSubmit 不保存完整 Maker Prompt。除固定长度 `excerpt` 与完整 Prompt 哈希外，Hook 必须从完整 Prompt 提取有界的结构化授权证据：唯一 `request_id`、唯一 `scope_digest` 与明确意图。`commit_change` 和 `decline_change` 优先校验这些结构化字段，不得因授权信息位于 `excerpt` 截断边界之后而拒绝有效授权；旧记录缺少结构化字段时保留 `excerpt` 兼容校验。
+
 以下操作必须获得 Maker Authorization：
 
 - 激活或停用 Project Incubator；

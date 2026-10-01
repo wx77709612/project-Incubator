@@ -48,7 +48,9 @@ function hasExplicitDecline(text) {
   return /(?:明确拒绝|正式拒绝|明确撤回|正式撤回|拒绝批准|明确不同意|\b(?:reject|rejected|decline|declined|withdraw|withdrawn)\b)/iu.test(text);
 }
 
-async function authorizePreparedPrompt(prepared, promptRef, options, intentMatches, errorCode) {
+async function authorizePreparedPrompt(
+  prepared, promptRef, options, expectedIntent, intentMatches, errorCode,
+) {
   if (!prepared.requires_authorization) throw new Error("AUTHORIZATION_NOT_REQUIRED");
   const stored = await readPrompt(promptRef);
   if (
@@ -62,10 +64,17 @@ async function authorizePreparedPrompt(prepared, promptRef, options, intentMatch
     await consumePrompt(promptRef);
     throw new Error("PROMPT_EXPIRED");
   }
-  if (!stored.excerpt.includes(prepared.request_id) || !stored.excerpt.includes(prepared.scope_digest)) {
+  const claim = stored.authorization_claim;
+  const scopeConfirmed = claim === undefined
+    ? stored.excerpt.includes(prepared.request_id) && stored.excerpt.includes(prepared.scope_digest)
+    : claim.request_id === prepared.request_id && claim.scope_digest === prepared.scope_digest;
+  if (!scopeConfirmed) {
     throw new Error("PROMPT_SCOPE_NOT_CONFIRMED");
   }
-  if (!intentMatches(stored.excerpt)) throw new Error(errorCode);
+  const intentConfirmed = claim === undefined
+    ? intentMatches(stored.excerpt)
+    : claim.intent === expectedIntent;
+  if (!intentConfirmed) throw new Error(errorCode);
 
   const authorization = Object.freeze({
     authorization_id: `authorization-${randomUUID()}`,
@@ -78,12 +87,12 @@ async function authorizePreparedPrompt(prepared, promptRef, options, intentMatch
 
 export async function authorizePreparedChange(prepared, promptRef, options = {}) {
   return authorizePreparedPrompt(
-    prepared, promptRef, options, hasExplicitApproval, "EXPLICIT_APPROVAL_REQUIRED",
+    prepared, promptRef, options, "APPROVE", hasExplicitApproval, "EXPLICIT_APPROVAL_REQUIRED",
   );
 }
 
 export async function authorizePreparedDecline(prepared, promptRef, options = {}) {
   return authorizePreparedPrompt(
-    prepared, promptRef, options, hasExplicitDecline, "EXPLICIT_DECLINE_REQUIRED",
+    prepared, promptRef, options, "DECLINE", hasExplicitDecline, "EXPLICIT_DECLINE_REQUIRED",
   );
 }
