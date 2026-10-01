@@ -5,7 +5,9 @@ import { evaluateModTransition } from "../../src/domains/mod/workflow.mjs";
 const state = (stage, return_stage = null) => ({ workflow: { stage, return_stage } });
 
 test("Mod stages advance in order and reject skips", () => {
-  assert.equal(evaluateModTransition(state("M1_RISK_MODEL"), { target_stage: "M2_VERTICAL_SLICE", completion_satisfied: true }).allowed, true);
+  const advanced = evaluateModTransition(state("M1_RISK_MODEL"), { target_stage: "M2_VERTICAL_SLICE", completion_satisfied: true });
+  assert.equal(advanced.allowed, true);
+  assert.deepEqual(advanced.workflow.allowed_next, ["M3_BUILD_PACKAGE", "MODEL_REVIEW"]);
   assert.equal(evaluateModTransition(state("M1_RISK_MODEL"), { target_stage: "M4_TARGET_VALIDATION", completion_satisfied: true }).code, "ILLEGAL_TRANSITION");
 });
 
@@ -19,6 +21,7 @@ test("M2 through M4 enter and return from MODEL_REVIEW without becoming iteratio
     const entered = evaluateModTransition(state(origin), { target_stage: "MODEL_REVIEW", model_invalidated: true });
     assert.equal(entered.allowed, true);
     assert.equal(entered.workflow.return_stage, origin);
+    assert.deepEqual(entered.workflow.allowed_next, [origin]);
     assert.notEqual(entered.semantic, "ITERATION");
     const resumed = evaluateModTransition({ workflow: entered.workflow }, { target_stage: origin, model_updated: true });
     assert.equal(resumed.allowed, true);

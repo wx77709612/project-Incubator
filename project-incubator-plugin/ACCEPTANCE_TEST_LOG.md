@@ -43,3 +43,5 @@
 - 自动化验证：Plugin 测试 `73/73` 通过。下一轮 Round 8 只验证 `Get-FileHash` / `Get-Content` 可读、`Set-Content` 仍被拒绝、权威状态与 Receipt 不变。
 - 修复版已安装为 `0.1.0+codex.20260930143443`；安装缓存烟雾验证中 `Get-FileHash` 返回放行、`Set-Content` 返回拒绝，缓存 Hook 与测试源码 SHA-256 一致，模拟项目三份权威文件哈希未变化。
 - Round 8 已通过人工重放：Hook 面板记录 `16` 次运行、`1` 次阻止、`0` 次失败；唯一阻止对应写入探针，两条只读命令均完成，Stop 未形成续写循环。独立哈希复核与 Round 6 基线一致。
+- Round 8 后审计发现 Mod Workflow 仅有独立领域测试，尚未接入 `prepare_change / commit_change`，导致非法阶段跳转可穿透 Runtime。修复采用 Registry Workflow Adapter：阶段变化必须绑定 `workflow_transition`，准备与提交均由当前项目类型的 Evaluator 校验；Shared Kernel 不直接依赖 Mod。
+- 自动化验证：非法 `M0 -> M4`、缺少转换描述和无效 `MODEL_REVIEW` 均在 Pending Request 创建前拒绝；合法 `M0 -> M1` 经 Maker Authorization、Receipt 与 Stop 完整闭合；Plugin 测试 `79/79` 通过。下一轮 Round 9 只重放非法跳级拒绝与状态不变。

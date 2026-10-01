@@ -461,6 +461,29 @@
 
   Commit: `test(plugin): verify extensible enforced incubation flow`
 
+### Correction Task: Mod Workflow Runtime Wiring
+
+**Files:**
+- Modify: `project-incubator-plugin/src/server.mjs`
+- Modify: `project-incubator-plugin/src/domains/mod/workflow.mjs`
+- Modify: `project-incubator-plugin/tests/integration/router-mcp.test.mjs`
+- Modify: `project-incubator-plugin/tests/e2e/enforcement-flow.test.mjs`
+
+**Contract:**
+- `prepare_change` 在 `workflow.stage` 变化时要求并校验 `workflow_transition`；
+- Kernel 根据激活的 `project_type_id` 调用领域 Workflow，不由 Agent 自行宣称转换合法；
+- 缺少转换描述、目标不一致、非法跳级和无效 `MODEL_REVIEW` 在创建 Pending Request 前失败；
+- `scope_digest` 与 Pending Payload 必须绑定转换描述；
+- `commit_change` 在授权后针对最新状态再次校验，防止准备与提交之间绕过规则；
+- 不改变阶段的普通 Mutation 保持现有兼容行为。
+
+- [x] **Step 1: 写入 Runtime 集成失败测试，证明当前 `M0 -> M4` 可穿透**
+- [x] **Step 2: 验证测试因缺少 Workflow Runtime Wiring 而失败**
+- [x] **Step 3: 实现最小 Workflow Transition Contract 与双重校验**
+- [x] **Step 4: 验证合法 `M0 -> M1`、非法跳级、描述缺失和 `MODEL_REVIEW` 路径**
+- [ ] **Step 5: 运行完整 Plugin、结构与安装缓存验证**
+- [ ] **Step 6: 安装新候选版本并执行 Round 9 非法跳级宿主走查**
+
 ## 完成判定
 
 只有以下事实全部有实际证据时，才能声明 MVP 完成：

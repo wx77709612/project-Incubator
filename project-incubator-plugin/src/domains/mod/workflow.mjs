@@ -6,6 +6,24 @@ const REVIEW_ORIGINS = new Set(["M2_VERTICAL_SLICE", "M3_BUILD_PACKAGE", "M4_TAR
 
 function rejected(code) { return { allowed: false, code }; }
 
+function allowedNext(stage, returnStage = null) {
+  if (stage === "MODEL_REVIEW") return returnStage ? [returnStage] : [];
+  const index = STAGES.indexOf(stage);
+  if (index < 0 || index === STAGES.length - 1) return [];
+  const next = [STAGES[index + 1]];
+  if (REVIEW_ORIGINS.has(stage)) next.push("MODEL_REVIEW");
+  return next;
+}
+
+function movedWorkflow(workflow, stage, returnStage = null) {
+  return {
+    ...workflow,
+    stage,
+    allowed_next: allowedNext(stage, returnStage),
+    return_stage: returnStage,
+  };
+}
+
 export function evaluateModTransition(state, request) {
   const current = state.workflow.stage;
   if (request.changes_boundary && !request.maker_authorized) return rejected("MAKER_AUTHORIZATION_REQUIRED");
@@ -13,7 +31,7 @@ export function evaluateModTransition(state, request) {
     if (!REVIEW_ORIGINS.has(current) || !request.model_invalidated) return rejected("MODEL_REVIEW_NOT_AVAILABLE");
     return {
       allowed: true, code: "MODEL_REVIEW_ENTERED", semantic: "CORRECTION",
-      workflow: { ...state.workflow, stage: "MODEL_REVIEW", return_stage: current },
+      workflow: movedWorkflow(state.workflow, "MODEL_REVIEW", current),
     };
   }
   if (current === "MODEL_REVIEW") {
@@ -22,7 +40,7 @@ export function evaluateModTransition(state, request) {
     }
     return {
       allowed: true, code: "MODEL_REVIEW_RESUMED", semantic: "CORRECTION",
-      workflow: { ...state.workflow, stage: request.target_stage, return_stage: null },
+      workflow: movedWorkflow(state.workflow, request.target_stage),
     };
   }
   const index = STAGES.indexOf(current);
@@ -31,8 +49,9 @@ export function evaluateModTransition(state, request) {
   if (current === "M0_BOUNDARY" && !request.maker_authorized) return rejected("MAKER_AUTHORIZATION_REQUIRED");
   return {
     allowed: true, code: "TRANSITION_ALLOWED", semantic: "STAGE_ADVANCE",
-    workflow: { ...state.workflow, stage: request.target_stage, return_stage: null },
+    workflow: movedWorkflow(state.workflow, request.target_stage),
   };
 }
 
+export const evaluateTransition = evaluateModTransition;
 export const modStages = Object.freeze([...STAGES, "MODEL_REVIEW"]);

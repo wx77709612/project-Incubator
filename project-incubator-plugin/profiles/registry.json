@@ -15,7 +15,8 @@
     {
       "id": "mod",
       "child_skill_id": "mod-incubator",
-      "profile_path": "profiles/project-types/mod.json"
+      "profile_path": "profiles/project-types/mod.json",
+      "workflow_module": "src/domains/mod/workflow.mjs"
     }
   ],
   "host_profiles": [

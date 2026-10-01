@@ -44,6 +44,19 @@ async function fixture(t) {
   };
 }
 
+async function activatedFixture(t) {
+  const value = await fixture(t);
+  await initializeProjectState(value.projectRoot, {
+    schema_version: "1.0", project_id: "project-1",
+    plugin_id: "project-incubator-plugin", plugin_version: "0.1.0", status: "ACTIVE",
+    project_type_id: "mod", child_skill_id: "mod-incubator", host_profile_id: "sims-4",
+  }, initialState(), {
+    authorization_id: "authorization-existing", request_id: "activation-existing",
+    prompt_digest: "a".repeat(64),
+  });
+  return value;
+}
+
 test("propose_route is read-only and MCP failures use stable error codes", async (t) => {
   const { projectRoot, service } = await fixture(t);
   const proposal = await service.callTool("propose_route", {
@@ -206,4 +219,111 @@ test("route migration cannot be committed without Maker authorization", async (t
   });
   assert.equal(denied.isError, true);
   assert.equal(denied.structuredContent.error.code, "PROMPT_NOT_FOUND");
+});
+
+test("prepare_change rejects an illegal Mod stage skip before creating a pending request", async (t) => {
+  const { projectRoot, service } = await activatedFixture(t);
+  const before = await service.callTool("get_project_state", { project_root: projectRoot });
+  const proposedState = structuredClone(before.structuredContent.state);
+  proposedState.workflow.stage = "M4_TARGET_VALIDATION";
+
+  const result = await service.callTool("prepare_change", {
+    project_root: projectRoot, operation: "ADVANCE_MOD_STAGE", change_kind: "WORKFLOW_TRANSITION",
+    session_id: "session-1", proposed_state: proposedState,
+    workflow_transition: { target_stage: "M4_TARGET_VALIDATION", completion_satisfied: true },
+  });
+
+  assert.equal(result.isError, true);
+  assert.equal(result.structuredContent.error.code, "ILLEGAL_TRANSITION");
+  const after = await service.callTool("get_project_state", { project_root: projectRoot });
+  assert.equal(after.structuredContent.state.revision, before.structuredContent.state.revision);
+  assert.deepEqual(after.structuredContent.state.pending_requests, []);
+});
+
+test("prepare_change requires a transition contract whenever the Mod stage changes", async (t) => {
+  const { projectRoot, service } = await activatedFixture(t);
+  const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });
+  const proposedState = structuredClone(snapshot.structuredContent.state);
+  proposedState.workflow.stage = "M1_RISK_MODEL";
+
+  const result = await service.callTool("prepare_change", {
+    project_root: projectRoot, operation: "ADVANCE_MOD_STAGE", change_kind: "WORKFLOW_TRANSITION",
+    session_id: "session-1", proposed_state: proposedState,
+  });
+
+  assert.equal(result.isError, true);
+  assert.equal(result.structuredContent.error.code, "WORKFLOW_TRANSITION_REQUIRED");
+});
+
+test("a legal Mod transition is bound into the pending request", async (t) => {
+  const { projectRoot, service } = await activatedFixture(t);
+  const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });
+  const proposedState = structuredClone(snapshot.structuredContent.state);
+  proposedState.workflow.stage = "M1_RISK_MODEL";
+  proposedState.workflow.allowed_next = ["M2_VERTICAL_SLICE"];
+
+  const result = await service.callTool("prepare_change", {
+    project_root: projectRoot, operation: "ADVANCE_MOD_STAGE", change_kind: "WORKFLOW_TRANSITION",
+    session_id: "session-1", proposed_state: proposedState,
+    workflow_transition: { target_stage: "M1_RISK_MODEL", completion_satisfied: true },
+  });
+
+  assert.equal(result.isError, undefined);
+  const after = await service.callTool("get_project_state", { project_root: projectRoot });
+  assert.deepEqual(after.structuredContent.state.pending_requests[0].payload.workflow_transition, {
+    target_stage: "M1_RISK_MODEL", completion_satisfied: true,
+  });
+});
+
+test("a legal M0 to M1 transition commits only after scoped Maker authorization", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await activatedFixture(t);
+  const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });
+  const proposedState = structuredClone(snapshot.structuredContent.state);
+  proposedState.workflow.stage = "M1_RISK_MODEL";
+  proposedState.workflow.allowed_next = ["M2_VERTICAL_SLICE"];
+  proposedState.plan.current_action = "评估 Capability 风险";
+
+  const prepared = await service.callTool("prepare_change", {
+    project_root: projectRoot, operation: "ADVANCE_MOD_STAGE", change_kind: "WORKFLOW_TRANSITION",
+    session_id: "session-1", proposed_state: proposedState,
+    workflow_transition: { target_stage: "M1_RISK_MODEL", completion_satisfied: true },
+  }, { now: new Date(approvalTime) });
+  const request = prepared.structuredContent;
+  await handleUserPromptSubmit({
+    cwd: projectRoot, session_id: "session-1", turn_id: "turn-transition", timestamp: approvalTime,
+    prompt: `我明确批准 ${request.request_id}，scope_digest: ${request.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(approvalTime) });
+
+  const committed = await service.callTool("commit_change", {
+    project_root: projectRoot, request_id: request.request_id, scope_digest: request.scope_digest,
+    session_id: "session-1", turn_id: "turn-transition",
+  }, { now: new Date(approvalTime) });
+
+  assert.equal(committed.isError, undefined);
+  assert.match(committed.structuredContent.receipt.authorization_ref.authorization_id, /^authorization-/);
+  const after = await service.callTool("get_project_state", { project_root: projectRoot });
+  assert.equal(after.structuredContent.state.workflow.stage, "M1_RISK_MODEL");
+  assert.deepEqual(after.structuredContent.state.workflow.allowed_next, ["M2_VERTICAL_SLICE"]);
+  assert.deepEqual(after.structuredContent.state.pending_requests, []);
+});
+
+test("prepare_change enforces the Mod MODEL_REVIEW entry contract", async (t) => {
+  const { projectRoot, service } = await activatedFixture(t);
+  const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });
+  const proposedState = structuredClone(snapshot.structuredContent.state);
+  proposedState.workflow = {
+    ...proposedState.workflow,
+    stage: "MODEL_REVIEW", return_stage: "M0_BOUNDARY", allowed_next: ["M0_BOUNDARY"],
+  };
+
+  const result = await service.callTool("prepare_change", {
+    project_root: projectRoot, operation: "ENTER_MODEL_REVIEW", change_kind: "WORKFLOW_TRANSITION",
+    session_id: "session-1", proposed_state: proposedState,
+    workflow_transition: {
+      target_stage: "MODEL_REVIEW", completion_satisfied: false, model_invalidated: true,
+    },
+  });
+
+  assert.equal(result.isError, true);
+  assert.equal(result.structuredContent.error.code, "MODEL_REVIEW_NOT_AVAILABLE");
 });

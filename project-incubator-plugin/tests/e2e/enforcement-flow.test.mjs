@@ -39,7 +39,6 @@ test("Maker-approved activation, protected writes, Receipt and Stop close end to
     session_id: "s1", turn_id: "t1",
   }, { now: new Date(now) });
   assert.equal(initialized.isError, undefined);
-  const receiptId = initialized.structuredContent.receipt.receipt_id;
   const state = await service.callTool("get_project_state", { project_root: root });
   assert.equal(state.structuredContent.state.decisions.active.length, 1);
   const summary = await service.callTool("inspect_project", { project_root: root });
@@ -49,6 +48,30 @@ test("Maker-approved activation, protected writes, Receipt and Stop close end to
     cwd: root, tool_name: "apply_patch", tool_input: { patch: "*** Update File: .project-incubator/state.json" },
   });
   assert.equal(denied.hookSpecificOutput.permissionDecision, "deny");
-  await handleUserPromptSubmit({ cwd: root, session_id: "s1", turn_id: "t2", timestamp: "2026-09-29T12:01:00.000Z", prompt: "查询" }, { runtimeDataRoot: runtime, now: new Date("2026-09-29T12:01:00.000Z") });
-  assert.deepEqual(await handleStop({ cwd: root, session_id: "s1", turn_id: "t2", last_assistant_message: `receipt_id: ${receiptId}` }, { runtimeDataRoot: runtime }), { continue: true });
+
+  const proposedState = structuredClone(state.structuredContent.state);
+  proposedState.workflow.stage = "M1_RISK_MODEL";
+  proposedState.workflow.allowed_next = ["M2_VERTICAL_SLICE"];
+  proposedState.plan.current_action = "评估 Capability 风险";
+  const transitionAt = "2026-09-29T12:01:00.000Z";
+  const transition = (await service.callTool("prepare_change", {
+    project_root: root, operation: "ADVANCE_MOD_STAGE", change_kind: "WORKFLOW_TRANSITION",
+    session_id: "s1", proposed_state: proposedState,
+    workflow_transition: { target_stage: "M1_RISK_MODEL", completion_satisfied: true },
+  }, { now: new Date(transitionAt) })).structuredContent;
+  await handleUserPromptSubmit({
+    cwd: root, session_id: "s1", turn_id: "t2", timestamp: transitionAt,
+    prompt: `我明确批准 ${transition.request_id}，scope_digest: ${transition.scope_digest}`,
+  }, { runtimeDataRoot: runtime, now: new Date(transitionAt) });
+  const committed = await service.callTool("commit_change", {
+    project_root: root, request_id: transition.request_id, scope_digest: transition.scope_digest,
+    session_id: "s1", turn_id: "t2",
+  }, { now: new Date(transitionAt) });
+  assert.equal(committed.isError, undefined);
+  const receiptId = committed.structuredContent.receipt.receipt_id;
+  const advanced = await service.callTool("inspect_project", { project_root: root });
+  assert.equal(advanced.structuredContent.summary.workflow.stage, "M1_RISK_MODEL");
+
+  await handleUserPromptSubmit({ cwd: root, session_id: "s1", turn_id: "t3", timestamp: "2026-09-29T12:02:00.000Z", prompt: "查询" }, { runtimeDataRoot: runtime, now: new Date("2026-09-29T12:02:00.000Z") });
+  assert.deepEqual(await handleStop({ cwd: root, session_id: "s1", turn_id: "t3", last_assistant_message: `receipt_id: ${receiptId}` }, { runtimeDataRoot: runtime }), { continue: true });
 });

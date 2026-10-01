@@ -11,7 +11,7 @@ import { authorizePreparedChange, prepareChange } from "./kernel/authorization.m
 import { hashJson } from "./kernel/canonical-json.mjs";
 import { findPromptRef } from "./kernel/prompt-events.mjs";
 import { buildProjectSummary, renderProjectSummary, writeProjectOverview } from "./kernel/project-summary.mjs";
-import { loadRegistry, resolveRoute } from "./kernel/registry.mjs";
+import { loadRegistry, loadWorkflowEvaluators, resolveRoute } from "./kernel/registry.mjs";
 import {
   consumeActivationRequest,
   getPendingActivation,
@@ -54,11 +54,53 @@ function failure(error) {
   };
 }
 
+function sameValues(left, right) {
+  return hashJson(left) === hashJson(right);
+}
+
+function assertWorkflowShape(proposed, evaluated) {
+  if ((proposed.return_stage ?? null) !== (evaluated.return_stage ?? null)) {
+    throw new Error("WORKFLOW_RETURN_STAGE_MISMATCH");
+  }
+  if (!sameValues(proposed.allowed_next, evaluated.allowed_next)) {
+    throw new Error("WORKFLOW_ALLOWED_NEXT_MISMATCH");
+  }
+}
+
+function validateWorkflowTransition(snapshot, proposedState, transition, evaluator, options = {}) {
+  const stageChanged = snapshot.state.workflow.stage !== proposedState.workflow.stage;
+  if (!stageChanged) {
+    if (transition !== undefined) throw new Error("WORKFLOW_TRANSITION_UNEXPECTED");
+    return null;
+  }
+  if (!transition) throw new Error("WORKFLOW_TRANSITION_REQUIRED");
+  if (transition.target_stage !== proposedState.workflow.stage) {
+    throw new Error("WORKFLOW_TARGET_MISMATCH");
+  }
+  if (typeof evaluator !== "function") throw new Error("WORKFLOW_EVALUATOR_NOT_FOUND");
+
+  const request = {
+    ...transition,
+    changes_boundary: !sameValues(snapshot.state.boundary, proposedState.boundary),
+    maker_authorized: options.makerAuthorized === true,
+  };
+  let evaluation = evaluator(snapshot.state, request);
+  let requiresMakerAuthorization = false;
+  if (!evaluation.allowed && evaluation.code === "MAKER_AUTHORIZATION_REQUIRED" && options.allowAuthorizationPending) {
+    requiresMakerAuthorization = true;
+    evaluation = evaluator(snapshot.state, { ...request, maker_authorized: true });
+  }
+  if (!evaluation.allowed) throw new Error(evaluation.code);
+  assertWorkflowShape(proposedState.workflow, evaluation.workflow);
+  return { evaluation, requires_maker_authorization: requiresMakerAuthorization };
+}
+
 export async function createKernelService(options = {}) {
   const pluginRoot = options.pluginRoot
     ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
   const runtimeDataRoot = options.runtimeDataRoot ?? resolveRuntimeDataRoot(options.env ?? process.env);
   const registry = await loadRegistry(pluginRoot);
+  const workflowEvaluators = await loadWorkflowEvaluators(pluginRoot, registry);
 
   const handlers = {
     async propose_route(args) {
@@ -152,9 +194,16 @@ export async function createKernelService(options = {}) {
       const snapshot = await readProjectSnapshot(args.project_root);
       const proposedState = parseProjectState(args.proposed_state);
       if (proposedState.project_id !== snapshot.state.project_id) throw new Error("PROJECT_ID_MISMATCH");
+      validateWorkflowTransition(
+        snapshot, proposedState, args.workflow_transition,
+        workflowEvaluators.get(snapshot.activation.project_type_id), {
+        allowAuthorizationPending: true,
+        },
+      );
       const requestId = `request-${randomUUID()}`;
       const scopeDigest = hashJson({
         operation: args.operation, change_kind: args.change_kind, proposed_state: proposedState,
+        workflow_transition: args.workflow_transition ?? null,
       });
       const createdAt = (context.now ?? new Date()).toISOString();
       const receipt = await commitProjectState(args.project_root, {
@@ -165,6 +214,7 @@ export async function createKernelService(options = {}) {
             status: "PENDING", created_at: createdAt, project_revision: current.revision + 1,
             payload: {
               change_kind: args.change_kind, proposed_state: proposedState,
+              workflow_transition: args.workflow_transition,
               session_id: args.session_id, requires_authorization: true,
             },
           });
@@ -196,6 +246,12 @@ export async function createKernelService(options = {}) {
         now: context.now ?? new Date(),
       });
       const proposedState = parseProjectState(pending.payload.proposed_state);
+      validateWorkflowTransition(
+        snapshot, proposedState, pending.payload.workflow_transition,
+        workflowEvaluators.get(snapshot.activation.project_type_id), {
+        makerAuthorized: true,
+        },
+      );
       const receipt = await commitProjectState(args.project_root, {
         operation: pending.operation, expectedRevision: snapshot.state.revision, authorizationRef,
         mutate(current) {
@@ -274,6 +330,10 @@ export async function createMcpServer(options = {}) {
     prepare_change: {
       project_root: z.string(), operation: z.string(), change_kind: z.string(),
       session_id: z.string(), proposed_state: z.record(z.unknown()),
+      workflow_transition: z.object({
+        target_stage: z.string(), completion_satisfied: z.boolean(),
+        model_invalidated: z.boolean().optional(), model_updated: z.boolean().optional(),
+      }).strict().optional(),
     },
     commit_change: {
       project_root: z.string(), request_id: z.string(), scope_digest: z.string(),

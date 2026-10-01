@@ -152,6 +152,21 @@ Kernel 对任何状态变更执行：
 - Receipt 必须绑定前后状态哈希、revision、操作、项目 ID 和授权引用；
 - Receipt 校验必须同时验证 Receipt、当前状态哈希和 revision，不能只比较 ID。
 
+### 6.1 领域 Workflow 强制执行
+
+Child Skill 声明的阶段规则必须接入 Kernel Mutation，不能只存在于 Skill 文本或独立单元测试中。
+
+当 `prepare_change` 的拟议状态改变 `workflow.stage` 时，调用方必须同时提交 `workflow_transition`：
+
+- `target_stage`：必须与拟议状态中的目标阶段一致；
+- `completion_satisfied`：声明当前阶段退出条件已经满足，并进入授权摘要与 `scope_digest`；
+- `model_invalidated`：仅用于请求进入 `MODEL_REVIEW`；
+- `model_updated`：仅用于从 `MODEL_REVIEW` 返回原阶段。
+
+Kernel 必须根据当前激活路由选择对应 Child Workflow，在创建 Pending Request 前拒绝缺少描述、目标不一致、非法跳级或无效 `MODEL_REVIEW`。Product Boundary 是否变化由 Kernel 比较当前状态和拟议状态得出，不接受调用方自报。提交时必须针对最新状态重新执行同一 Workflow 校验；需要 Maker Authorization 的转换只有在授权绑定成功后才能提交。
+
+未改变阶段的普通状态更新不得伪造 `workflow_transition`。Host Profile 可以增加完成条件，但不能放宽 Child Workflow 的合法转换。
+
 ## 7. Maker Authorization
 
 需要 Maker 权限的操作采用两步协议：

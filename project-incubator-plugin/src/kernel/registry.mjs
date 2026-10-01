@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { z } from "zod";
 
 const id = z.string().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9._:-]*$/);
@@ -18,7 +19,9 @@ const registrySchema = z.object({
     receipt: z.literal("REQUIRED"),
   }).strict(),
   child_skills: z.array(z.object({ id, skill_path: relativePath }).strict()).max(100),
-  project_types: z.array(z.object({ id, child_skill_id: id, profile_path: relativePath.optional() }).strict()).max(100),
+  project_types: z.array(z.object({
+    id, child_skill_id: id, profile_path: relativePath.optional(), workflow_module: relativePath,
+  }).strict()).max(100),
   host_profiles: z.array(z.object({
     id, project_type_id: id, profile_path: relativePath,
     kernel_constraints: constraints.default({}),
@@ -38,6 +41,9 @@ export function validateRegistry(value) {
   const typeIds = new Set(parsed.project_types.map((item) => item.id));
   for (const type of parsed.project_types) {
     if (!childIds.has(type.child_skill_id)) throw new Error("UNKNOWN_CHILD_SKILL");
+    if (type.workflow_module.split(/[\\/]/u).includes("..")) {
+      throw new Error("INVALID_WORKFLOW_MODULE_PATH");
+    }
   }
   for (const profile of parsed.host_profiles) {
     if (!typeIds.has(profile.project_type_id)) throw new Error("UNKNOWN_PROFILE_PROJECT_TYPE");
@@ -57,6 +63,23 @@ export async function loadRegistry(pluginRoot) {
     throw error;
   }
   return validateRegistry(value);
+}
+
+export async function loadWorkflowEvaluators(pluginRoot, registry) {
+  const evaluators = new Map();
+  for (const projectType of registry.project_types) {
+    const modulePath = path.resolve(pluginRoot, projectType.workflow_module);
+    const relative = path.relative(pluginRoot, modulePath);
+    if (relative.startsWith("..") || path.isAbsolute(relative)) {
+      throw new Error("INVALID_WORKFLOW_MODULE_PATH");
+    }
+    const module = await import(pathToFileURL(modulePath).href);
+    if (typeof module.evaluateTransition !== "function") {
+      throw new Error("WORKFLOW_EVALUATOR_INVALID");
+    }
+    evaluators.set(projectType.id, module.evaluateTransition);
+  }
+  return evaluators;
 }
 
 export function resolveRoute(registry, projectTypeId, hostProfileId = null) {
