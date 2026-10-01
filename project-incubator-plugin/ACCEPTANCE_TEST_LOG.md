@@ -20,6 +20,7 @@
 | 10A Replay | 修正后的合法 `M0 -> M1` 变更准备 | PASS | Revision `2 -> 3`、当前阶段仍为 M0、Pending `0 -> 1`；完整 Payload 已更新版本 Decision、Boundary、Gate、Risk 与 M1 Plan，未提前应用业务状态 | Maker 精确批准 Request 后执行 Round 10B Commit |
 | 10B | 长授权 Prompt 提交 | FAIL | 唯一一次 `commit_change` 返回 `PROMPT_SCOPE_NOT_CONFIRMED`；Hook 只保存前 240 字符，Request ID 在 excerpt 内而 Digest 被截断；状态与 Receipt 未变化 | 使用短授权恢复当前 Request，并修复结构化授权证据 |
 | 10B Retry | 短授权 Prompt 提交 | PASS | Revision `3 -> 4`、M0 进入 M1、Pending `1 -> 0`；变更 Decision 绑定新 Authorization，其他 Decision 保留旧 Authorization；Receipt 验证通过 | 修复长 Prompt 授权截断并独立重放 |
+| 11A | M1 风险模型与 M2 变更准备 | FAIL | 新会话加载正确版本并恢复 Revision 4，但兼容格式 MCP 未继承 Hook 的 `PLUGIN_DATA`，启动时返回 `RUNTIME_DATA_ROOT_REQUIRED`；`prepare_change` 调用 0 次，权威状态未变 | 修复 Hook/MCP Runtime Data 同源解析后重放 Round 11A |
 
 ## 失败原因与修复状态
 
@@ -67,3 +68,5 @@
 - Round 10B Retry 使用令牌前置的短 Prompt 成功提交。独立回读确认 Revision `4`、阶段 `M1_RISK_MODEL / ACTIVE`、Pending `0`、Receipt `receipt-f725bc5c-381e-4f1c-a6de-4fb41cb73550`；变更 Decision 的授权等于 Receipt Authorization，其余五项 Decision 保留原授权，Evidence 为 `E0`，人工预算仍为 `UNSET / 0`。
 - 长 Prompt 授权修复已实现：Prompt Record 继续仅保存完整哈希、240 字符 excerpt 与有界结构化 Claim；Claim 从完整 Prompt 提取唯一 Request ID、唯一 Scope Digest 和明确意图。歧义意图或多令牌不形成可用授权，旧记录继续使用 excerpt 回退。失败测试先复现 `PROMPT_SCOPE_NOT_CONFIRMED`，修复后完整 Plugin 套件 `86/86` 通过。
 - 修复版已打包并安装为 `0.1.0+codex.20261001222139`。安装缓存中 `prompt-events.mjs` 与 `authorization.mjs` 的 SHA-256 均与源码一致；直接从安装缓存重放 457 字符 Prompt，授权令牌位于 240 字符 excerpt 之后仍成功授权，且未持久化完整 Prompt。尚差一次新 Codex 会话的 Hook + MCP 宿主重放。
+- Round 11A 未进入业务变更：失败发生在 MCP 创建 Kernel Service 之前，因此无 Request、无 Pending、无 Receipt 和 Revision 变化。根因是兼容格式插件的 Hook 获得 `PLUGIN_DATA`，但本地 stdio MCP 配置显示 `env=null` 且 `env_vars=[]`；运行时将改为从 Codex 安装缓存结构推导同一 `plugins/data/<plugin>-<marketplace>/runtime-events` 目录，无法验证结构时仍 fail closed。
+- Runtime Data 修复版已打包并安装为 `0.1.0+codex.20261001224335`。完整 Plugin 套件 `87/87` 通过；安装缓存在 `PLUGIN_DATA` 与 `CODEX_HOME` 均缺失时，正确解析到 `C:\Users\Xenia_Woo\.codex\plugins\data\project-incubator-plugin-personal\runtime-events`，Kernel Service 启动并成功执行只读 `inspect_project`。尚待新 Codex 会话重放 Round 11A。

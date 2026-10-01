@@ -124,7 +124,8 @@ function validateWorkflowTransition(snapshot, proposedState, transition, evaluat
 export async function createKernelService(options = {}) {
   const pluginRoot = options.pluginRoot
     ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-  const runtimeDataRoot = options.runtimeDataRoot ?? resolveRuntimeDataRoot(options.env ?? process.env);
+  const runtimeDataRoot = options.runtimeDataRoot
+    ?? resolveRuntimeDataRoot(options.env ?? process.env, pluginRoot);
   const registry = await loadRegistry(pluginRoot);
   const workflowEvaluators = await loadWorkflowEvaluators(pluginRoot, registry);
 

@@ -65,6 +65,7 @@ Mod Incubator Skill + Sims 4 Host Profile
 4. 存在候选请求时，只捕获下一轮对应 Maker Prompt，用于校验当前 request、scope、project、session 与 turn；
 5. 明确批准后 Kernel 才原子创建三个权威文件；批准、拒绝、消费或超过 24 小时后，候选请求与 Prompt 临时记录立即删除；
 6. Bootstrap Runtime Data 不是第四份项目状态，不能用于恢复项目、推进 Workflow 或覆盖三个权威文件。
+7. Hook 与 Kernel MCP 必须解析到同一 Plugin Runtime Data 命名空间；兼容格式宿主未向 MCP 注入 `PLUGIN_DATA` 时，MCP 可从 Codex 安装缓存路径推导同一受控数据目录，但不得回退到项目目录或插件包目录写入临时证据。
 
 除已激活项目和上述有效 Bootstrap 候选外，所有 Hooks 必须直接返回 `continue`，不得保存 Prompt、修改文件或阻止任务。
 

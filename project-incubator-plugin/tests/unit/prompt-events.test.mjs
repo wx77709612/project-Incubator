@@ -46,6 +46,21 @@ test("runtime data root prefers plugin writable data and keeps CODEX_HOME fallba
   assert.throws(() => resolveRuntimeDataRoot({}), /RUNTIME_DATA_ROOT_REQUIRED/);
 });
 
+test("legacy plugin MCP derives the same writable data root when host env is absent", () => {
+  const codexHome = path.join(os.tmpdir(), "codex-home");
+  const pluginRoot = path.join(
+    codexHome, "plugins", "cache", "personal", "project-incubator-plugin", "0.1.0",
+  );
+  assert.equal(
+    resolveRuntimeDataRoot({}, pluginRoot),
+    path.join(codexHome, "plugins", "data", "project-incubator-plugin-personal", "runtime-events"),
+  );
+  assert.equal(
+    resolveRuntimeDataRoot({ CODEX_HOME: path.join(codexHome, "legacy-home") }, pluginRoot),
+    path.join(codexHome, "plugins", "data", "project-incubator-plugin-personal", "runtime-events"),
+  );
+});
+
 test("inactive projects do not create runtime data", async (t) => {
   const root = path.join(await tempRoot(t), "does-not-exist");
   const result = await recordMakerPrompt(event({ activation: activation("INACTIVE") }), root);

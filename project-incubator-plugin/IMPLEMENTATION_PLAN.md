@@ -145,7 +145,7 @@
 **Interfaces:**
 - Consumes: Task 1 schemas and Task 2 commit API.
 - Produces: `prepareChange(snapshot: ProjectSnapshot, proposal: ChangeProposal): PreparedChange`
-- Produces: `resolveRuntimeDataRoot(env: NodeJS.ProcessEnv): string`
+- Produces: `resolveRuntimeDataRoot(env: NodeJS.ProcessEnv, pluginRoot?: string): string`
 - Produces: `recordMakerPrompt(event: PromptEvent, runtimeDataRoot: string): Promise<PromptRef>`
 - Produces: `authorizePreparedChange(prepared: PreparedChange, promptRef: PromptRef): Promise<AuthorizationRef>`
 - Produces: `consumePrompt(promptRef: PromptRef): Promise<void>`
@@ -156,7 +156,7 @@
 
 - [ ] **Step 2: Write failing Prompt lifecycle tests**
 
-  断言未激活项目不写入 Runtime Data；激活项目只保存 session、turn、project、hash 和最小必要原文；Plugin 运行时优先解析到官方提供的 `$PLUGIN_DATA/runtime-events/`，并保留 `$CODEX_HOME/project-incubator-plugin/runtime-events/` 作为非 Plugin 运行与测试兼容回退；两者均不存在时 fail closed；消费后立即删除，超过 24 小时的孤立记录在下次访问时清理。Stop 首次闭合失败可继续本轮一次，但 `stop_hook_active=true` 时必须停止重复阻断并输出警告，避免不可终止循环。
+  断言未激活项目不写入 Runtime Data；激活项目只保存 session、turn、project、hash 和最小必要原文；Plugin 运行时优先解析到官方提供的 `$PLUGIN_DATA/runtime-events/`，并保留 `$CODEX_HOME/project-incubator-plugin/runtime-events/` 作为非 Plugin 运行与测试兼容回退；兼容格式 MCP 未获得上述变量时，必须从已安装缓存路径推导与 Hook 相同的 `plugins/data/<plugin>-<marketplace>/runtime-events/`；无法验证任一路径时 fail closed；消费后立即删除，超过 24 小时的孤立记录在下次访问时清理。Stop 首次闭合失败可继续本轮一次，但 `stop_hook_active=true` 时必须停止重复阻断并输出警告，避免不可终止循环。
 
 - [ ] **Step 3: Verify tests fail**
 
@@ -524,6 +524,13 @@
 - [x] **Step 2: 实现有界结构化授权证据提取与兼容读取**
 - [x] **Step 3: 运行完整测试、打包、安装并验证安装缓存**
 - [ ] **Step 4: 在新 Codex 会话中执行一次长 Prompt 宿主重放**
+
+### Correction Task: Shared Runtime Data Resolution
+
+- [x] **Step 1: 用缺少 `PLUGIN_DATA` 与 `CODEX_HOME` 的兼容格式 MCP 环境复现 `RUNTIME_DATA_ROOT_REQUIRED`**
+- [x] **Step 2: 从已安装插件缓存路径推导 Hook 已使用的同一 Plugin Data 目录**
+- [x] **Step 3: 打包安装并从安装缓存验证无环境变量启动**
+- [ ] **Step 4: 在新 Codex 会话重放 Round 11A**
 
 ## 完成判定
 
