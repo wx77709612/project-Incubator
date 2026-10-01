@@ -15,6 +15,7 @@
 | 7S | Plugin Data 与 Stop 熔断重放 | PASS | 加载 `0.1.0+codex.20260930115950`；写入探针执行前被拒绝；三份权威文件、Revision、Action 与 Receipt 均未变化；Stop 正常放行且无循环 | 单独处理只读命令被 PreToolUse 误拦截的问题 |
 | 8 | 只读放行与写入保护并存 | PASS | 加载 `0.1.0+codex.20260930143443`；两条只读命令退出码为 0；写入探针执行前被拒绝；权威文件、Revision、Action 与 Receipt 均未变化；Stop 正常结束 | 结束 Hook 基础验收，进入受控状态推进测试 |
 | 9 | 非法 Mod 阶段跳级拒绝 | PASS | 加载 `0.1.0+codex.20261001102149`；`prepare_change` 对 `M0_BOUNDARY -> M4_IMPLEMENT` 返回 `ILLEGAL_TRANSITION`；未创建 Pending Request、未调用 Commit，权威状态与 Receipt 均未变化 | 使用真实宿主版本信息准备合法 `M0 -> M1` 变更 |
+| 10A | 合法 `M0 -> M1` 变更准备 | FAIL | `prepare_change` 闭环正确并生成 Pending Request，但拟议状态仍将“精确版本待 Maker 提供”保留为 Active Decision，与已记录版本 `1.126.73.1030` 冲突；Runtime 也没有拒绝或撤回错误 Pending Request 的受控入口 | 不批准 Commit；补齐 Pending Request 拒绝路径和 Decision 授权绑定后重放 |
 
 ## 失败原因与修复状态
 
@@ -49,3 +50,6 @@
 - Workflow 修复版已安装为 `0.1.0+codex.20261001102149`；仓库外候选包成功加载 Registry Workflow Adapter，安装缓存对临时项目的 `M0 -> M4` 返回 `ILLEGAL_TRANSITION`，并保持 `revision=0`、`pending_requests=0`。
 - Round 9 已通过人工重放：Runtime 恰好拒绝一次非法转换，未调用 `commit_change`；Stop 返回 `continue: true`。Hook 面板的阻止次数为 `0` 符合预期，因为本轮由 MCP Runtime 拒绝语义非法的受控请求，不属于 PreToolUse 的直接文件写入拦截职责。
 - Round 9 后独立复核确认 Revision 为 `0`、阶段为 `M0_BOUNDARY / ACTIVE`、Pending Request 为 `0`，Receipt 仍为 `receipt-05769fe4-fc73-4133-8db8-7dae51f57932`；三份权威文件哈希与 Round 6 基线一致。
+- Round 10A 的 Runtime 机械闭环通过：Revision `0 -> 1`、阶段仍为 `M0_BOUNDARY`、Pending Request `0 -> 1`，Receipt operation 为 `PREPARE_CHANGE`，Stop 正常放行。
+- Round 10A 的拟议内容验收失败：Boundary、Capability、Gate 与 Risk 已记录 Maker 提供的版本 `1.126.73.1030`，但 `decisions.active` 仍保留 `versions-maker-supplied` 的“精确游戏版本和补丁版本待 Maker 提供”陈述。若直接提交，权威状态将产生 Active Decision 与目标环境事实冲突。
+- 恢复路径缺口：当前 MCP 仅提供 `prepare_change` 与 `commit_change`，没有受控的 `decline_change` 或 `withdraw_change`；错误 Pending Request 无法在不直接写权威文件的前提下正式作废。Round 10B 暂停，且不得批准或提交 `request-1003e089-b892-4a0d-bd00-8674e3296735`。
