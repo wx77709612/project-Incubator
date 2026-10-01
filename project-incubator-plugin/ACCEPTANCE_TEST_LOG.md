@@ -66,3 +66,4 @@
 - Round 10B 首次提交安全失败：完整 Prompt 哈希存在，但授权检查只读取 240 字符 `excerpt`，导致位于截断边界后的 Scope Digest 不可见。Revision、M0 阶段、Pending Request 与 PREPARE_CHANGE Receipt 均保持不变。
 - Round 10B Retry 使用令牌前置的短 Prompt 成功提交。独立回读确认 Revision `4`、阶段 `M1_RISK_MODEL / ACTIVE`、Pending `0`、Receipt `receipt-f725bc5c-381e-4f1c-a6de-4fb41cb73550`；变更 Decision 的授权等于 Receipt Authorization，其余五项 Decision 保留原授权，Evidence 为 `E0`，人工预算仍为 `UNSET / 0`。
 - 长 Prompt 授权修复已实现：Prompt Record 继续仅保存完整哈希、240 字符 excerpt 与有界结构化 Claim；Claim 从完整 Prompt 提取唯一 Request ID、唯一 Scope Digest 和明确意图。歧义意图或多令牌不形成可用授权，旧记录继续使用 excerpt 回退。失败测试先复现 `PROMPT_SCOPE_NOT_CONFIRMED`，修复后完整 Plugin 套件 `86/86` 通过。
+- 修复版已打包并安装为 `0.1.0+codex.20261001222139`。安装缓存中 `prompt-events.mjs` 与 `authorization.mjs` 的 SHA-256 均与源码一致；直接从安装缓存重放 457 字符 Prompt，授权令牌位于 240 字符 excerpt 之后仍成功授权，且未持久化完整 Prompt。尚差一次新 Codex 会话的 Hook + MCP 宿主重放。
