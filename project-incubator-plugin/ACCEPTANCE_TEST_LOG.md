@@ -16,6 +16,7 @@
 | 8 | 只读放行与写入保护并存 | PASS | 加载 `0.1.0+codex.20260930143443`；两条只读命令退出码为 0；写入探针执行前被拒绝；权威文件、Revision、Action 与 Receipt 均未变化；Stop 正常结束 | 结束 Hook 基础验收，进入受控状态推进测试 |
 | 9 | 非法 Mod 阶段跳级拒绝 | PASS | 加载 `0.1.0+codex.20261001102149`；`prepare_change` 对 `M0_BOUNDARY -> M4_IMPLEMENT` 返回 `ILLEGAL_TRANSITION`；未创建 Pending Request、未调用 Commit，权威状态与 Receipt 均未变化 | 使用真实宿主版本信息准备合法 `M0 -> M1` 变更 |
 | 10A | 合法 `M0 -> M1` 变更准备 | FAIL | `prepare_change` 闭环正确并生成 Pending Request，但拟议状态仍将“精确版本待 Maker 提供”保留为 Active Decision，与已记录版本 `1.126.73.1030` 冲突；Runtime 也没有拒绝或撤回错误 Pending Request 的受控入口 | 不批准 Commit；补齐 Pending Request 拒绝路径和 Decision 授权绑定后重放 |
+| 10A Cleanup | 错误 Pending Request 受控拒绝 | PASS | 加载 `0.1.0+codex.20261001212236`；`decline_change` 跨会话精确拒绝目标 Request；Revision `1 -> 2`、Pending `1 -> 0`，业务状态未应用，Receipt 为 `DECLINE_CHANGE` 且授权可验证 | 重放修正后的合法 `M0 -> M1` 变更准备 |
 
 ## 失败原因与修复状态
 
@@ -57,3 +58,4 @@
 - Decision Mutation 修复已实现：`commit_change` 自动将新增或内容变化的 Decision 绑定本次真实 Authorization 与确认时间，未变化的 Decision 保留原授权。测试先分别因 `TOOL_NOT_FOUND` 与旧授权残留失败，修复后完整 Plugin 套件 `82/82` 通过。
 - 当前 Codex 安装中的旧 `plugin-creator/validate_plugin.py` 已不存在；`skill-creator/quick_validate.py` 在系统 Python 与 bundled Python 中均因缺少 PyYAML 无法启动。本轮不将验证器环境错误表述为 Skill 失败，继续使用完整测试、Manifest 解析、候选包和安装缓存烟雾测试验证。
 - 修复候选已打包并安装为 `0.1.0+codex.20261001212236`。仓库外候选与全局安装缓存均成功启动 Kernel，返回 `ROUTE_PROPOSED`，且 `decline_change` 已实际注册；安装缓存中的 `server.mjs`、`authorization.mjs` 与 `mod-incubator/SKILL.md` 哈希和源码一致。
+- Round 10A Cleanup 已通过人工重放与独立回读：Revision 为 `2`、阶段仍为 `M0_BOUNDARY / ACTIVE`、Pending Request 为 `0`，Receipt 为 `receipt-9146dd5e-f3d1-415d-8577-f79b341460e2` 且 operation 为 `DECLINE_CHANGE`。Boundary 未出现版本 `1.126.73.1030`，Active Decision 仍保留清理前原值，证明被拒绝 Request 的拟议业务状态未泄漏。
