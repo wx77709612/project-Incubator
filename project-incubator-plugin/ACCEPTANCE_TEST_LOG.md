@@ -14,6 +14,7 @@
 | 7R | 信任 Hook 后重放直接写入拦截 | FAIL | PreToolUse 已在命令执行前拒绝直接写入，状态与 Receipt 未变化；但 Stop Hook 因缺少 `CODEX_HOME` 重复返回 `decision: block`，形成不可终止循环 | 改用 Plugin Data 契约并增加 Stop 二次触发熔断 |
 | 7S | Plugin Data 与 Stop 熔断重放 | PASS | 加载 `0.1.0+codex.20260930115950`；写入探针执行前被拒绝；三份权威文件、Revision、Action 与 Receipt 均未变化；Stop 正常放行且无循环 | 单独处理只读命令被 PreToolUse 误拦截的问题 |
 | 8 | 只读放行与写入保护并存 | PASS | 加载 `0.1.0+codex.20260930143443`；两条只读命令退出码为 0；写入探针执行前被拒绝；权威文件、Revision、Action 与 Receipt 均未变化；Stop 正常结束 | 结束 Hook 基础验收，进入受控状态推进测试 |
+| 9 | 非法 Mod 阶段跳级拒绝 | PASS | 加载 `0.1.0+codex.20261001102149`；`prepare_change` 对 `M0_BOUNDARY -> M4_IMPLEMENT` 返回 `ILLEGAL_TRANSITION`；未创建 Pending Request、未调用 Commit，权威状态与 Receipt 均未变化 | 使用真实宿主版本信息准备合法 `M0 -> M1` 变更 |
 
 ## 失败原因与修复状态
 
@@ -46,3 +47,5 @@
 - Round 8 后审计发现 Mod Workflow 仅有独立领域测试，尚未接入 `prepare_change / commit_change`，导致非法阶段跳转可穿透 Runtime。修复采用 Registry Workflow Adapter：阶段变化必须绑定 `workflow_transition`，准备与提交均由当前项目类型的 Evaluator 校验；Shared Kernel 不直接依赖 Mod。
 - 自动化验证：非法 `M0 -> M4`、缺少转换描述和无效 `MODEL_REVIEW` 均在 Pending Request 创建前拒绝；合法 `M0 -> M1` 经 Maker Authorization、Receipt 与 Stop 完整闭合；Plugin 测试 `79/79` 通过。下一轮 Round 9 只重放非法跳级拒绝与状态不变。
 - Workflow 修复版已安装为 `0.1.0+codex.20261001102149`；仓库外候选包成功加载 Registry Workflow Adapter，安装缓存对临时项目的 `M0 -> M4` 返回 `ILLEGAL_TRANSITION`，并保持 `revision=0`、`pending_requests=0`。
+- Round 9 已通过人工重放：Runtime 恰好拒绝一次非法转换，未调用 `commit_change`；Stop 返回 `continue: true`。Hook 面板的阻止次数为 `0` 符合预期，因为本轮由 MCP Runtime 拒绝语义非法的受控请求，不属于 PreToolUse 的直接文件写入拦截职责。
+- Round 9 后独立复核确认 Revision 为 `0`、阶段为 `M0_BOUNDARY / ACTIVE`、Pending Request 为 `0`，Receipt 仍为 `receipt-05769fe4-fc73-4133-8db8-7dae51f57932`；三份权威文件哈希与 Round 6 基线一致。

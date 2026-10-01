@@ -482,7 +482,7 @@
 - [x] **Step 3: 实现最小 Workflow Transition Contract 与双重校验**
 - [x] **Step 4: 验证合法 `M0 -> M1`、非法跳级、描述缺失和 `MODEL_REVIEW` 路径**
 - [x] **Step 5: 运行完整 Plugin、结构与安装缓存验证**
-- [ ] **Step 6: 安装新候选版本并执行 Round 9 非法跳级宿主走查**
+- [x] **Step 6: 安装新候选版本并执行 Round 9 非法跳级宿主走查**
 
 ## 完成判定
 
