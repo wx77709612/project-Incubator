@@ -53,3 +53,7 @@
 - Round 10A 的 Runtime 机械闭环通过：Revision `0 -> 1`、阶段仍为 `M0_BOUNDARY`、Pending Request `0 -> 1`，Receipt operation 为 `PREPARE_CHANGE`，Stop 正常放行。
 - Round 10A 的拟议内容验收失败：Boundary、Capability、Gate 与 Risk 已记录 Maker 提供的版本 `1.126.73.1030`，但 `decisions.active` 仍保留 `versions-maker-supplied` 的“精确游戏版本和补丁版本待 Maker 提供”陈述。若直接提交，权威状态将产生 Active Decision 与目标环境事实冲突。
 - 恢复路径缺口：当前 MCP 仅提供 `prepare_change` 与 `commit_change`，没有受控的 `decline_change` 或 `withdraw_change`；错误 Pending Request 无法在不直接写权威文件的前提下正式作废。Round 10B 暂停，且不得批准或提交 `request-1003e089-b892-4a0d-bd00-8674e3296735`。
+- Round 10A 修复已实现：新增可跨 Agent 会话恢复的 `decline_change`，要求同一项目、精确 Request/Digest 与 Maker 明确拒绝；拒绝只移除目标 Pending Request，不应用拟议业务状态，并生成授权 Receipt。
+- Decision Mutation 修复已实现：`commit_change` 自动将新增或内容变化的 Decision 绑定本次真实 Authorization 与确认时间，未变化的 Decision 保留原授权。测试先分别因 `TOOL_NOT_FOUND` 与旧授权残留失败，修复后完整 Plugin 套件 `82/82` 通过。
+- 当前 Codex 安装中的旧 `plugin-creator/validate_plugin.py` 已不存在；`skill-creator/quick_validate.py` 在系统 Python 与 bundled Python 中均因缺少 PyYAML 无法启动。本轮不将验证器环境错误表述为 Skill 失败，继续使用完整测试、Manifest 解析、候选包和安装缓存烟雾测试验证。
+- 修复候选已打包并安装为 `0.1.0+codex.20261001212236`。仓库外候选与全局安装缓存均成功启动 Kernel，返回 `ROUTE_PROPOSED`，且 `decline_change` 已实际注册；安装缓存中的 `server.mjs`、`authorization.mjs` 与 `mod-incubator/SKILL.md` 哈希和源码一致。
