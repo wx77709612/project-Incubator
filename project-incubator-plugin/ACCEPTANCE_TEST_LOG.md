@@ -27,6 +27,7 @@
 | 12B | M2 方案与预算变更准备 | PASS | Revision `6 -> 7`、阶段仍为 M2、Pending `0 -> 1`；拟议预算为 `3 / 0`，新增两个 Architecture Decision，M2 Gate、E0 与空 Baseline 未提前改变 | Maker 精确批准 Request 后提交 M2 方案与预算 |
 | 12C | M2 方案与预算提交 | PASS | Revision `7 -> 8`、Pending `1 -> 0`、预算成为 `3 / 0`；预算 Decision 与两项 Architecture Decision 绑定本轮 Authorization，其余五项 Decision 授权未变 | 核心治理链验收完成；进入受限技术调查，尚不实施 Mod |
 | 13A | M2 实现前只读技术调查 | PASS | 权威状态保持 Revision 8；本机路径、游戏与 Studio 版本、工具链及唯一冰箱 `fridgeLOW_01_set1`/`0x459B` 获得本地证据；Package-only 宿主语义仍保持未证明 | Plugin 人工验收可在实现前收口；继续将进入真实 Mod 工程 |
+| Closeout | 发布候选收口 | PASS | Plugin `88/88`、Legacy `132+32+3` 全绿；最终审阅修复控制目录 basename 写入绕过；候选 `0.1.0+codex.20261002144305` 在仓库外安装并从全局缓存启动 | 等待选择本地合并、PR 或保留分支 |
 
 ## 失败原因与修复状态
 
@@ -82,3 +83,12 @@
 - Round 12B 已通过准备闭环与 Pending Payload 复核：唯一 Request 为 `request-d40c05b4-17aa-4b8c-b92c-f194ae58ae67`，Scope Digest 为 `64a99a29c291c51f2ca1d6470a4efd63d5954110a442144b09fec80d3f3c71be`；Revision 为 `7`，权威阶段仍为 M2，当前预算仍为 `UNSET / 0`。拟议状态才将预算设为 `3 / 0`，新增 Package-only additive 与诊断/隔离/MODEL_REVIEW 两项 Architecture Decision；其余五项 Decision 保留原授权，Evidence、M2 Gate 与 Baseline 均未提前改变。
 - Round 12C 已通过提交闭环与独立回读：Revision 为 `8`，阶段仍为 `M2_VERTICAL_SLICE / ACTIVE`，Pending 已清空，预算为 `3 / 0`。Receipt `receipt-6294053e-2273-440f-afe7-7d4e1ea20b1b` 精确绑定本轮 Request 与 Authorization；修改后的预算 Decision 和两项新增 Architecture Decision 均绑定该 Authorization，其余五项 Decision 的 statement、授权与确认时间未变化。Capability 仍为 `E0 / HYPOTHESIZED / LOW`，M2 Gate 仍为 `PENDING`，Baseline 为空，未开始实现或消耗人工验证。
 - Round 13A 已通过调查边界与本地证据抽查：权威状态仍为 Revision `8`、M2、Pending `0`、预算 `3 / 0`、Evidence `E0`。游戏、用户数据、Mods、基础模拟资源、Sims 4 Studio 与资源索引路径均实际存在；程序版本为 `1.126.73.1030`，Studio 产品版本为 `3.2.6.4+5d11d0e5c2e9a9f09a1ad7503a6ab2816c4abf94`。资源索引只读查询确认 `fridgeLOW_01_set1` 的 Instance 为 `17819`（`0x459B`）、GameId `1`、PackID `0`、价格 `375`，并存在对应 COBJ/OBJD 类型记录。Agent 没有将这些可用性证据提升为完整宿主语义，也没有修改文件、状态或消耗人工测试。
+
+## 最终收口
+
+- 自动化：Node `88/88`；Legacy unit `132/132`、integration `32/32`、e2e `3/3`。
+- 最终审阅：发现并以 RED→GREEN 测试修复控制目录内使用 `state.json` 等 basename 绕过 PreToolUse 的问题；修复后相对 Shell 写入和结构化写入均拒绝，只读 basename 继续放行。
+- 候选包：`0.1.0+codex.20261002144305`；白名单内容、9 个 JSON、三份 Skill 等价结构检查、禁用研发绝对路径扫描均通过，生产依赖安装 `95` 个包且审计 `0` 漏洞。
+- 独立运行：候选已写入个人 Plugin 源与版本化 Codex 缓存；从安装缓存启动 Router、`inspect_project` 和 Hook，恢复 Revision `8`、Receipt 验证通过、只读放行、直接写入拒绝，关键文件哈希与源码一致。
+- 验证工具限制：官方 `quick_validate.py` 在系统与 Codex bundled Python 中都因缺少 `PyYAML` 无法启动；已按该脚本实际规则执行等价 frontmatter、命名、字段和 TODO 检查，三份 Skill 均通过。
+- 人工验收边界：模拟项目停在 `M2_VERTICAL_SLICE / ACTIVE`，未把技术调查升级为宿主语义证据；继续推进属于真实 Mod 工程，不属于本 Plugin MVP 收口。
