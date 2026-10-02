@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 import { findActivatedProjectRoot, isProtectedProjectPath } from "../src/kernel/project-root.mjs";
 
 const CONTROL_PATTERN = /(?:^|[^a-z0-9_.-])\.project-incubator[\\/](?:activation|state|latest-receipt)\.json(?=$|[^a-z0-9_.-])/iu;
+const PROTECTED_BASENAME_PATTERN = /(?:^|[^a-z0-9_.-])(activation|state|latest-receipt)\.json(?=$|[^a-z0-9_.-])/giu;
 const KERNEL_TOOL_PREFIXES = ["mcp__project_incubator__", "mcp__project-incubator-plugin__"];
 const READ_ONLY_TOOL_PATTERN = /^(?:.*__)?(?:read_file|read_text_file|read_multiple_files|get_file_info)$/iu;
 const SHELL_TOOL_NAMES = new Set(["bash", "exec_command"]);
@@ -59,24 +60,28 @@ function isReadOnlyAccess(event) {
   return typeof command === "string" && isReadOnlyPowerShell(command);
 }
 
-async function referencesProtectedState(root, toolInput) {
+async function referencesProtectedState(root, cwd, toolInput) {
   for (const item of strings(toolInput)) {
     const normalized = item.value.replaceAll("\\", "/");
     if (CONTROL_PATTERN.test(item.value) || CONTROL_PATTERN.test(normalized)) return true;
     if (looksLikePathField(item.key)) {
-      const candidate = path.isAbsolute(item.value) ? item.value : path.resolve(root, item.value);
+      const candidate = path.isAbsolute(item.value) ? item.value : path.resolve(cwd, item.value);
       if (await isProtectedProjectPath(root, candidate)) return true;
+    }
+    for (const match of item.value.matchAll(PROTECTED_BASENAME_PATTERN)) {
+      if (await isProtectedProjectPath(root, path.resolve(cwd, `${match[1]}.json`))) return true;
     }
   }
   return false;
 }
 
 export async function handlePreToolUse(event) {
-  const root = await findActivatedProjectRoot(event.cwd ?? ".");
+  const cwd = event.cwd ?? ".";
+  const root = await findActivatedProjectRoot(cwd);
   if (!root) return {};
   if (KERNEL_TOOL_PREFIXES.some((prefix) => event.tool_name?.startsWith(prefix))) return {};
 
-  if (!await referencesProtectedState(root, event.tool_input)) return {};
+  if (!await referencesProtectedState(root, cwd, event.tool_input)) return {};
   return isReadOnlyAccess(event) ? {} : deny();
 }
 

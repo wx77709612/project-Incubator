@@ -44,4 +44,3 @@ export function evaluateReceipt(state, receipt, expectedReceiptId) {
   }
   return { verified: true, reason: null, receipt };
 }
-

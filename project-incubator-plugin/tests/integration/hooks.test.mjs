@@ -96,6 +96,23 @@ test("activated projects block shell writes when the protected path is quoted", 
   assert.equal(result.hookSpecificOutput?.permissionDecision, "deny");
 });
 
+test("activated projects block basename writes from inside the authority directory", async (t) => {
+  const { root } = await workspace(t);
+  await initialize(root);
+  const cwd = path.join(root, ".project-incubator");
+  const cases = [
+    { tool_name: "exec_command", tool_input: { cmd: "Set-Content state.json hacked" } },
+    { tool_name: "write_file", tool_input: { path: "latest-receipt.json" } },
+  ];
+  for (const current of cases) {
+    const result = await handlePreToolUse({ cwd, ...current });
+    assert.equal(result.hookSpecificOutput?.permissionDecision, "deny");
+  }
+  assert.deepEqual(await handlePreToolUse({
+    cwd, tool_name: "exec_command", tool_input: { cmd: "Get-Content state.json" },
+  }), {});
+});
+
 test("activated projects allow explicit read-only access to authority files", async (t) => {
   const { root } = await workspace(t);
   await initialize(root);

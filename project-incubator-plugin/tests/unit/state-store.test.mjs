@@ -136,4 +136,3 @@ test("concurrent commits cannot both consume the same revision", async (t) => {
   assert.equal(results.filter((item) => item.status === "rejected").length, 1);
   assert.equal((await readProjectSnapshot(root)).state.revision, 1);
 });
-

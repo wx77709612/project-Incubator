@@ -123,4 +123,3 @@ test("bounds active collections and validates receipt hashes", () => {
     parseReceipt({ ...validReceipt(), new_state_hash: "not-a-hash" }),
   );
 });
-

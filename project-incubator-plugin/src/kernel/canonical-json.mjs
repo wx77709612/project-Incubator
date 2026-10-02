@@ -21,4 +21,3 @@ export function sha256(value) {
 export function hashJson(value) {
   return sha256(canonicalJson(value));
 }
-
