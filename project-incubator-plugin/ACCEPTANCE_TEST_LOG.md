@@ -26,6 +26,7 @@
 | 12A | M2 垂直切片方案设计 | PASS | 只读恢复 Revision 6；按加载、注入、触发、创建、投递建立可归因完整路径；三次人工验证分别绑定可区分假设且只作提议；Runtime Mutation 与文件修改均为 0 | Maker 确认候选机制、诊断边界、预算与隔离条件后准备受控变更 |
 | 12B | M2 方案与预算变更准备 | PASS | Revision `6 -> 7`、阶段仍为 M2、Pending `0 -> 1`；拟议预算为 `3 / 0`，新增两个 Architecture Decision，M2 Gate、E0 与空 Baseline 未提前改变 | Maker 精确批准 Request 后提交 M2 方案与预算 |
 | 12C | M2 方案与预算提交 | PASS | Revision `7 -> 8`、Pending `1 -> 0`、预算成为 `3 / 0`；预算 Decision 与两项 Architecture Decision 绑定本轮 Authorization，其余五项 Decision 授权未变 | 核心治理链验收完成；进入受限技术调查，尚不实施 Mod |
+| 13A | M2 实现前只读技术调查 | PASS | 权威状态保持 Revision 8；本机路径、游戏与 Studio 版本、工具链及唯一冰箱 `fridgeLOW_01_set1`/`0x459B` 获得本地证据；Package-only 宿主语义仍保持未证明 | Plugin 人工验收可在实现前收口；继续将进入真实 Mod 工程 |
 
 ## 失败原因与修复状态
 
@@ -80,3 +81,4 @@
 - Round 12A 已通过方案验收与状态复核：权威状态保持 Revision `6`、`M2_VERTICAL_SLICE / ACTIVE`、Pending `0`、Evidence `E0`、Baseline 空、人工预算 `UNSET / 0`。方案没有选择具体 API，也没有实施或写入状态；它把 Package 加载、互动注入/显示、玩家触发、食物创建和正确投递拆成可关联的诊断阶段，并将三次人工验证分别绑定加载/显示、完整路径、执行者绑定与重复性假设。预算仍明确等待 Maker 决定。
 - Round 12B 已通过准备闭环与 Pending Payload 复核：唯一 Request 为 `request-d40c05b4-17aa-4b8c-b92c-f194ae58ae67`，Scope Digest 为 `64a99a29c291c51f2ca1d6470a4efd63d5954110a442144b09fec80d3f3c71be`；Revision 为 `7`，权威阶段仍为 M2，当前预算仍为 `UNSET / 0`。拟议状态才将预算设为 `3 / 0`，新增 Package-only additive 与诊断/隔离/MODEL_REVIEW 两项 Architecture Decision；其余五项 Decision 保留原授权，Evidence、M2 Gate 与 Baseline 均未提前改变。
 - Round 12C 已通过提交闭环与独立回读：Revision 为 `8`，阶段仍为 `M2_VERTICAL_SLICE / ACTIVE`，Pending 已清空，预算为 `3 / 0`。Receipt `receipt-6294053e-2273-440f-afe7-7d4e1ea20b1b` 精确绑定本轮 Request 与 Authorization；修改后的预算 Decision 和两项新增 Architecture Decision 均绑定该 Authorization，其余五项 Decision 的 statement、授权与确认时间未变化。Capability 仍为 `E0 / HYPOTHESIZED / LOW`，M2 Gate 仍为 `PENDING`，Baseline 为空，未开始实现或消耗人工验证。
+- Round 13A 已通过调查边界与本地证据抽查：权威状态仍为 Revision `8`、M2、Pending `0`、预算 `3 / 0`、Evidence `E0`。游戏、用户数据、Mods、基础模拟资源、Sims 4 Studio 与资源索引路径均实际存在；程序版本为 `1.126.73.1030`，Studio 产品版本为 `3.2.6.4+5d11d0e5c2e9a9f09a1ad7503a6ab2816c4abf94`。资源索引只读查询确认 `fridgeLOW_01_set1` 的 Instance 为 `17819`（`0x459B`）、GameId `1`、PackID `0`、价格 `375`，并存在对应 COBJ/OBJD 类型记录。Agent 没有将这些可用性证据提升为完整宿主语义，也没有修改文件、状态或消耗人工测试。
