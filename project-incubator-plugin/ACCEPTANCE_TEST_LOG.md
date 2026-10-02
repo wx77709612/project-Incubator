@@ -23,6 +23,7 @@
 | 11A | M1 风险模型与 M2 变更准备 | FAIL | 新会话加载正确版本并恢复 Revision 4，但兼容格式 MCP 未继承 Hook 的 `PLUGIN_DATA`，启动时返回 `RUNTIME_DATA_ROOT_REQUIRED`；`prepare_change` 调用 0 次，权威状态未变 | 修复 Hook/MCP Runtime Data 同源解析后重放 Round 11A |
 | 11A Replay | M1 风险模型与 M2 变更准备重放 | PASS | 加载 `0.1.0+codex.20261001224335`；Revision `4 -> 5`、当前阶段仍为 M1、Pending `0 -> 1`；八维风险模型总分 13，拟议 M2 Payload、Gate、E0 与 `UNSET / 0` 经独立回读一致 | 使用长授权 Prompt 提交该精确 Request，验证结构化授权不受 240 字符摘要限制 |
 | 11B | 长授权 Prompt 宿主提交 | PASS | Revision `5 -> 6`、M1 进入 M2、Pending `1 -> 0`；完整 Prompt 中位于旧摘要边界后的唯一 Request/Digest 被识别，Receipt 绑定真实 Authorization；六项 Decision 授权未被改写 | 长 Prompt 授权与 Runtime Data 缺陷关闭；进入 M2 垂直切片方案验收 |
+| 12A | M2 垂直切片方案设计 | PASS | 只读恢复 Revision 6；按加载、注入、触发、创建、投递建立可归因完整路径；三次人工验证分别绑定可区分假设且只作提议；Runtime Mutation 与文件修改均为 0 | Maker 确认候选机制、诊断边界、预算与隔离条件后准备受控变更 |
 
 ## 失败原因与修复状态
 
@@ -74,3 +75,4 @@
 - Runtime Data 修复版已打包并安装为 `0.1.0+codex.20261001224335`。完整 Plugin 套件 `87/87` 通过；安装缓存在 `PLUGIN_DATA` 与 `CODEX_HOME` 均缺失时，正确解析到 `C:\Users\Xenia_Woo\.codex\plugins\data\project-incubator-plugin-personal\runtime-events`，Kernel Service 启动并成功执行只读 `inspect_project`。尚待新 Codex 会话重放 Round 11A。
 - Round 11A Replay 已通过人工重放与独立回读：唯一 Pending Request 为 `request-f3d1b9e5-2681-4346-a2e9-da4852bf3baf`，Scope Digest 为 `41761c9bdf381524a20261d8382799418288db9c02737ca6d7dd0ec1854819b5`；权威阶段仍为 `M1_RISK_MODEL / ACTIVE`，拟议状态才进入 M2，Revision 为 `5`，Receipt operation 为 `PREPARE_CHANGE`。拟议八维风险模型、M1/M2 Gate、E0、空 Baseline 与 `UNSET / 0` 均与报告一致，未夹带实验、API 选择或实现。
 - Round 11B 已通过人工重放与独立回读：Revision 为 `6`，阶段为 `M2_VERTICAL_SLICE / ACTIVE`，Pending Request 已清空；Receipt `receipt-99dc6fba-0776-41e3-8647-55061c47ab74` 的 operation 为 `ADVANCE_MOD_STAGE`，Authorization 精确绑定本轮 Request 与完整 Prompt digest。六项既有 Decision 的 statement、授权和确认时间均未改变，M1 Gate 为 `PASSED`、M2 Gate 为 `PENDING`，Evidence 仍为 `E0`，Baseline 为空，人工预算仍为 `UNSET / 0`。长 Prompt 结构化授权与 Hook/MCP Runtime Data 同源缺陷至此关闭。
+- Round 12A 已通过方案验收与状态复核：权威状态保持 Revision `6`、`M2_VERTICAL_SLICE / ACTIVE`、Pending `0`、Evidence `E0`、Baseline 空、人工预算 `UNSET / 0`。方案没有选择具体 API，也没有实施或写入状态；它把 Package 加载、互动注入/显示、玩家触发、食物创建和正确投递拆成可关联的诊断阶段，并将三次人工验证分别绑定加载/显示、完整路径、执行者绑定与重复性假设。预算仍明确等待 Maker 决定。
