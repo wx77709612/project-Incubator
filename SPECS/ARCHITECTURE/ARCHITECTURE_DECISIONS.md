@@ -2412,6 +2412,71 @@ ACTIVE — V1.1 RC Remediation，Maker 于 2026-09-24 批准
 
 ---
 
+# Decision 013: Desktop Product Project Type 与 Core Phase 语义复用
+
+## Decision
+
+Project Incubator Plugin 新增按产品形态划分的 `desktop-product` Project Type，并由 `desktop-product-incubator` Child Skill 提供桌面产品的阶段指导、交付约束、验证边界与风险控制。
+
+`desktop-product` 不编码具体业务领域、产品品牌、跨产品组合或“伴侣”关系。浏览器扩展属于后续独立 Project Type 设计范围，不由当前 Child Skill 管理，也不因与某个桌面产品协作而自动成为同一 Managed Project。
+
+Desktop Product Workflow 原样复用适用的 Core Phase ID 与 Phase Name：
+
+- `P0 Intent Discovery`；
+- `P1 Project Definition`；
+- `P2 Solution Design`；
+- `P3 Execution Planning`；
+- `P4 Creation`；
+- `P5 Validation`；
+- `P6 Iteration`。
+
+Desktop System Model、Usable Slice、Delivery Hardening、Target Environment Validation、`FEASIBILITY_PROBE` 与 Creation Correction 是 Child Skill 对相应 Core Phase 的 description、活动、检查点或 Gate Evidence，不是新的顶层 Phase，不写入 `workflow.stage`，也不产生额外 Transition。
+
+Windows 通过独立 Host Profile 具体化安装、权限、签名、进程、文件系统、升级与真实环境验证要求。`desktop-product` 不把 Windows 规则写入通用 Project Type，也不据此排除未来 macOS 或 Linux Host Profile。
+
+Shared Kernel 的 Maker Authorization、MCP-only Mutation、Pending Request、Receipt、Hook、Evidence、状态摘要与机器可读权威状态原则上原样复用。本次扩展通过 Registry、Project Type Profile、独立 Workflow evaluator、Child Skill 与 Host Profile 完成；不得仅为桌面副命名扩展 Kernel 或状态 Schema。
+
+## Reason
+
+Project Type 的主要复用单位是产品形态及其研发风险，而不是业务领域。桌面产品在安装、升级、权限、本地状态、进程生命周期、恢复与真实 Host 验证方面具有稳定共性，足以形成独立 Child Incubator。
+
+P0–P6 对桌面产品仍具有完整语义。保留既有 Phase 名称可以降低 Maker 与 Agent 的理解成本，保持跨项目状态、Gate 与 Evidence 的可比较性；桌面差异由 Child Skill 的 Phase Profile 表达即可，无需制造第二套生命周期词汇。
+
+## Authority Boundary
+
+- Maker 决定 Product Boundary、Architecture Decision、Host 支持范围、高风险自动化政策、真实环境验证预算与残余风险接受；
+- Child Skill 提供桌面产品的指导、检查点、证据要求和风险提示，不决定其他产品形态如何组合；
+- Host Profile 只能具体化特定操作系统环境，不得改变 Project Type 或 Core Workflow；
+- Runtime 只执行结构、授权、Revision、Mutation、Receipt 与 Workflow 合法性校验，不替 Maker 作出产品或架构决策。
+
+## Compatibility and Migration
+
+- 现有 `mod`、`mod-incubator` 与 `sims-4` Host Profile 不修改、不迁移、不重新解释；
+- 已激活 Managed Project 不自动迁移 Project Type；
+- 浏览器扩展设计不得反向把浏览器规则写入 `desktop-product`；
+- 不新增权威 Markdown 状态文件；
+- 下游 Design 若发现必须增加 Kernel 或 Schema 语义，必须登记 `DESIGN_GAP` 并返回 Architecture 层审批。
+
+## Impact
+
+- Desktop Product Project Type Profile；
+- Desktop Product Workflow 与 Gate Design；
+- `desktop-product-incubator` Child Skill；
+- Windows Desktop Host Profile；
+- Registry 与 Router 候选类型；
+- Contract、Runtime Specification、Implementation Plan 与 Acceptance Test Plan；
+- Plugin、Legacy 与现有 `mod` 回归矩阵。
+
+## Source
+
+`SPECS/ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md`
+
+## Status
+
+ACTIVE — Plugin 后续迭代，Maker 于 2026-10-04 批准
+
+---
+
 # 4. Decision Record Rules
 
 

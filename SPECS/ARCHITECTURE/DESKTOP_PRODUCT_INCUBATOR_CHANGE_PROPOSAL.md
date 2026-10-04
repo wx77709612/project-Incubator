@@ -5,16 +5,17 @@
 | 字段 | 值 |
 | --- | --- |
 | Specification Track | Project Incubator Plugin 下一迭代 |
-| Status | DRAFT |
+| Status | APPROVED |
 | Plugin Baseline | `0.1.0+codex.20261002144305` |
 | Verified Commit | `6f4daf05acad92f3c097b4729c81d36fab3906b2` |
 | Change Type | Project Type Extension |
 | Implementation Authorization | NOT GRANTED |
 | Maker Discussion Baseline | 2026-10-04 |
+| Maker Approval | 2026-10-04 |
 
 本文档是新增第二种项目孵化能力前的 Architecture Change Proposal。它只定义 `desktop-product` 项目类型、`desktop-product-incubator` 的职责边界、与 Shared Kernel 的关系以及下游设计约束。
 
-本文档处于 `DRAFT`，不是当前实现依据，不授权修改 Plugin Runtime、Schema、Registry、Skill、Host Profile 或测试。
+Maker 已批准本文档定义的架构方向。该批准只授权更新 Architecture Decisions 与 Design Layer；在 Contract、Runtime Specification、Implementation Plan 与 Acceptance Test Plan 完成并分别获得所需审批前，仍不授权修改 Plugin Runtime、Schema、Registry、Skill、Host Profile 或测试。
 
 ## 2. 变更动机
 
@@ -360,9 +361,9 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 - 新类型可通过 Registry 与独立 Workflow 扩展，Shared Kernel 不出现桌面领域分支；
 - 现有 `mod`、`sims-4` 与完整回归矩阵保持不变。
 
-## 17. 待 Maker 审批
+## 17. Maker 审批记录
 
-Maker 需要确认：
+Maker 于 2026-10-04 确认：
 
 1. `desktop-product` 是按产品形态复用的第二个 Project Type；
 2. `desktop-product-incubator` 只负责桌面产品孵化，不负责产品组合关系；
