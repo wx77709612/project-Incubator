@@ -2432,7 +2432,7 @@ Desktop Product Workflow 原样复用适用的 Core Phase ID 与 Phase Name：
 
 Desktop System Model、Usable Slice、Delivery Hardening、Target Environment Validation、`FEASIBILITY_PROBE` 与 Creation Correction 是 Child Skill 对相应 Core Phase 的 description、活动、检查点或 Gate Evidence，不是新的顶层 Phase，不写入 `workflow.stage`，也不产生额外 Transition。
 
-Windows 通过独立 Host Profile 具体化安装、权限、签名、进程、文件系统、升级与真实环境验证要求。`desktop-product` 不把 Windows 规则写入通用 Project Type，也不据此排除未来 macOS 或 Linux Host Profile。
+Windows 通过独立的 `windows-desktop` Host Profile 具体化安装、权限、签名、进程、文件系统、升级与真实环境验证要求。`desktop-product` 不把 Windows 规则写入通用 Project Type，也不据此排除未来 macOS 或 Linux Host Profile。
 
 Shared Kernel 的 Maker Authorization、MCP-only Mutation、Pending Request、Receipt、Hook、Evidence、状态摘要与机器可读权威状态原则上原样复用。本次扩展通过 Registry、Project Type Profile、独立 Workflow evaluator、Child Skill 与 Host Profile 完成；不得仅为桌面副命名扩展 Kernel 或状态 Schema。
 
