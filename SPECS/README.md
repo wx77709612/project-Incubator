@@ -16,6 +16,14 @@
 
 历史归档不参与当前 Source of Truth 解析、产品配置引用或默认上下文加载。需要进行回归、迁移和历史追踪时，才显式读取对应归档。
 
+## Plugin 后续架构提案
+
+| Layer | Document | Status | 说明 |
+| --- | --- | --- | --- |
+| Architecture | `ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | DRAFT | 提议新增 `desktop-product` 与 `desktop-product-incubator`；等待 Maker 书面审批，不属于当前实现依据，也不授权修改 Plugin 产品文件 |
+
+该提案用于 Project Incubator Plugin 的后续版本化迭代，不改变下方 V1.1 RC 文档的当前状态。只有 Maker 批准并完成活动规格状态迁移后，它才能成为下游 Architecture 与 Design 的依据。
+
 ## 当前文档状态
 
 | Layer | Document | Status | 说明 |
