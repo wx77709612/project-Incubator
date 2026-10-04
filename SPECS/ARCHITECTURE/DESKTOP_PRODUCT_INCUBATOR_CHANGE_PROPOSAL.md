@@ -116,21 +116,32 @@ desktop-product
 
 新增首个 Windows Host Profile 不等于作出“所有未来桌面产品只支持 Windows”的 Product Decision。
 
-## 7. 推荐阶段模型
+## 7. Core Phase 复用与桌面专用指导
 
-`desktop-product` 不复刻 Legacy P0–P6，也不照搬 Mod M0–M5。下游 Workflow Design 应基于以下五个语义阶段细化合法转换、Gate 与失败语义：
+`desktop-product` 复用 Project Incubator 已沉淀的 P0–P6 Core Phase 语义、顺序、Transition、Gate、Artifact 与 Authority 经验，不另建一套同义阶段。Mod M0–M5 是针对 Mod 生命周期的专门化选择，不构成其他 Child Incubator 必须重新命名阶段的先例。
 
-| 阶段 | 目的 | 最小可观察出口 |
+桌面产品的 Project Type-specific Guidance 应在既有阶段中提供：
+
+| Core Phase | 复用的基础目标 | 桌面产品专用指导与可观察出口 |
 | --- | --- | --- |
-| `PRODUCT_DEFINITION` | 明确桌面产品的用户、核心结果、支持边界、排除边界与首个 Host | Maker 已确认 Product Boundary；当前 Host 与不支持范围明确 |
-| `DESKTOP_ARCHITECTURE` | 建立进程、UI、本地数据、权限、外部集成和失败恢复的最小架构模型 | 关键组件与信任边界可追踪；高风险 Assumption 和验证路径已记录 |
-| `USABLE_SLICE` | 完成一个代表性、用户可操作、可观察的桌面产品完整路径 | 选定用户旅程在受控桌面环境中可执行；失败位置和证据可归因 |
-| `DELIVERY_HARDENING` | 闭合安装、升级、卸载、迁移、权限、恢复、打包和回归风险 | 交付物内容可验证；失败可恢复；关键本地副作用有边界和回归证据 |
-| `RELEASE_READINESS` | 在目标桌面环境确认支持矩阵、发布边界和已知限制 | 目标环境证据、发布产物、升级/回滚路径、限制与残余风险可审阅 |
+| `P0 Intent Discovery` | 明确 Maker 意图、对象、问题和成功标准 | 识别桌面用户、核心用户结果、为什么需要桌面载体，以及当前不承诺的范围 |
+| `P1 Project Definition` | 建立项目身份、范围、约束和当前状态 | 确认首个桌面 Host、支持边界、分发假设、外部依赖与明确排除范围 |
+| `P2 Solution Design` | 形成解决方案、系统边界和关键设计决策 | 定义进程、UI、本地数据、权限、外部集成、信任边界和失败恢复模型 |
+| `P3 Execution Planning` | 建立执行路线、任务顺序、依赖和验证方式 | 规划代表性桌面切片、安装/升级/卸载、数据迁移、打包、自动化与真实环境验证 |
+| `P4 Creation` | 执行项目创建并产生 Project Artifact | 先形成可用桌面切片，再在获批边界内完成交付加固；产物、失败位置和本地副作用可追踪 |
+| `P5 Validation` | 验证成果是否满足目标和约束 | 区分逻辑自动化、桌面 UI 自动化与真实 Host Evidence，检查发布准备度、升级/回滚和已知限制 |
+| `P6 Iteration` | 根据 Validation Result 调整设计、计划、实现或验证 | 按既有合法路径返回受影响阶段；不得把新需求或发布后优化伪装为已验证事实 |
 
-本提案不预先规定阶段编号，也不要求阶段名称带数字。详细 Completion Condition、允许转换、Correction 行为和 Gate 由 Design Layer 定义。
+此前候选名称不进入 Workflow Phase Set：
 
-Evidence 推翻 Runtime Assumption 时，默认在当前阶段内收敛影响、更新模型并重放受影响验证。只有 Product Boundary、Architecture Decision、Host 支持范围或发布边界发生变化时，才必须形成新的 Maker 授权请求。
+- `PRODUCT_DEFINITION` 是 P0 与 P1 的桌面指导主题；
+- `DESKTOP_ARCHITECTURE` 是 P2 的桌面 Solution Design 关注点；
+- `USABLE_SLICE` 与 `DELIVERY_HARDENING` 是 P4 内可排序的 Work Package，不是新 Phase；
+- `RELEASE_READINESS` 是 P5 的 Gate 与 Validation Result 关注点，不是新 Phase。
+
+复用 P0–P6 指复用语义和治理经验，不恢复 Legacy 四份 Markdown 的物理存储。Plugin 继续以现有机器可读权威状态表达对应的 Profile、State、Plan 与 Decision 逻辑分区。
+
+Evidence 推翻 Runtime Assumption 时，沿现有 P4 Correction 与 P6 Iteration 规则收敛影响、更新模型并重放受影响验证。只有 Product Boundary、Architecture Decision、Host 支持范围或发布边界发生变化时，才必须形成新的 Maker 授权请求。
 
 ## 8. Maker Authority 边界
 
@@ -239,7 +250,7 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 | Layer | 预计影响 | 本提案后的动作 |
 | --- | --- | --- |
 | Architecture | 新增按产品形态划分的 `desktop-product`；明确 Project Incubator 不拥有产品组合决策 | Maker 批准后更新 Architecture Decisions 与 Document Architecture |
-| Design | 需要定义桌面产品 Domain Model、五阶段 Workflow、Gate、Evidence 与 Host Profile 接口 | 新增或更新活动 Design 文档 |
+| Design | 需要定义 P0–P6 的桌面专用 Guidance、Domain Model、Gate、Evidence 与 Host Profile 接口 | 新增或更新活动 Design 文档 |
 | Contract | 需要定义桌面 Workflow evaluator 输入输出、阶段转换和 Host Profile 收紧规则 | 下游 Contract 更新 |
 | Runtime Specification | 原则上复用 Registry evaluator、授权、Receipt 与状态；需说明无 Kernel 新语义 | 下游 Runtime Spec 记录加载与失败语义 |
 | Implementation Plan | 需要冻结 Registry、Profile、Skill、Workflow、测试与候选打包范围 | 在 Architecture、Design、Contract、Runtime 均批准后编写 |
@@ -295,7 +306,7 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 - `desktop-product` 的规则不依赖具体业务领域；
 - 桌面产品与 Windows Host Profile 的职责没有混淆；
 - 浏览器扩展规则未进入本轮 Child Skill、Workflow 或 Schema；
-- 五阶段模型具有可观察出口和合法转换；
+- P0–P6 Core Phase 身份、基础目标与合法转换得到复用，桌面规则只作为专用 Guidance、Work Package 或更严格 Gate；
 - Maker Authority、Agent 创造性职责与 Runtime 机械校验边界清晰；
 - 自动化、桌面自动化和真实环境 Evidence 的结论上限清晰；
 - 安装、升级、卸载、数据迁移、权限和回滚风险具有对应 Gate；
@@ -308,7 +319,7 @@ Maker 需要确认：
 
 1. `desktop-product` 是按产品形态复用的第二个 Project Type；
 2. `desktop-product-incubator` 只负责桌面产品孵化，不负责产品组合关系；
-3. 本轮采用五个语义阶段作为下游 Workflow Design 基线；
+3. 本轮复用 P0–P6 Core Phase，下游只增加桌面专用 Guidance、Work Package 与更严格 Gate，不新增同义阶段；
 4. Windows 作为首个 Host Profile 方向，但不构成所有未来桌面产品的唯一 Host；
 5. 本次原则上不扩展 Shared Kernel 或权威状态 Schema；
 6. 浏览器扩展保留为下一独立 Project Type 设计任务，本轮不实现；
