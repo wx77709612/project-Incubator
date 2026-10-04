@@ -151,7 +151,7 @@ P0–P6 的阶段目标具有通用价值，但原始阶段切分不完全贴合
 | Desktop Phase | 主要复用来源 | 桌面产品目标 | 最小可观察出口 |
 | --- | --- | --- | --- |
 | `PRODUCT_BOUNDARY` | P0 + P1 | 明确用户、核心结果、桌面载体理由、首个 Host、支持与排除边界 | Maker 已确认 Product Boundary；项目身份、Host 与不支持范围可恢复 |
-| `DESKTOP_SYSTEM_MODEL` | P2 | 定义进程、UI、本地数据、权限、外部集成、信任边界和失败恢复模型 | Architecture Decision、Assumption、风险与验证路径可追踪 |
+| `DESKTOP_SYSTEM_MODEL` | P2 | 定义进程、UI、本地数据、权限、外部集成、信任边界和失败恢复模型，并通过低成本探针处理可能推翻整体方案的关键可行性未知项 | Architecture Decision、Assumption、风险与验证路径可追踪；进入 Creation 所需的关键可行性主张已有证据、备选路径或经 Maker 接受的有界风险 |
 | `EXECUTION_PLAN` | P3 | 将系统模型转换为切片、工作包、依赖、交付和验证计划 | 实施顺序、完成条件、自动/人工验证与预算边界明确 |
 | `USABLE_SLICE` | P4 的核心创建职责 | 完成一个代表性、用户可操作、可观察的桌面产品完整路径 | 用户旅程在受控桌面环境可执行；失败位置、产物和副作用可归因 |
 | `DELIVERY_HARDENING` | P4 的交付职责 + 桌面专门化 | 闭合打包、安装、升级、卸载、数据迁移、权限、签名、恢复和回归风险 | 交付物内容可验证；失败可恢复；Known-Good Baseline 与关键回归存在 |
@@ -166,7 +166,47 @@ P0–P6 的阶段目标具有通用价值，但原始阶段切分不完全贴合
 - 安装、升级、迁移、权限、恢复或发布问题返回 `DELIVERY_HARDENING`；
 - 仅需补充同边界验证时保持在 `TARGET_VALIDATION`。
 
-Creation 中的 Evidence 反例继续复用 Correction 思想，但应由下游 Design 判断它适用于 `USABLE_SLICE`、`DELIVERY_HARDENING` 或两者。只有 Product Boundary、Architecture Decision、Host 支持范围或发布边界发生变化时，才必须形成新的 Maker 授权请求。
+### 7.4 可行性调研的位置
+
+可行性调研不是独立的常驻 Phase，而是服务于阶段决策的 `FEASIBILITY_PROBE` 活动。它的主要归属是 `DESKTOP_SYSTEM_MODEL`：在冻结执行路线前，用最小成本验证可能推翻核心用户路径、系统边界或关键 Architecture Assumption 的未知项。
+
+不同问题应在最早能影响决策的位置处理：
+
+- “是否存在值得孵化的用户问题、桌面载体是否必要”属于 `PRODUCT_BOUNDARY`；
+- 框架能力、进程模型、本地数据、权限、系统集成、外部接口和失败恢复是否成立，主要属于 `DESKTOP_SYSTEM_MODEL`；
+- 已知需要实验但不会改变系统边界的实现未知项，由 `EXECUTION_PLAN` 安排有预算和停止条件的探针；
+- 打包、安装、升级、签名或安全软件交互若可能推翻架构，必须在进入 Creation 前提前探查；若只影响交付实现，则可在 `DELIVERY_HARDENING` 中验证。
+
+每个可行性探针至少记录：待验证主张、关键未知项、最小判别实验、成功与失败信号、预算或停止条件、Evidence 引用、受影响 Assumption 以及结论。探针产物默认不是生产实现，也不能以孤立实验宣称完整 Host 语义成立。
+
+进入 `USABLE_SLICE` 前，不要求所有实现细节均已证明；但任何可能推翻整体系统模型或核心用户路径的高影响未知项，必须满足以下之一：
+
+- 已取得足以支持当前 Architecture Decision 的证据；
+- 已定义可行的备选路径和切换条件；
+- Maker 明确接受有界风险、验证预算与失败停止条件。
+
+上述记录继续使用现有 `assumptions`、`plan`、`gates`、`risks`、`evidence` 与 `human_validation` 分区，不新增可行性 Markdown 状态文件，也不要求扩展 Shared Kernel 或权威状态 Schema。
+
+### 7.5 Creation 中发现设计问题
+
+Creation 中出现反例不是自动失败、固定进入 P6，也不是继续用局部补丁掩盖模型问题。`USABLE_SLICE`、`DELIVERY_HARDENING` 和 `TARGET_VALIDATION` 均可进入轻量 `MODEL_REVIEW` 子流程，复用既有 Correction、Evidence、Assumption 与 `return_stage` 机制：
+
+1. 标记被反例推翻或显著削弱的 Assumption，并保存可复核 Evidence；
+2. 暂停依赖该 Assumption 的受影响工作，不冻结无关工作；
+3. 定位最早失效层级，评估受影响 Artifact、Gate、Plan、Baseline 与验证范围；
+4. 形成纠正提案；涉及 Product Boundary、Architecture Decision、Host 支持范围或发布边界时请求 Maker 授权；
+5. 完成获授权的 Context Mutation，更新受影响计划和验证条件；
+6. 重放受影响验证，证据成立后通过 `return_stage` 恢复原工作流。
+
+返回位置由问题性质决定：
+
+- 仅为局部 Implementation Detail 时留在当前 Creation Phase；
+- 执行顺序、切片或验证计划失效时返回 `EXECUTION_PLAN`；
+- 系统边界、信任边界、交互模型或 Architecture Assumption 失效时返回 `DESKTOP_SYSTEM_MODEL`；
+- 用户问题、核心结果、桌面载体理由或明确排除范围失效时，先请求 Maker 决策，再返回 `PRODUCT_BOUNDARY`；
+- 仅缺少同一边界内的验证证据时留在 `TARGET_VALIDATION`。
+
+`MODEL_REVIEW` 是纠正子流程，不是新的必经主阶段。下游 Design 必须定义触发条件、暂停范围、恢复条件和 Evidence 要求，但原则上可由现有 Workflow evaluator、`model_invalidated`、`model_updated` 与 `return_stage` 承载，不构成本轮 Kernel 或 Schema 扩展理由。
 
 ## 8. Maker Authority 边界
 
@@ -275,7 +315,7 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 | Layer | 预计影响 | 本提案后的动作 |
 | --- | --- | --- |
 | Architecture | 新增按产品形态划分的 `desktop-product`；明确 Project Incubator 不拥有产品组合决策 | Maker 批准后更新 Architecture Decisions 与 Document Architecture |
-| Design | 需要定义 P0–P6 经验到六个 Desktop Phase 的映射、Domain Model、Gate、Evidence 与 Host Profile 接口 | 新增或更新活动 Design 文档 |
+| Design | 需要定义 P0–P6 经验到六个 Desktop Phase 的映射、Domain Model、Gate、Evidence、`FEASIBILITY_PROBE`、`MODEL_REVIEW` 与 Host Profile 接口 | 新增或更新活动 Design 文档 |
 | Contract | 需要定义桌面 Workflow evaluator 输入输出、阶段转换和 Host Profile 收紧规则 | 下游 Contract 更新 |
 | Runtime Specification | 原则上复用 Registry evaluator、授权、Receipt 与状态；需说明无 Kernel 新语义 | 下游 Runtime Spec 记录加载与失败语义 |
 | Implementation Plan | 需要冻结 Registry、Profile、Skill、Workflow、测试与候选打包范围 | 在 Architecture、Design、Contract、Runtime 均批准后编写 |
@@ -332,6 +372,8 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 - 桌面产品与 Windows Host Profile 的职责没有混淆；
 - 浏览器扩展规则未进入本轮 Child Skill、Workflow 或 Schema；
 - P0–P6 的通用治理经验具有明确复用映射，Desktop Phase 的合并、拆分和返回路径均由桌面风险与证据边界解释；
+- 可行性调研作为阶段内探针服务于决策，进入 Creation 的证据门槛、备选路径和 Maker 风险接受边界清晰；
+- Creation 或 Validation 中的模型反例可以暂停受影响工作、返回最早失效阶段、完成纠正并重放验证；
 - Maker Authority、Agent 创造性职责与 Runtime 机械校验边界清晰；
 - 自动化、桌面自动化和真实环境 Evidence 的结论上限清晰；
 - 安装、升级、卸载、数据迁移、权限和回滚风险具有对应 Gate；
@@ -345,7 +387,8 @@ Maker 需要确认：
 1. `desktop-product` 是按产品形态复用的第二个 Project Type；
 2. `desktop-product-incubator` 只负责桌面产品孵化，不负责产品组合关系；
 3. 本轮采用“选择性复用”阶段模型：保留 P0–P6 的通用职责与治理经验，按桌面产品风险采用六个 Desktop Phase，并由 `TARGET_VALIDATION` 返回最早受影响阶段；
-4. Windows 作为首个 Host Profile 方向，但不构成所有未来桌面产品的唯一 Host；
-5. 本次原则上不扩展 Shared Kernel 或权威状态 Schema；
-6. 浏览器扩展保留为下一独立 Project Type 设计任务，本轮不实现；
-7. 批准后只授权继续更新 Architecture Decisions 与 Design Layer，不授权产品实现。
+4. 可行性调研采用阶段内 `FEASIBILITY_PROBE`，主要归属 `DESKTOP_SYSTEM_MODEL`；Creation 中的模型反例进入轻量 `MODEL_REVIEW`，返回最早失效阶段后再恢复；
+5. Windows 作为首个 Host Profile 方向，但不构成所有未来桌面产品的唯一 Host；
+6. 本次原则上不扩展 Shared Kernel 或权威状态 Schema；
+7. 浏览器扩展保留为下一独立 Project Type 设计任务，本轮不实现；
+8. 批准后只授权继续更新 Architecture Decisions 与 Design Layer，不授权产品实现。
