@@ -118,68 +118,54 @@ desktop-product
 
 ## 7. 阶段模型复用评估
 
-P0–P6 是本次设计的重要输入，但不是必须原样继承的 Runtime Phase Set。Desktop Product Workflow 必须同时满足两项要求：复用已有治理经验，且让阶段边界对应桌面产品真正不同的风险与证据。
+Project Incubator 的阶段名称是一套由 Maker 与 Agent 共同使用的生命周期语言。Child Incubator 不应仅为了突出产品形态而改写语义相同的 Phase ID 或 Phase Name；否则每增加一种 Project Type 都会增加新的理解、状态解释和跨项目比较成本。
 
-### 7.1 可直接复用的经验
+是否复用某一 Core Phase，必须分别比较其目标、Authority 边界、Required Artifact、Gate 与 Transition 语义。上述语义实质一致时，复用原 Phase ID 与 Phase Name，并由 Child Skill 在 description、活动、检查点和出口中表达产品形态差异；只有语义确实不适用时，才允许像 `mod-incubator` 一样定义独立阶段模型。
 
-下列经验与产品形态无关，应继续保留：
+### 7.1 Desktop Product 对 P0–P6 的复用结论
 
-- Intent、Project Definition、Solution Design 与 Execution Planning 必须在 Creation 前闭合；
-- Required Artifact、Phase Artifact 与 Context Mutation 必须分开表达；
-- State Change Requirement 不等于 Context 已修改；
-- Gate Result 不直接执行 Transition；
-- `READY_FOR_TRANSITION` 不等于 Transition 已完成；
-- Maker 保留 Product 与 Architecture Decision 权威；
-- Validation 必须回看 Intent、边界、Artifact 与约束；
-- Validation 失败应返回最早受影响的设计、计划、创建或验证范围；
-- Evidence、Known-Good Baseline、Correction 与 Confidence 规则继续适用。
+本提案判断 P0–P6 均适用于 `desktop-product`。Plugin Activation 可以预填项目身份和状态输入，但不替代 P0 的意图确认与 P1 的执行上下文定义；桌面交付风险也不足以要求拆分或重命名 P4。
 
-### 7.2 不宜原样复用的部分
+| Core Phase | Desktop Child Skill 中的具体解释 | 最小可观察出口 |
+| --- | --- | --- |
+| `P0 Intent Discovery` | 明确用户问题、核心结果、成功标准，以及为什么需要桌面产品这一载体 | Maker 已确认 Intent、核心结果与桌面载体理由 |
+| `P1 Project Definition` | 明确 Product Boundary、首个 Host、约束、支持范围和非目标 | 项目身份、边界、Host 与约束已写入现有机器可读权威状态并可恢复 |
+| `P2 Solution Design` | 形成 Desktop System Model，定义进程、UI、本地数据、权限、外部集成、信任边界和失败恢复，并执行关键可行性探针 | Solution Design、Architecture Decision、Assumption、风险与验证路径可追踪；关键可行性主张已有证据、备选路径或经 Maker 接受的有界风险 |
+| `P3 Execution Planning` | 将 Desktop System Model 转换为代表性切片、工作包、依赖、交付与验证计划 | 实施顺序、完成条件、自动与人工验证、真实环境预算和停止条件明确 |
+| `P4 Creation` | 在同一 Creation Phase 内完成 Usable Slice 与 Delivery Hardening，并在证据推翻模型时使用内部 Creation Correction | 代表性用户路径可操作、可观察；交付物及安装、升级、卸载、迁移、权限与恢复边界达到进入验证的条件 |
+| `P5 Validation` | 执行逻辑自动化、桌面自动化和 Target Environment Validation，验证 Intent、Artifact、约束与支持声明 | 形成带 Evidence 上限、环境绑定、已知限制和结论的 Validation Result |
+| `P6 Iteration` | 根据 Validation Result 决定调整 Solution Design、Execution Plan、Project Artifact 或补充 Validation | 在 Maker Authority 边界内选择并完成到 P2、P3、P4 或 P5 的合法 Transition |
 
-P0–P6 的阶段目标具有通用价值，但原始阶段切分不完全贴合桌面产品：
+P6 只复用现有 P2–P5 返回集合。若 Validation Result 推翻 P0 Intent 或 P1 Project Definition，不得由 Child Skill 发明 P6→P0/P1 Transition；必须提出 Maker Review，由 Maker 决定是否正式重开项目边界、迁移项目或采取其他获授权的生命周期动作。
 
-- Plugin Activation 已建立项目身份与机器权威状态，P0 Intent Discovery 与 P1 Project Definition 在运行态可以合并，避免重复 Gate；
-- P4 Creation 对桌面产品过宽，无法区分“核心用户路径可用”和“安装、升级、卸载、数据迁移、权限、签名、恢复已经闭合”；
-- P5 Validation 需要显式区分逻辑自动化、桌面 UI 自动化与真实 Host Evidence；
-- P6 Iteration 更适合作为基于 Validation Result 返回受影响阶段的转换机制，而不是所有项目必须经过的固定尾部阶段；
-- Legacy Core Context 的物理文件和 Artifact 结构不应恢复，Plugin 继续使用现有机器可读权威状态。
+### 7.2 Desktop 副命名与内部活动
 
-### 7.3 推荐的选择性复用方案
+桌面专门术语用于解释通用阶段，而不是替代通用阶段：
 
-本提案推荐吸收 P0–P6 的职责与治理规则，同时根据桌面产品风险重新设置阶段边界：
+- `Desktop System Model` 是 P2 `Solution Design` 的桌面化 description 与设计内容；
+- `Usable Slice` 是 P4 `Creation` 中验证代表性核心路径的内部检查点；
+- `Delivery Hardening` 是 P4 `Creation` 中闭合安装、升级、卸载、数据迁移、权限、签名与恢复风险的内部检查点；
+- `Target Environment Validation` 是 P5 `Validation` 的桌面化验证活动；
+- `FEASIBILITY_PROBE` 是主要发生在 P2 的可行性活动；
+- `MODEL_REVIEW` / Creation Correction 是 P4 内部的纠正活动。
 
-| Desktop Phase | 主要复用来源 | 桌面产品目标 | 最小可观察出口 |
-| --- | --- | --- | --- |
-| `PRODUCT_BOUNDARY` | P0 + P1 | 明确用户、核心结果、桌面载体理由、首个 Host、支持与排除边界 | Maker 已确认 Product Boundary；项目身份、Host 与不支持范围可恢复 |
-| `DESKTOP_SYSTEM_MODEL` | P2 | 定义进程、UI、本地数据、权限、外部集成、信任边界和失败恢复模型，并通过低成本探针处理可能推翻整体方案的关键可行性未知项 | Architecture Decision、Assumption、风险与验证路径可追踪；进入 Creation 所需的关键可行性主张已有证据、备选路径或经 Maker 接受的有界风险 |
-| `EXECUTION_PLAN` | P3 | 将系统模型转换为切片、工作包、依赖、交付和验证计划 | 实施顺序、完成条件、自动/人工验证与预算边界明确 |
-| `USABLE_SLICE` | P4 的核心创建职责 | 完成一个代表性、用户可操作、可观察的桌面产品完整路径 | 用户旅程在受控桌面环境可执行；失败位置、产物和副作用可归因 |
-| `DELIVERY_HARDENING` | P4 的交付职责 + 桌面专门化 | 闭合打包、安装、升级、卸载、数据迁移、权限、签名、恢复和回归风险 | 交付物内容可验证；失败可恢复；Known-Good Baseline 与关键回归存在 |
-| `TARGET_VALIDATION` | P5 + P6 返回语义 | 在真实 Host 验证支持边界、发布准备度、升级/回滚和已知限制 | 形成受约束的 Validation Result；满足发布边界或明确返回受影响阶段 |
+这些副命名不得写入 `workflow.stage`，不得形成新的 `allowed_next`，也不得被描述成额外的必经 Phase。下游 Design 可以定义其输入、输出、Gate Evidence 和完成条件，但必须保持 P0–P6 的正式 Phase 语义。
 
-`TARGET_VALIDATION` 不是单向终点。Validation Result 必须指出结论、Evidence 上限和最早受影响阶段：
+### 7.3 可行性调研的位置
 
-- 产品边界错误返回 `PRODUCT_BOUNDARY`；
-- 系统模型或 Architecture Assumption 错误返回 `DESKTOP_SYSTEM_MODEL`；
-- 执行路线或验证计划不足返回 `EXECUTION_PLAN`；
-- 核心用户路径实现问题返回 `USABLE_SLICE`；
-- 安装、升级、迁移、权限、恢复或发布问题返回 `DELIVERY_HARDENING`；
-- 仅需补充同边界验证时保持在 `TARGET_VALIDATION`。
-
-### 7.4 可行性调研的位置
-
-可行性调研不是独立的常驻 Phase，而是服务于阶段决策的 `FEASIBILITY_PROBE` 活动。它的主要归属是 `DESKTOP_SYSTEM_MODEL`：在冻结执行路线前，用最小成本验证可能推翻核心用户路径、系统边界或关键 Architecture Assumption 的未知项。
+可行性调研不是独立的常驻 Phase，而是服务于阶段决策的 `FEASIBILITY_PROBE` 活动。它的主要归属是 P2 `Solution Design` 中的 Desktop System Model：在冻结执行路线前，用最小成本验证可能推翻核心用户路径、系统边界或关键 Architecture Assumption 的未知项。
 
 不同问题应在最早能影响决策的位置处理：
 
-- “是否存在值得孵化的用户问题、桌面载体是否必要”属于 `PRODUCT_BOUNDARY`；
-- 框架能力、进程模型、本地数据、权限、系统集成、外部接口和失败恢复是否成立，主要属于 `DESKTOP_SYSTEM_MODEL`；
-- 已知需要实验但不会改变系统边界的实现未知项，由 `EXECUTION_PLAN` 安排有预算和停止条件的探针；
-- 打包、安装、升级、签名或安全软件交互若可能推翻架构，必须在进入 Creation 前提前探查；若只影响交付实现，则可在 `DELIVERY_HARDENING` 中验证。
+- “是否存在值得孵化的用户问题、桌面载体是否必要”属于 P0 `Intent Discovery`；
+- Product Boundary、首个 Host、支持范围和非目标属于 P1 `Project Definition`；
+- 框架能力、进程模型、本地数据、权限、系统集成、外部接口和失败恢复是否成立，主要属于 P2 `Solution Design`；
+- 已知需要实验但不会改变系统边界的实现未知项，由 P3 `Execution Planning` 安排有预算和停止条件的探针；
+- 打包、安装、升级、签名或安全软件交互若可能推翻架构，必须在进入 P4 前提前探查；若只影响交付实现，则可作为 P4 `Delivery Hardening` 活动验证。
 
 每个可行性探针至少记录：待验证主张、关键未知项、最小判别实验、成功与失败信号、预算或停止条件、Evidence 引用、受影响 Assumption 以及结论。探针产物默认不是生产实现，也不能以孤立实验宣称完整 Host 语义成立。
 
-进入 `USABLE_SLICE` 前，不要求所有实现细节均已证明；但任何可能推翻整体系统模型或核心用户路径的高影响未知项，必须满足以下之一：
+进入 P4 `Creation` 前，不要求所有实现细节均已证明；但任何可能推翻整体系统模型或核心用户路径的高影响未知项，必须满足以下之一：
 
 - 已取得足以支持当前 Architecture Decision 的证据；
 - 已定义可行的备选路径和切换条件；
@@ -187,26 +173,20 @@ P0–P6 的阶段目标具有通用价值，但原始阶段切分不完全贴合
 
 上述记录继续使用现有 `assumptions`、`plan`、`gates`、`risks`、`evidence` 与 `human_validation` 分区，不新增可行性 Markdown 状态文件，也不要求扩展 Shared Kernel 或权威状态 Schema。
 
-### 7.5 Creation 中发现设计问题
+### 7.4 Creation 中发现设计问题
 
-Creation 中出现反例不是自动失败、固定进入 P6，也不是继续用局部补丁掩盖模型问题。`USABLE_SLICE`、`DELIVERY_HARDENING` 和 `TARGET_VALIDATION` 均可进入轻量 `MODEL_REVIEW` 子流程，复用既有 Correction、Evidence、Assumption 与 `return_stage` 机制：
+P4 `Creation` 中出现反例不是自动失败、提前进入 P6，也不是继续用局部补丁掩盖模型问题。Desktop Child Skill 复用现有 P4 Creation Correction 思想：
 
 1. 标记被反例推翻或显著削弱的 Assumption，并保存可复核 Evidence；
 2. 暂停依赖该 Assumption 的受影响工作，不冻结无关工作；
-3. 定位最早失效层级，评估受影响 Artifact、Gate、Plan、Baseline 与验证范围；
-4. 形成纠正提案；涉及 Product Boundary、Architecture Decision、Host 支持范围或发布边界时请求 Maker 授权；
-5. 完成获授权的 Context Mutation，更新受影响计划和验证条件；
-6. 重放受影响验证，证据成立后通过 `return_stage` 恢复原工作流。
+3. 定位失效模型，评估受影响 Artifact、Gate、Plan、Baseline 与验证范围；
+4. 若纠正仍在当前工作包与 Maker 已批准边界内，则保持 `current_phase = P4`，完成局部模型纠正与执行重规划；
+5. 更新受影响计划和验证条件，重放受影响验证后恢复 P4 工作；
+6. 若问题改变 Product Boundary、Architecture Decision、Host 支持范围、发布边界或跨越当前工作包，则输出 Maker Review Requirement，不得自动修改边界或跳转 Phase。
 
-返回位置由问题性质决定：
+P5 `Validation` 产生的 Validation Result 按正常流程进入 P6 `Iteration`，再由 P6 在现有合法集合中选择 P2、P3、P4 或 P5。Creation Correction 与 P6 Iteration 保持不同语义：前者是在 P4 内修复有界模型问题，后者是在完整 Validation Result 形成后决定下一轮生命周期位置。
 
-- 仅为局部 Implementation Detail 时留在当前 Creation Phase；
-- 执行顺序、切片或验证计划失效时返回 `EXECUTION_PLAN`；
-- 系统边界、信任边界、交互模型或 Architecture Assumption 失效时返回 `DESKTOP_SYSTEM_MODEL`；
-- 用户问题、核心结果、桌面载体理由或明确排除范围失效时，先请求 Maker 决策，再返回 `PRODUCT_BOUNDARY`；
-- 仅缺少同一边界内的验证证据时留在 `TARGET_VALIDATION`。
-
-`MODEL_REVIEW` 是纠正子流程，不是新的必经主阶段。下游 Design 必须定义触发条件、暂停范围、恢复条件和 Evidence 要求，但原则上可由现有 Workflow evaluator、`model_invalidated`、`model_updated` 与 `return_stage` 承载，不构成本轮 Kernel 或 Schema 扩展理由。
+下游 Design 必须定义桌面场景下的 Correction 触发条件、暂停范围、恢复条件和 Evidence 要求，但不得把 `MODEL_REVIEW` 建成新的顶层 Phase，也不得仅为了副命名扩展 Kernel 或状态 Schema。
 
 ## 8. Maker Authority 边界
 
@@ -315,7 +295,7 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 | Layer | 预计影响 | 本提案后的动作 |
 | --- | --- | --- |
 | Architecture | 新增按产品形态划分的 `desktop-product`；明确 Project Incubator 不拥有产品组合决策 | Maker 批准后更新 Architecture Decisions 与 Document Architecture |
-| Design | 需要定义 P0–P6 经验到六个 Desktop Phase 的映射、Domain Model、Gate、Evidence、`FEASIBILITY_PROBE`、`MODEL_REVIEW` 与 Host Profile 接口 | 新增或更新活动 Design 文档 |
+| Design | 需要定义 P0–P6 的 Desktop Phase Profile、Domain Model、Gate、Evidence、`FEASIBILITY_PROBE`、P4 Creation Correction 与 Host Profile 接口 | 新增或更新活动 Design 文档 |
 | Contract | 需要定义桌面 Workflow evaluator 输入输出、阶段转换和 Host Profile 收紧规则 | 下游 Contract 更新 |
 | Runtime Specification | 原则上复用 Registry evaluator、授权、Receipt 与状态；需说明无 Kernel 新语义 | 下游 Runtime Spec 记录加载与失败语义 |
 | Implementation Plan | 需要冻结 Registry、Profile、Skill、Workflow、测试与候选打包范围 | 在 Architecture、Design、Contract、Runtime 均批准后编写 |
@@ -371,9 +351,9 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 - `desktop-product` 的规则不依赖具体业务领域；
 - 桌面产品与 Windows Host Profile 的职责没有混淆；
 - 浏览器扩展规则未进入本轮 Child Skill、Workflow 或 Schema；
-- P0–P6 的通用治理经验具有明确复用映射，Desktop Phase 的合并、拆分和返回路径均由桌面风险与证据边界解释；
+- P0–P6 中语义适用的 Phase ID 与 Phase Name 被原样复用，桌面副命名只存在于 Child Skill 的 description、活动、检查点和 Gate 中；
 - 可行性调研作为阶段内探针服务于决策，进入 Creation 的证据门槛、备选路径和 Maker 风险接受边界清晰；
-- Creation 或 Validation 中的模型反例可以暂停受影响工作、返回最早失效阶段、完成纠正并重放验证；
+- P4 Creation Correction 与 P6 Iteration 的边界清晰；内部纠正不改写 Phase，Validation 后的返回遵守 P6 既有 Transition 集合；
 - Maker Authority、Agent 创造性职责与 Runtime 机械校验边界清晰；
 - 自动化、桌面自动化和真实环境 Evidence 的结论上限清晰；
 - 安装、升级、卸载、数据迁移、权限和回滚风险具有对应 Gate；
@@ -386,8 +366,8 @@ Maker 需要确认：
 
 1. `desktop-product` 是按产品形态复用的第二个 Project Type；
 2. `desktop-product-incubator` 只负责桌面产品孵化，不负责产品组合关系；
-3. 本轮采用“选择性复用”阶段模型：保留 P0–P6 的通用职责与治理经验，按桌面产品风险采用六个 Desktop Phase，并由 `TARGET_VALIDATION` 返回最早受影响阶段；
-4. 可行性调研采用阶段内 `FEASIBILITY_PROBE`，主要归属 `DESKTOP_SYSTEM_MODEL`；Creation 中的模型反例进入轻量 `MODEL_REVIEW`，返回最早失效阶段后再恢复；
+3. `desktop-product` 原样复用适用的 P0–P6 Phase ID 与 Phase Name；Desktop System Model、Usable Slice、Delivery Hardening 和 Target Environment Validation 仅作为 Child Skill 中的 description、活动或检查点；
+4. 可行性调研采用阶段内 `FEASIBILITY_PROBE`，主要归属 P2 `Solution Design`；Creation 中的模型反例采用 P4 内部 Creation Correction，P5 后的迭代继续使用 P6；
 5. Windows 作为首个 Host Profile 方向，但不构成所有未来桌面产品的唯一 Host；
 6. 本次原则上不扩展 Shared Kernel 或权威状态 Schema；
 7. 浏览器扩展保留为下一独立 Project Type 设计任务，本轮不实现；
