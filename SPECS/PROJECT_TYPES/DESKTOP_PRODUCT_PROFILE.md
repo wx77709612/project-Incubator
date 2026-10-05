@@ -13,6 +13,7 @@
 | Plugin Baseline | `0.1.0+codex.20261002144305` |
 | Implementation Authorization | NOT GRANTED |
 | Maker Approval | 2026-10-05 |
+| Approved Amendment | Workflow Entry 与 Host Requirement，2026-10-05 |
 
 本文档定义 `desktop-product` 的领域模型、P0–P6 Phase Profile、桌面交付检查点、Evidence 边界、安全边界以及 Host Profile 接口。它不定义 Contract、Runtime Payload、文件实现位置或具体产品功能。
 
@@ -41,6 +42,8 @@ Maker 已批准本文档的 Design 决策。该批准授权继续编写下游 Co
 5. Shared Kernel 继续负责授权、Mutation、Receipt、Hook、Evidence 与状态完整性，不进入桌面领域判断。
 6. 现有机器可读状态优先；不创建第二份 Current Project State，也不默认增加 Markdown 运行态文件。
 7. 首个实现服务于实际桌面产品，但不提前抽象成覆盖所有软件形态的大而全流程。
+8. 新项目与已有项目使用不同 Workflow Entry；已有项目的阶段由 Agent 基于 Evidence 判断，不由 Kernel 或 Maker 代替。
+9. Host 必须按 Project Type Requirement 显式处理；`desktop-product` 激活前必须由 Maker 确认 Host，不使用默认值。
 
 ## 4. Domain Model
 
@@ -128,6 +131,33 @@ Host Profile 具体化桌面产品运行环境，至少能够表达：
 
 Child Skill 不得把“不适用”误写成“已验证”，也不得因为某项能力常见就默认扩大 Product Boundary。
 
+### 4.8 `WorkflowEntry`
+
+Managed Project 激活入口分为：
+
+- `NEW_PROJECT`：使用 Child Workflow 声明的标准初始阶段；Desktop Product 为 P0；
+- `ADOPT_EXISTING`：Maker 说明项目来源和已知背景，Agent 检查现有设计、计划、Artifact、实现与 Evidence 后判断当前阶段。
+
+新激活状态的 `workflow.entry` 至少保存：
+
+- `mode`；
+- `initial_stage`；
+- `assessment_summary`；
+- `evidence_refs`；
+- `assessed_at`。
+
+`ADOPT_EXISTING` 必须具有 Evidence 引用，只能进入 Child Workflow 声明的正常阶段，不能直接进入 `MODEL_REVIEW` 或其他临时子流程。Maker 确认项目来源、Project Type、Host 和完整激活请求；Agent 对阶段归属的语义判断负责；Kernel 只验证结构与合法范围。
+
+### 4.9 `HostProfileRequirement`
+
+每个 Project Type 必须通过 Registry 字段 `host_profile_requirement` 显式声明：
+
+- `REQUIRED`：没有 Maker 确认的匹配 Host 时不得激活；
+- `OPTIONAL`：允许无 Host 激活；
+- `FORBIDDEN`：不得绑定 Host。
+
+`desktop-product` 为 `REQUIRED`。`windows-desktop` 是当前可提议 Profile，不是默认值。若 Maker 的目标环境没有匹配 Profile，Router 必须报告不支持并停止激活。
+
 ## 5. 组件职责
 
 | 组件 | 负责 | 不负责 |
@@ -161,7 +191,7 @@ Maker 边界：Intent、核心结果和载体方向必须由 Maker 确认。
 最小出口：
 
 - `project_type_id = desktop-product` 已受控确认；
-- 首个运行 Host 已由 Maker 确认，并绑定相应 `host_profile_id`；Activation 可以暂时为 `null`，但 P1 不得在 Host 未定时完成；
+- 首个运行 Host 已在激活前由 Maker 明确确认，并绑定非空 `host_profile_id`；Router 与 Kernel 不提供默认 Host；
 - 支持与排除边界可恢复；
 - 外部依赖不被错误登记为 Host；
 - 高风险能力仍标记为待决政策而不是默认授权。
@@ -342,11 +372,12 @@ Host Profile 可以提高最低 Evidence 要求，但不能把低等级 Evidence
 
 ## 12. 现有权威状态映射
 
-本设计不新增机器权威状态分区：
+本设计新增一个通用、内嵌于 `workflow` 的 Entry 记录，不新增权威文件或第二份 Current Project State：
 
 | Desktop 设计信息 | 现有状态落点 |
 | --- | --- |
 | 用户目标、支持与排除范围 | `boundary` |
+| 新建/接管模式、初始阶段与评估证据 | `workflow.entry` |
 | P0–P6 Current Phase | `workflow` |
 | 可观察能力与支持边界 | `capabilities` |
 | Product / Architecture Decision | `decisions` |
@@ -366,7 +397,8 @@ Host Profile 可以提高最低 Evidence 要求，但不能把低等级 Evidence
 
 - Intent、Product Boundary、核心成功标准与明确排除范围；
 - Project Type 激活或迁移；
-- 首个或新增 Host 支持；
+- Project Type、Entry Mode 与首个 Host 的激活确认；
+- 新增 Host 支持；
 - Architecture Decision；
 - 自动下载、自动安装、自动更新、管理员权限、后台服务和外部代码执行政策；
 - 第三方账号、敏感凭据与隐私数据政策；
@@ -401,6 +433,7 @@ Agent 可以在获批边界内决定 Implementation Detail、探针设计、测�
 - 新增多个 `project_type_id`、`child_skill_id` 或 `host_profile_id`；
 - 修改 Shared Kernel Authorization、Mutation、Receipt、Hook 或 Evidence 语义；
 - 修改现有 `mod-incubator`、`sims-4` 或其状态；
+- 提供激活后的 Host 迁移；
 - 授权实现。
 
 ## 16. 下游 Contract 与 Runtime 约束
@@ -408,6 +441,10 @@ Agent 可以在获批边界内决定 Implementation Detail、探针设计、测�
 下游规格必须保持：
 
 - Router 只提议，Maker 确认后才激活；
+- Router 不提供默认 Host；Registry 对每个 Project Type 显式声明 Host Requirement；
+- `desktop-product` 的 Host Requirement 为 `REQUIRED`，Host 为空时激活失败关闭；
+- 新激活必须提供 `workflow.entry`；旧状态允许缺省；
+- `NEW_PROJECT` 使用标准初始阶段；`ADOPT_EXISTING` 使用 Agent 基于 Evidence 评估且由 Child Workflow 允许的正常阶段；
 - Registry 将 `desktop-product` 路由到独立 Child Skill 与 Workflow evaluator；
 - Workflow evaluator 使用 P0–P6 正式标识与既有合法 Transition；
 - Desktop 副命名不进入 `workflow.stage`；
@@ -427,7 +464,7 @@ Agent 可以在获批边界内决定 Implementation Detail、探针设计、测�
 4. Windows Host、桌面 Delivery Surface、External Dependency 与领域约束没有混淆；
 5. 自动化、桌面自动化和目标 Host Evidence 的结论上限清晰；
 6. 下载、解包、安装、更新、权限、凭据和执行边界具有 Maker Authority 与失败语义；
-7. 现有机器权威状态足以承载设计，或 Design Gap 已显式登记；
+7. `workflow.entry` 能够恢复新建/接管模式、初始阶段和 Evidence；旧激活状态保持兼容；
 8. Shared Kernel 不出现桌面领域分支；
 9. `mod-incubator` 与 `sims-4` 不修改；
 10. 浏览器扩展保持在下一独立设计任务。
@@ -444,3 +481,9 @@ Maker 于 2026-10-05 确认：
 6. 当前状态 Schema 原则上足够，不为桌面副命名增加字段；
 7. 下载、安装、更新、权限和外部内容的安全边界；
 8. 批准后才进入 Contract 与 Runtime Specification，不授权实现。
+
+Maker 于 2026-10-05 补充确认：
+
+9. 新项目从标准初始阶段开始；已有项目由 Agent 基于 Evidence 判断当前阶段，Maker 确认项目来源和完整激活请求；
+10. `desktop-product` 激活前必须显式确认非空 Host，`windows-desktop` 不作为默认值；
+11. 批准通用 `workflow.entry`、Workflow Entry 校验与 Registry Host Requirement；首版不增加激活后 Host 迁移。

@@ -20,7 +20,7 @@
 
 | Layer | Document | Status | 说明 |
 | --- | --- | --- | --- |
-| Architecture | `ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED | 新增 `desktop-product` 与 `desktop-product-incubator` 的架构方向已由 Maker 于 2026-10-04 批准；仅授权 Architecture Decision 与 Design 更新，不授权实现 |
+| Architecture | `ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED | 新增 `desktop-product` 与 `desktop-product-incubator`；Workflow Entry 与显式 Host Requirement 修订于 2026-10-05 获批；不授权实现 |
 
 该提案用于 Project Incubator Plugin 的后续版本化迭代，不改变下方 V1.1 RC 文档的当前状态。提案已获 Maker 批准，可作为下游 Architecture 与 Design 的依据；Contract、Runtime、Implementation 与 Acceptance 仍须按 Change Control 顺序推进。
 
@@ -32,7 +32,7 @@
 | Architecture | `ARCHITECTURE/DOCUMENT_ARCHITECTURE.md` | ACTIVE | 定义 V1.1 文档职责、层级、版本和加载规则 |
 | Architecture | `ARCHITECTURE/ARCHITECTURE_DECISIONS.md` | ACTIVE | 保留 V1.0 Decision 001–006、V1.1 Decision 007–012，并登记 Plugin 后续迭代 Decision 013 |
 | Architecture | `ARCHITECTURE/CONTEXT_MUTATION_ORCHESTRATION_CHANGE_PROPOSAL.md` | APPROVED | Round 2 授权误判与多 Context 不闭合的 RC 修复提案；Maker 于 2026-09-24 批准 |
-| Project Type Design | `PROJECT_TYPES/DESKTOP_PRODUCT_PROFILE.md` | APPROVED | 定义 `desktop-product` 的 P0–P6 Phase Profile、可行性、Creation Checkpoint、Host 接口、Evidence 与安全边界；Maker 于 2026-10-05 批准 |
+| Project Type Design | `PROJECT_TYPES/DESKTOP_PRODUCT_PROFILE.md` | APPROVED | 定义 P0–P6 Phase Profile、Workflow Entry、显式 Host Requirement、Creation Checkpoint、Evidence 与安全边界；Maker 于 2026-10-05 批准 |
 | Design | `DESIGN/PROJECT_INCUBATOR_DESIGN.md` | APPROVED | V1.0 非冲突设计与 V1.1 Evidence-driven Evolution 总体关系 |
 | Design | `DESIGN/EVIDENCE_MODEL_DESIGN.md` | APPROVED | V1.1 Core Evidence、Claim、Assumption、Baseline 与 Drift 模型 |
 | Design | `DESIGN/WORKFLOW_DESIGN.md` | APPROVED | P4 Creation Correction 内部活动模型 |

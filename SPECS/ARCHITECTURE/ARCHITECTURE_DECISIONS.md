@@ -2434,7 +2434,18 @@ Desktop System Model、Usable Slice、Delivery Hardening、Target Environment Va
 
 Windows 通过独立的 `windows-desktop` Host Profile 具体化安装、权限、签名、进程、文件系统、升级与真实环境验证要求。`desktop-product` 不把 Windows 规则写入通用 Project Type，也不据此排除未来 macOS 或 Linux Host Profile。
 
-Shared Kernel 的 Maker Authorization、MCP-only Mutation、Pending Request、Receipt、Hook、Evidence、状态摘要与机器可读权威状态原则上原样复用。本次扩展通过 Registry、Project Type Profile、独立 Workflow evaluator、Child Skill 与 Host Profile 完成；不得仅为桌面副命名扩展 Kernel 或状态 Schema。
+Host 不设置默认值。每个 Project Type 必须在 Registry 中显式声明 `host_profile_requirement = REQUIRED | OPTIONAL | FORBIDDEN`。`desktop-product` 为 `REQUIRED`；Router 根据 Maker 输入提议具体 Host，Maker 明确确认后才能激活。`windows-desktop` 只是当前首个候选，不得在 Host 未确认或不匹配时自动填入。
+
+激活采用通用 Workflow Entry：
+
+- `NEW_PROJECT` 使用 Child Workflow 声明的标准初始阶段；
+- `ADOPT_EXISTING` 由 Maker 提供项目来源和背景，Agent 基于可复核 Evidence 判断当前阶段；
+- Kernel 验证 Entry 完整性、阶段集合、Workflow Shape、Host Requirement 与授权，不判断 Evidence 的业务语义；
+- 临时 Correction / Review 子流程不能成为已有项目接管入口。
+
+新激活状态必须保存通用 `workflow.entry`，至少包含 Entry Mode、Initial Stage、Assessment Summary、Evidence Refs 与 Assessed At。旧激活状态允许没有该字段，以保持兼容。
+
+Shared Kernel 的 Maker Authorization、MCP-only Mutation、Pending Request、Receipt、Hook、Evidence 与状态摘要继续复用。为保证激活完整性，本 Decision 只批准通用 Workflow Entry 校验、`workflow.entry` 和 Registry Host Requirement；不得仅为桌面副命名增加其他 Kernel 或 Schema 语义。
 
 ## Reason
 
@@ -2448,11 +2459,15 @@ P0–P6 对桌面产品仍具有完整语义。保留既有 Phase 名称可以�
 - Child Skill 提供桌面产品的指导、检查点、证据要求和风险提示，不决定其他产品形态如何组合；
 - Host Profile 只能具体化特定操作系统环境，不得改变 Project Type 或 Core Workflow；
 - Runtime 只执行结构、授权、Revision、Mutation、Receipt 与 Workflow 合法性校验，不替 Maker 作出产品或架构决策。
+- Agent 对 `ADOPT_EXISTING` 的阶段归属负责；Maker 确认项目来源、路由和完整激活请求，但不被要求替 Agent 完成阶段分析。
 
 ## Compatibility and Migration
 
 - 现有 `mod`、`mod-incubator` 与 `sims-4` Host Profile 不修改、不迁移、不重新解释；
 - 已激活 Managed Project 不自动迁移 Project Type；
+- 旧激活状态允许缺少 `workflow.entry`；所有新激活状态必须提供；
+- 现有 `mod` 的 Host Requirement 登记为 `OPTIONAL`，不改变其既有路由行为；
+- 首版不提供激活后的 Host 迁移；
 - 浏览器扩展设计不得反向把浏览器规则写入 `desktop-product`；
 - 不新增权威 Markdown 状态文件；
 - 下游 Design 若发现必须增加 Kernel 或 Schema 语义，必须登记 `DESIGN_GAP` 并返回 Architecture 层审批。
@@ -2464,6 +2479,7 @@ P0–P6 对桌面产品仍具有完整语义。保留既有 Phase 名称可以�
 - `desktop-product-incubator` Child Skill；
 - Windows Desktop Host Profile；
 - Registry 与 Router 候选类型；
+- Workflow Entry、Registry Host Requirement 与 Kernel 激活校验；
 - Contract、Runtime Specification、Implementation Plan 与 Acceptance Test Plan；
 - Plugin、Legacy 与现有 `mod` 回归矩阵。
 
@@ -2473,7 +2489,7 @@ P0–P6 对桌面产品仍具有完整语义。保留既有 Phase 名称可以�
 
 ## Status
 
-ACTIVE — Plugin 后续迭代，Maker 于 2026-10-04 批准
+ACTIVE — Plugin 后续迭代，Maker 于 2026-10-04 批准；Workflow Entry 与 Host Requirement 修订于 2026-10-05 批准
 
 ---
 

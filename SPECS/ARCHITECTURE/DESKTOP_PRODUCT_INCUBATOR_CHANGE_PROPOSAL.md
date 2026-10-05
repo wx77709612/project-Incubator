@@ -56,6 +56,8 @@ Project Incubator 是孵化工具，不是产品组合、项目群或系统集�
 
 Maker Authorization、MCP-only Mutation、Pending Request、Receipt、Hook、Evidence、状态摘要和三份机器可读权威状态继续由 Shared Kernel 提供。桌面产品规则不得进入 Kernel。
 
+新项目创建与已有项目接管需要通用的 Workflow Entry 校验；Project Type 是否必须绑定 Host 也需要由 Registry 显式声明。这两项是跨 Project Type 的激活完整性规则，不是桌面领域规则。Kernel 可以执行其结构与授权校验，但不得替 Agent 判断已有项目处于哪个阶段，也不得替 Maker 选择 Host。
+
 ## 4. `desktop-product` 适用边界
 
 ### 4.1 适用条件
@@ -125,7 +127,7 @@ Project Incubator 的阶段名称是一套由 Maker 与 Agent 共同使用的生
 
 ### 7.1 Desktop Product 对 P0–P6 的复用结论
 
-本提案判断 P0–P6 均适用于 `desktop-product`。Plugin Activation 可以预填项目身份和状态输入，但不替代 P0 的意图确认与 P1 的执行上下文定义；桌面交付风险也不足以要求拆分或重命名 P4。
+本提案判断 P0–P6 均适用于 `desktop-product`。新项目使用 P0 作为标准入口；接管已有项目时，由 Maker 说明项目来源和背景，Agent 基于可复核 Evidence 判断当前阶段，Kernel 只验证该阶段属于 Child Workflow、Workflow Shape 合法且入口记录完整。桌面交付风险不足以要求拆分或重命名 P4。
 
 | Core Phase | Desktop Child Skill 中的具体解释 | 最小可观察出口 |
 | --- | --- | --- |
@@ -219,7 +221,18 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 - Capability、Evidence、Assumption、Gate、Risk、Baseline 与人工验证预算；
 - `inspect_project` 固定状态摘要。
 
-### 9.2 本次不扩展
+### 9.2 有界通用扩展
+
+本次新增两项跨 Project Type 的通用激活语义：
+
+- `workflow.entry`：记录 `NEW_PROJECT` 或 `ADOPT_EXISTING`、初始阶段、Assessment Summary、Evidence 引用与评估时间。旧激活状态允许缺省；新激活状态必须提供。`ADOPT_EXISTING` 的语义阶段由 Agent 基于 Evidence 判断，Kernel 不替代该判断；
+- `host_profile_requirement`：每个 Project Type 在 Registry 中显式声明 `REQUIRED`、`OPTIONAL` 或 `FORBIDDEN`。`desktop-product` 为 `REQUIRED`；现有 `mod` 登记为 `OPTIONAL` 以保持现行行为。
+
+Child Workflow 必须暴露新项目初始阶段与允许接管进入的正常阶段。临时子流程不得作为 `ADOPT_EXISTING` 入口。Kernel 在准备激活和最终初始化时重复校验 Entry、Host Requirement、路由与 Workflow Shape。
+
+`windows-desktop` 是当前首个可提议 Host Profile，不是默认值。Router 必须根据 Maker 输入提出 Project Type 与 Host，Maker 明确确认后才能激活；没有匹配 Profile 时必须报告不支持，不得回退到 Windows。首版不新增激活后的 Host 迁移能力。
+
+### 9.3 仍不扩展
 
 本次不新增：
 
@@ -232,18 +245,20 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 - 浏览器扩展专用字段；
 - 业务领域专用字段。
 
-现有 `boundary`、`workflow`、`capabilities`、`decisions`、`assumptions`、`plan`、`gates`、`risks`、`baselines` 与 `human_validation` 分区足以承载首个桌面产品孵化流程。若下游设计发现必须新增机器强制语义，应登记 `DESIGN_GAP` 并返回本提案修订，不得在 Schema 或 Runtime 中隐式增加。
+除 `workflow.entry` 外，现有 `boundary`、`workflow`、`capabilities`、`decisions`、`assumptions`、`plan`、`gates`、`risks`、`baselines` 与 `human_validation` 分区足以承载首个桌面产品孵化流程。若下游设计发现其他必须新增的机器强制语义，应登记 `DESIGN_GAP` 并返回本提案修订，不得在 Schema 或 Runtime 中隐式增加。
 
-### 9.3 预计扩展点
+### 9.4 预计扩展点
 
 在本提案获批且下游计划获批后，产品实现预计通过以下扩展点完成：
 
 - Registry 中新增 Child Skill 与 Project Type；
+- Registry Project Type 条目新增显式 `host_profile_requirement`；
 - 新增 `desktop-product` Project Type Profile；
-- 新增独立桌面 Workflow evaluator；
+- 新增独立桌面 Workflow evaluator，并为所有 Child Workflow 增加 Entry 校验 Contract；
 - 新增 `desktop-product-incubator` Skill；
 - 经批准后新增首个 `windows-desktop` Host Profile；
-- 增加对应 Workflow、Registry、Router、Kernel 集成和端到端验收。
+- 为新激活状态新增通用 `workflow.entry`，旧状态保持兼容；
+- 增加对应 Workflow、Registry、Router、Kernel 激活校验和端到端验收。
 
 具体文件范围由 Implementation Plan 冻结，本提案不直接授权修改这些文件。
 
@@ -297,8 +312,8 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 | --- | --- | --- |
 | Architecture | 新增按产品形态划分的 `desktop-product`；明确 Project Incubator 不拥有产品组合决策 | Maker 批准后更新 Architecture Decisions 与 Document Architecture |
 | Design | 需要定义 P0–P6 的 Desktop Phase Profile、Domain Model、Gate、Evidence、`FEASIBILITY_PROBE`、P4 Creation Correction 与 Host Profile 接口 | 新增或更新活动 Design 文档 |
-| Contract | 需要定义桌面 Workflow evaluator 输入输出、阶段转换和 Host Profile 收紧规则 | 下游 Contract 更新 |
-| Runtime Specification | 原则上复用 Registry evaluator、授权、Receipt 与状态；需说明无 Kernel 新语义 | 下游 Runtime Spec 记录加载与失败语义 |
+| Contract | 需要定义 Workflow Entry、桌面 evaluator 输入输出、阶段转换、Host Requirement 和 Host Profile 收紧规则 | 下游 Contract 更新 |
+| Runtime Specification | 复用授权、Receipt 与状态事务；新增通用 Entry 与 Host Requirement 的准备/提交双重校验 | 下游 Runtime Spec 记录执行与失败语义 |
 | Implementation Plan | 需要冻结 Registry、Profile、Skill、Workflow、测试与候选打包范围 | 在 Architecture、Design、Contract、Runtime 均批准后编写 |
 | Implementation Code | 当前禁止修改 | 仅在 Implementation 与 Acceptance Plan 获批后开始 |
 | Existing `mod` Type | 不修改、不迁移、不重新解释 | 必须保持 `mod-incubator` 与 `sims-4` Profile 行为和测试通过 |
@@ -359,6 +374,8 @@ Agent 可以在获批边界内决定 Implementation Detail、测试组织、内�
 - 自动化、桌面自动化和真实环境 Evidence 的结论上限清晰；
 - 安装、升级、卸载、数据迁移、权限和回滚风险具有对应 Gate；
 - 新类型可通过 Registry 与独立 Workflow 扩展，Shared Kernel 不出现桌面领域分支；
+- 新项目与已有项目使用不同 Entry Mode；已有项目阶段由 Agent 基于 Evidence 判断，Kernel 只校验结构与合法范围；
+- 每个 Project Type 显式声明 Host Requirement，Router 与 Kernel 不使用默认 Host；
 - 现有 `mod`、`sims-4` 与完整回归矩阵保持不变。
 
 ## 17. Maker 审批记录
@@ -370,6 +387,12 @@ Maker 于 2026-10-04 确认：
 3. `desktop-product` 原样复用适用的 P0–P6 Phase ID 与 Phase Name；Desktop System Model、Usable Slice、Delivery Hardening 和 Target Environment Validation 仅作为 Child Skill 中的 description、活动或检查点；
 4. 可行性调研采用阶段内 `FEASIBILITY_PROBE`，主要归属 P2 `Solution Design`；Creation 中的模型反例采用 P4 内部 Creation Correction，P5 后的迭代继续使用 P6；
 5. Windows 作为首个 Host Profile 方向，但不构成所有未来桌面产品的唯一 Host；
-6. 本次原则上不扩展 Shared Kernel 或权威状态 Schema；
+6. Shared Kernel 与权威状态 Schema 原则上保持不变；2026-10-05 补充批准的通用 Workflow Entry 与 Host Requirement 除外；
 7. 浏览器扩展保留为下一独立 Project Type 设计任务，本轮不实现；
 8. 批准后只授权继续更新 Architecture Decisions 与 Design Layer，不授权产品实现。
+
+Maker 于 2026-10-05 补充确认：
+
+9. 新项目使用 Child Workflow 的标准初始阶段；接管已有项目时，Maker 提供项目来源和背景，Agent 基于 Evidence 判断当前阶段，Kernel 校验结构、阶段集合与 Evidence 引用；
+10. Host 不使用默认值。每个 Project Type 显式声明 Host Requirement；`desktop-product` 激活前必须由 Maker 确认非空 Host，`windows-desktop` 只是当前候选，不是默认值；
+11. 为支持上述语义，批准最小通用扩展：`workflow.entry`、Workflow Entry evaluator Contract 与 Registry `host_profile_requirement`；不新增激活后 Host 迁移。
