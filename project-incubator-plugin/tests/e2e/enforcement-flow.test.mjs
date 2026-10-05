@@ -10,9 +10,16 @@ import { createKernelService } from "../../src/server.mjs";
 
 const now = "2026-09-29T12:00:00.000Z";
 const initialState = () => ({
-  schema_version: "1.0", project_id: "e2e-project", revision: 0,
+  schema_version: "1.1", project_id: "e2e-project", revision: 0,
   boundary: { objective: "端到端 Mod", supported: ["单一产品点"], excluded: [] },
-  workflow: { stage: "M0_BOUNDARY", status: "ACTIVE", completed: [], allowed_next: ["M1_RISK_MODEL"] },
+  workflow: {
+    stage: "M0_BOUNDARY", status: "ACTIVE", completed: [], allowed_next: ["M1_RISK_MODEL"],
+    entry: {
+      mode: "NEW_PROJECT", initial_stage: "M0_BOUNDARY",
+      assessment_summary: "Maker 确认创建新的 Mod Managed Project。",
+      evidence_refs: [], assessed_at: now,
+    },
+  },
   capabilities: [], decisions: { active: [], archive_ref: null }, assumptions: [],
   plan: { current_action: "确认边界", next_action: "风险建模", completion_conditions: ["Maker 确认"] },
   gates: [], risks: [], pending_requests: [], baselines: [], human_validation: { limit: "UNSET", consumed: 0 },

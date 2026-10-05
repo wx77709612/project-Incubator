@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   parseActivation,
+  parsePostActivationInitialState,
   parseProjectState,
   parseReceipt,
 } from "../../src/kernel/schemas.mjs";
@@ -79,6 +80,27 @@ function validReceipt() {
   };
 }
 
+function validState11(overrides = {}) {
+  const state = validState();
+  return {
+    ...state,
+    schema_version: "1.1",
+    workflow: {
+      ...state.workflow,
+      stage: "P0",
+      allowed_next: ["P1"],
+      entry: {
+        mode: "NEW_PROJECT",
+        initial_stage: "P0",
+        assessment_summary: "Maker 确认创建新的 Desktop Product。",
+        evidence_refs: [],
+        assessed_at: now,
+      },
+    },
+    ...overrides,
+  };
+}
+
 test("parses the minimum complete authority documents", () => {
   assert.deepEqual(parseActivation(validActivation()), validActivation());
   assert.deepEqual(parseProjectState(validState()), validState());
@@ -122,4 +144,44 @@ test("bounds active collections and validates receipt hashes", () => {
   assert.throws(() =>
     parseReceipt({ ...validReceipt(), new_state_hash: "not-a-hash" }),
   );
+});
+
+test("parses Project State 1.1 with a strict workflow entry", () => {
+  const state = validState11();
+  assert.equal(parseProjectState(state).workflow.entry.mode, "NEW_PROJECT");
+
+  const withoutEntry = validState11();
+  delete withoutEntry.workflow.entry;
+  assert.throws(() => parseProjectState(withoutEntry));
+
+  const unknownField = validState11();
+  unknownField.workflow.entry.shadow_authority = true;
+  assert.throws(() => parseProjectState(unknownField));
+
+  const invalidTimestamp = validState11();
+  invalidTimestamp.workflow.entry.assessed_at = "yesterday";
+  assert.throws(() => parseProjectState(invalidTimestamp));
+});
+
+test("bounds Project State 1.1 workflow entry text and evidence references", () => {
+  const longSummary = validState11();
+  longSummary.workflow.entry.assessment_summary = "x".repeat(501);
+  assert.throws(() => parseProjectState(longSummary));
+
+  const tooManyRefs = validState11();
+  tooManyRefs.workflow.entry.evidence_refs = Array.from({ length: 101 }, (_, index) => `evidence:${index}`);
+  assert.throws(() => parseProjectState(tooManyRefs));
+});
+
+test("keeps legacy Project State 1.0 valid without workflow entry", () => {
+  const state = validState();
+  assert.deepEqual(parseProjectState(state), state);
+});
+
+test("requires Project State 1.1 for every new activation", () => {
+  assert.throws(
+    () => parsePostActivationInitialState(validState()),
+    /WORKFLOW_ENTRY_REQUIRED/,
+  );
+  assert.equal(parsePostActivationInitialState(validState11()).schema_version, "1.1");
 });

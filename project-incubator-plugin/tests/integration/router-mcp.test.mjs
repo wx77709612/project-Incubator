@@ -24,6 +24,19 @@ function initialState() {
   };
 }
 
+function activationState() {
+  const state = initialState();
+  state.schema_version = "1.1";
+  state.workflow.entry = {
+    mode: "NEW_PROJECT",
+    initial_stage: "M0_BOUNDARY",
+    assessment_summary: "Maker 确认创建新的 Mod Managed Project。",
+    evidence_refs: [],
+    assessed_at: approvalTime,
+  };
+  return state;
+}
+
 function productDecisions() {
   return [{
     decision_id: "product-boundary-1",
@@ -77,14 +90,14 @@ test("initialization is denied without a verified Maker prompt", async (t) => {
   const { projectRoot, service } = await fixture(t);
   const prepared = await service.callTool("prepare_activation", {
     project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
-    session_id: "session-1", summary: "激活 Mod 孵化器", state: initialState(),
+    session_id: "session-1", summary: "激活 Mod 孵化器", state: activationState(),
     product_decisions: productDecisions(),
   });
   const request = prepared.structuredContent;
   const result = await service.callTool("initialize_project", {
     project_root: projectRoot, request_id: request.request_id,
     scope_digest: request.scope_digest, session_id: "session-1", turn_id: "turn-2",
-    state: initialState(),
+    state: activationState(),
   });
   assert.equal(result.isError, true);
   assert.equal(result.structuredContent.error.code, "PROMPT_NOT_FOUND");
@@ -95,7 +108,7 @@ test("pending activation captures one scoped Maker approval and initializes atom
   const { projectRoot, runtimeDataRoot, service } = await fixture(t);
   const prepared = await service.callTool("prepare_activation", {
     project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
-    session_id: "session-1", summary: "激活 Mod 孵化器", state: initialState(),
+    session_id: "session-1", summary: "激活 Mod 孵化器", state: activationState(),
     product_decisions: productDecisions(),
   });
   const request = prepared.structuredContent;
@@ -108,7 +121,7 @@ test("pending activation captures one scoped Maker approval and initializes atom
   const initialized = await service.callTool("initialize_project", {
     project_root: projectRoot, request_id: request.request_id,
     scope_digest: request.scope_digest, session_id: "session-1", turn_id: "turn-2",
-    state: initialState(),
+    state: activationState(),
   }, { now: new Date(approvalTime) });
   assert.equal(initialized.isError, undefined);
   assert.equal(initialized.structuredContent.receipt.new_revision, 0);
@@ -135,7 +148,7 @@ test("pending activation captures one scoped Maker approval and initializes atom
 
 test("prepare_activation rejects an activation-draft narrative as authoritative initial state", async (t) => {
   const { projectRoot, service } = await fixture(t);
-  const stale = initialState();
+  const stale = activationState();
   stale.plan.current_action = "等待 Maker 对 Activation Request 作出明确授权。";
   stale.plan.completion_conditions = ["随后调用 initialize_project 完成激活"];
   stale.last_change = {
@@ -165,7 +178,7 @@ test("prepare_activation rejects a project that already has complete authority s
   });
   const result = await service.callTool("prepare_activation", {
     project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
-    session_id: "session-1", summary: "重复激活", state: initialState(),
+    session_id: "session-1", summary: "重复激活", state: activationState(),
     product_decisions: productDecisions(),
   });
   assert.equal(result.isError, true);
@@ -180,7 +193,7 @@ test("prepare_activation fails closed when only part of the authority state exis
   await writeFile(path.join(control, "state.json"), "{}\n", "utf8");
   const result = await service.callTool("prepare_activation", {
     project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
-    session_id: "session-1", summary: "损坏状态下激活", state: initialState(),
+    session_id: "session-1", summary: "损坏状态下激活", state: activationState(),
     product_decisions: productDecisions(),
   });
   assert.equal(result.isError, true);
@@ -192,7 +205,7 @@ test("route migration cannot be committed without Maker authorization", async (t
   const { projectRoot, runtimeDataRoot, service } = await fixture(t);
   const prepared = await service.callTool("prepare_activation", {
     project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
-    session_id: "session-1", summary: "激活 Mod 孵化器", state: initialState(),
+    session_id: "session-1", summary: "激活 Mod 孵化器", state: activationState(),
     product_decisions: productDecisions(),
   });
   const request = prepared.structuredContent;
@@ -202,7 +215,7 @@ test("route migration cannot be committed without Maker authorization", async (t
   }, { runtimeDataRoot, now: new Date(approvalTime) });
   await service.callTool("initialize_project", {
     project_root: projectRoot, request_id: request.request_id, scope_digest: request.scope_digest,
-    session_id: "session-1", turn_id: "turn-2", state: initialState(),
+    session_id: "session-1", turn_id: "turn-2", state: activationState(),
   }, { now: new Date(approvalTime) });
 
   const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });

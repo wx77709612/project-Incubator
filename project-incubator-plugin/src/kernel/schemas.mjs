@@ -62,13 +62,25 @@ const baselineSchema = z.object({
   environment: shortText, artifact_refs: z.array(shortText).max(100), established_at: timestamp,
 }).strict();
 
-const projectStateSchema = z.object({
-  schema_version: z.literal("1.0"), project_id: id, revision: z.number().int().nonnegative(),
+const workflowBaseShape = {
+  stage: id,
+  status: z.enum(["NOT_STARTED", "ACTIVE", "BLOCKED", "AWAITING_GATE", "COMPLETED"]),
+  completed: boundedTextList,
+  allowed_next: z.array(id).max(20),
+  return_stage: id.nullable().optional(),
+};
+
+const workflowEntrySchema = z.object({
+  mode: z.enum(["NEW_PROJECT", "ADOPT_EXISTING"]),
+  initial_stage: id,
+  assessment_summary: shortText,
+  evidence_refs: boundedTextList,
+  assessed_at: timestamp,
+}).strict();
+
+const projectStateBaseShape = {
+  project_id: id, revision: z.number().int().nonnegative(),
   boundary: z.object({ objective: text, supported: boundedTextList, excluded: boundedTextList }).strict(),
-  workflow: z.object({
-    stage: id, status: z.enum(["NOT_STARTED", "ACTIVE", "BLOCKED", "AWAITING_GATE", "COMPLETED"]),
-    completed: boundedTextList, allowed_next: z.array(id).max(20), return_stage: id.nullable().optional(),
-  }).strict(),
   capabilities: z.array(capabilitySchema).max(100),
   decisions: z.object({ active: z.array(decisionSchema).max(100), archive_ref: shortText.nullable() }).strict(),
   assumptions: z.array(assumptionSchema).max(100),
@@ -83,7 +95,24 @@ const projectStateSchema = z.object({
     operation: id, changed_at: timestamp, summary: shortText, receipt_id: id.optional(),
   }).strict(),
   archive_refs: z.array(shortText).max(100),
+};
+
+const projectStateV10Schema = z.object({
+  schema_version: z.literal("1.0"),
+  ...projectStateBaseShape,
+  workflow: z.object(workflowBaseShape).strict(),
 }).strict();
+
+const projectStateV11Schema = z.object({
+  schema_version: z.literal("1.1"),
+  ...projectStateBaseShape,
+  workflow: z.object({ ...workflowBaseShape, entry: workflowEntrySchema }).strict(),
+}).strict();
+
+const projectStateSchema = z.discriminatedUnion("schema_version", [
+  projectStateV10Schema,
+  projectStateV11Schema,
+]);
 
 const authorizationRefSchema = z.object({
   authorization_id: id, request_id: id, prompt_digest: digest,
@@ -106,6 +135,9 @@ export function parseActivationProductDecisions(value) {
 const preActivationNarrative = /(?:ACTIVATION_DRAFT|initialize_project|activation request|not yet activated|awaiting activation|pending activation|等待.{0,30}(?:激活|Activation)|尚未激活|激活前)/iu;
 
 export function parsePostActivationInitialState(value) {
+  if (value?.schema_version !== "1.1" || value?.workflow?.entry === undefined) {
+    throw new Error("WORKFLOW_ENTRY_REQUIRED");
+  }
   const state = parseProjectState(value);
   const narrative = [
     state.plan.current_action,
