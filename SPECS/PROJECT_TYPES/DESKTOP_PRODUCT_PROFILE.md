@@ -5,17 +5,18 @@
 | 字段 | 值 |
 | --- | --- |
 | Layer | Project Type Design |
-| Status | DRAFT |
+| Status | APPROVED |
 | Project Type ID | `desktop-product` |
 | Child Skill ID | `desktop-product-incubator` |
 | Architecture Source | `SPECS/ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` |
 | Architecture Decision | Decision 013 |
 | Plugin Baseline | `0.1.0+codex.20261002144305` |
 | Implementation Authorization | NOT GRANTED |
+| Maker Approval | 2026-10-05 |
 
 本文档定义 `desktop-product` 的领域模型、P0–P6 Phase Profile、桌面交付检查点、Evidence 边界、安全边界以及 Host Profile 接口。它不定义 Contract、Runtime Payload、文件实现位置或具体产品功能。
 
-本文档处于 `DRAFT`。在 Maker 批准前，它不是 Contract、Runtime Specification 或实现依据。
+Maker 已批准本文档的 Design 决策。该批准授权继续编写下游 Contract 与 Runtime Specification；在 Implementation Plan 与 Acceptance Test Plan 获得批准前，仍不授权实现。
 
 ## 2. 设计目标
 
@@ -431,9 +432,9 @@ Agent 可以在获批边界内决定 Implementation Detail、探针设计、测�
 9. `mod-incubator` 与 `sims-4` 不修改；
 10. 浏览器扩展保持在下一独立设计任务。
 
-## 18. 待 Maker 审阅
+## 18. Maker 审批记录
 
-Maker 需要确认：
+Maker 于 2026-10-05 确认：
 
 1. P0–P6 Desktop Phase Profile 的职责与出口；
 2. Desktop System Model、Usable Slice、Delivery Hardening 和 Target Environment Validation 的副命名层级；
