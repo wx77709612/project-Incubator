@@ -47,8 +47,10 @@
 | Contract | `CONTRACTS/GATE_CONTRACT.md` | APPROVED | Evidence Input、Evaluation Rule 与 Reason Code |
 | Contract | `CONTRACTS/SCRIPT_CONTRACT.md` | APPROVED | 确定性 Evidence、Failure Signature 与 Structural Drift |
 | Contract | `CONTRACTS/CONTEXT_MUTATION_ORCHESTRATION_CONTRACT.md` | APPROVED | 多 Context Mutation、Authorization Provenance 与闭合结果 Contract |
+| Contract | `CONTRACTS/DESKTOP_PRODUCT_INCUBATOR_CONTRACT.md` | DRAFT | 定义显式 Host Requirement、Workflow Entry、Desktop P0–P6 evaluator、Activation 与兼容契约；等待 Maker 审批 |
 | Runtime | `RUNTIME/SKILL_RUNTIME_SPEC.md` | APPROVED | V1.1 Evidence、Correction、Baseline、Drift 与 Extension 执行机制 |
 | Runtime | `RUNTIME/CONTEXT_MUTATION_ORCHESTRATION_RUNTIME_SPEC.md` | APPROVED | Prepare、Stage、Commit、Read-back、Rollback 与恢复语义 |
+| Runtime | `RUNTIME/DESKTOP_PRODUCT_INCUBATOR_RUNTIME_SPEC.md` | DRAFT | 定义 Entry/Host 双重校验、Desktop Workflow 执行、失败恢复与验证义务；等待 Maker 审批 |
 | Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | V1.1 Tasks 1–10 已完成，等待 Maker 发布审阅 |
 | Implementation | `IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / PACKAGING ACCEPTED | RC 已构建并行安装；195 项矩阵、唯一发现入口、Managed Project RC 绑定和安装后九项检查通过 |
 | Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP CLOSED FOR RC | RC 可发现且独立运行；下一步为人工行为验收 |
