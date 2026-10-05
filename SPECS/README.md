@@ -56,6 +56,8 @@
 | Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP CLOSED FOR RC | RC 可发现且独立运行；下一步为人工行为验收 |
 | Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / AUTOMATED ACCEPTANCE PASSED | Tasks 1–8 已完成；RC 1.1.0-rc.2 已构建并行安装，等待 Manual Round 2R |
 | Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | AUTOMATED PASSED / MANUAL ROUND 2R PENDING | Authorization、Rollback、Runtime Routing、Stage F 已通过；Manual Round 2R 尚未执行 |
+| Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | DRAFT | Desktop Product Incubator Tasks 1–6；等待 Maker 审批，不授权实现 |
+| Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | DRAFT | Registry、Entry、Workflow、Activation、Skill、回归、候选包与人工行为验收；等待 Maker 审批 |
 
 ## 人工验收入口
 
