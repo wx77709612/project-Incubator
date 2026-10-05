@@ -103,18 +103,18 @@ function validateWorkflowTransition(snapshot, proposedState, transition, evaluat
   if (transition.target_stage !== proposedState.workflow.stage) {
     throw new Error("WORKFLOW_TARGET_MISMATCH");
   }
-  if (typeof evaluator !== "function") throw new Error("WORKFLOW_EVALUATOR_NOT_FOUND");
+  if (typeof evaluator?.evaluateTransition !== "function") throw new Error("WORKFLOW_EVALUATOR_NOT_FOUND");
 
   const request = {
     ...transition,
     changes_boundary: !sameValues(snapshot.state.boundary, proposedState.boundary),
     maker_authorized: options.makerAuthorized === true,
   };
-  let evaluation = evaluator(snapshot.state, request);
+  let evaluation = evaluator.evaluateTransition(snapshot.state, request);
   let requiresMakerAuthorization = false;
   if (!evaluation.allowed && evaluation.code === "MAKER_AUTHORIZATION_REQUIRED" && options.allowAuthorizationPending) {
     requiresMakerAuthorization = true;
-    evaluation = evaluator(snapshot.state, { ...request, maker_authorized: true });
+    evaluation = evaluator.evaluateTransition(snapshot.state, { ...request, maker_authorized: true });
   }
   if (!evaluation.allowed) throw new Error(evaluation.code);
   assertWorkflowShape(proposedState.workflow, evaluation.workflow);

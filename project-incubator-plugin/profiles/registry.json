@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "kernel_constraints": {
     "maker_authorization": "REQUIRED",
     "state_mutation": "MCP_ONLY",
@@ -9,14 +9,26 @@
     {
       "id": "mod-incubator",
       "skill_path": "skills/mod-incubator/SKILL.md"
+    },
+    {
+      "id": "desktop-product-incubator",
+      "skill_path": "skills/desktop-product-incubator/SKILL.md"
     }
   ],
   "project_types": [
     {
       "id": "mod",
       "child_skill_id": "mod-incubator",
+      "host_profile_requirement": "OPTIONAL",
       "profile_path": "profiles/project-types/mod.json",
       "workflow_module": "src/domains/mod/workflow.mjs"
+    },
+    {
+      "id": "desktop-product",
+      "child_skill_id": "desktop-product-incubator",
+      "host_profile_requirement": "REQUIRED",
+      "profile_path": "profiles/project-types/desktop-product.json",
+      "workflow_module": "src/domains/desktop/workflow.mjs"
     }
   ],
   "host_profiles": [
@@ -24,6 +36,16 @@
       "id": "sims-4",
       "project_type_id": "mod",
       "profile_path": "profiles/hosts/sims-4.json",
+      "kernel_constraints": {
+        "maker_authorization": "REQUIRED",
+        "state_mutation": "MCP_ONLY",
+        "receipt": "REQUIRED"
+      }
+    },
+    {
+      "id": "windows-desktop",
+      "project_type_id": "desktop-product",
+      "profile_path": "profiles/hosts/windows-desktop.json",
       "kernel_constraints": {
         "maker_authorization": "REQUIRED",
         "state_mutation": "MCP_ONLY",

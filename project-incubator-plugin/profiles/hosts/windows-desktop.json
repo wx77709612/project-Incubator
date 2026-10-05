@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "host_profile_id": "windows-desktop",
+  "project_type_id": "desktop-product",
+  "skill_id": "windows-desktop-host-profile",
+  "required_context": [
+    "windows_version",
+    "architecture",
+    "install_scope",
+    "privilege_mode",
+    "distribution_format"
+  ],
+  "always_verify": [
+    "filesystem_and_process_effects",
+    "permission_boundaries",
+    "installation_and_upgrade",
+    "uninstall_and_recovery"
+  ],
+  "kernel_constraints": {
+    "maker_authorization": "REQUIRED",
+    "state_mutation": "MCP_ONLY",
+    "receipt": "REQUIRED"
+  }
+}

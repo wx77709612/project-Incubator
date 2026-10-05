@@ -10,9 +10,10 @@ const constraints = z.object({
   state_mutation: z.string().optional(),
   receipt: z.string().optional(),
 }).strict();
+const hostProfileRequirement = z.enum(["REQUIRED", "OPTIONAL", "FORBIDDEN"]);
 
 const registrySchema = z.object({
-  schema_version: z.literal("1.0"),
+  schema_version: z.literal("1.1"),
   kernel_constraints: z.object({
     maker_authorization: z.literal("REQUIRED"),
     state_mutation: z.literal("MCP_ONLY"),
@@ -21,6 +22,7 @@ const registrySchema = z.object({
   child_skills: z.array(z.object({ id, skill_path: relativePath }).strict()).max(100),
   project_types: z.array(z.object({
     id, child_skill_id: id, profile_path: relativePath.optional(), workflow_module: relativePath,
+    host_profile_requirement: hostProfileRequirement,
   }).strict()).max(100),
   host_profiles: z.array(z.object({
     id, project_type_id: id, profile_path: relativePath,
@@ -74,10 +76,13 @@ export async function loadWorkflowEvaluators(pluginRoot, registry) {
       throw new Error("INVALID_WORKFLOW_MODULE_PATH");
     }
     const module = await import(pathToFileURL(modulePath).href);
-    if (typeof module.evaluateTransition !== "function") {
+    if (typeof module.evaluateEntry !== "function" || typeof module.evaluateTransition !== "function") {
       throw new Error("WORKFLOW_EVALUATOR_INVALID");
     }
-    evaluators.set(projectType.id, module.evaluateTransition);
+    evaluators.set(projectType.id, Object.freeze({
+      evaluateEntry: module.evaluateEntry,
+      evaluateTransition: module.evaluateTransition,
+    }));
   }
   return evaluators;
 }
@@ -85,6 +90,12 @@ export async function loadWorkflowEvaluators(pluginRoot, registry) {
 export function resolveRoute(registry, projectTypeId, hostProfileId = null) {
   const projectType = registry.project_types.find((item) => item.id === projectTypeId);
   if (!projectType) throw new Error("PROJECT_TYPE_NOT_FOUND");
+  if (projectType.host_profile_requirement === "REQUIRED" && !hostProfileId) {
+    throw new Error("HOST_PROFILE_REQUIRED");
+  }
+  if (projectType.host_profile_requirement === "FORBIDDEN" && hostProfileId) {
+    throw new Error("HOST_PROFILE_FORBIDDEN");
+  }
   let hostProfile = null;
   if (hostProfileId) {
     hostProfile = registry.host_profiles.find((item) => item.id === hostProfileId);

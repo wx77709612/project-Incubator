@@ -10,7 +10,7 @@ import {
 
 function registry() {
   return {
-    schema_version: "1.0",
+    schema_version: "1.1",
     kernel_constraints: {
       maker_authorization: "REQUIRED",
       state_mutation: "MCP_ONLY",
@@ -18,7 +18,8 @@ function registry() {
     },
     child_skills: [{ id: "mod-incubator", skill_path: "skills/mod-incubator/SKILL.md" }],
     project_types: [{
-      id: "mod", child_skill_id: "mod-incubator", workflow_module: "src/domains/mod/workflow.mjs",
+      id: "mod", child_skill_id: "mod-incubator", host_profile_requirement: "OPTIONAL",
+      workflow_module: "src/domains/mod/workflow.mjs",
     }],
     host_profiles: [{
       id: "sims-4", project_type_id: "mod", profile_path: "profiles/sims-4.json",
@@ -34,19 +35,58 @@ test("registry rejects unknown child skills and duplicate identifiers", () => {
 
   const duplicate = registry();
   duplicate.project_types.push({
-    id: "mod", child_skill_id: "mod-incubator", workflow_module: "src/domains/mod/workflow.mjs",
+    id: "mod", child_skill_id: "mod-incubator", host_profile_requirement: "OPTIONAL",
+    workflow_module: "src/domains/mod/workflow.mjs",
   });
   assert.throws(() => validateRegistry(duplicate), /DUPLICATE_PROJECT_TYPE_ID/);
+});
+
+test("registry 1.1 requires an explicit valid host requirement on every project type", () => {
+  const legacy = registry();
+  legacy.schema_version = "1.0";
+  assert.throws(() => validateRegistry(legacy));
+
+  const missing = registry();
+  delete missing.project_types[0].host_profile_requirement;
+  assert.throws(() => validateRegistry(missing));
+
+  const invalid = registry();
+  invalid.project_types[0].host_profile_requirement = "DEFAULT";
+  assert.throws(() => validateRegistry(invalid));
 });
 
 test("host profiles belong to exactly one project type", () => {
   const value = registry();
   value.project_types.push({
-    id: "desktop-tool", child_skill_id: "mod-incubator", workflow_module: "src/domains/mod/workflow.mjs",
+    id: "desktop-tool", child_skill_id: "mod-incubator", host_profile_requirement: "REQUIRED",
+    workflow_module: "src/domains/mod/workflow.mjs",
   });
   const parsed = validateRegistry(value);
   assert.throws(() => resolveRoute(parsed, "desktop-tool", "sims-4"), /HOST_PROFILE_PROJECT_TYPE_MISMATCH/);
   assert.throws(() => resolveRoute(parsed, "mod", "unknown"), /HOST_PROFILE_NOT_FOUND/);
+});
+
+test("route resolution enforces REQUIRED, OPTIONAL and FORBIDDEN without selecting a default host", () => {
+  const value = registry();
+  value.child_skills.push({ id: "desktop-product-incubator", skill_path: "skills/desktop-product-incubator/SKILL.md" });
+  value.project_types.push({
+    id: "desktop-product", child_skill_id: "desktop-product-incubator",
+    host_profile_requirement: "REQUIRED", workflow_module: "src/domains/desktop/workflow.mjs",
+  });
+  value.host_profiles.push({
+    id: "windows-desktop", project_type_id: "desktop-product",
+    profile_path: "profiles/hosts/windows-desktop.json", kernel_constraints: {},
+  });
+  const parsed = validateRegistry(value);
+
+  assert.equal(resolveRoute(parsed, "mod").host_profile_id, null);
+  assert.throws(() => resolveRoute(parsed, "desktop-product"), /HOST_PROFILE_REQUIRED/);
+  assert.equal(resolveRoute(parsed, "desktop-product", "windows-desktop").host_profile_id, "windows-desktop");
+
+  const forbidden = registry();
+  forbidden.project_types[0].host_profile_requirement = "FORBIDDEN";
+  assert.equal(resolveRoute(validateRegistry(forbidden), "mod").host_profile_id, null);
+  assert.throws(() => resolveRoute(validateRegistry(forbidden), "mod", "sims-4"), /HOST_PROFILE_FORBIDDEN/);
 });
 
 test("profiles cannot loosen shared kernel constraints", () => {
@@ -63,10 +103,14 @@ test("a new legal project type is loaded from data without kernel changes", asyn
   value.project_types[0].workflow_module = "domains/desktop-workflow.mjs";
   value.child_skills.push({ id: "desktop-incubator", skill_path: "skills/desktop-incubator/SKILL.md" });
   value.project_types.push({
-    id: "desktop-tool", child_skill_id: "desktop-incubator", workflow_module: "domains/desktop-workflow.mjs",
+    id: "desktop-tool", child_skill_id: "desktop-incubator", host_profile_requirement: "OPTIONAL",
+    workflow_module: "domains/desktop-workflow.mjs",
   });
   await mkdir(path.join(root, "domains"), { recursive: true });
   await writeFile(path.join(root, "domains", "desktop-workflow.mjs"), [
+    "export function evaluateEntry() {",
+    "  return { allowed: true, code: 'ENTRY_ALLOWED' };",
+    "}",
     "export function evaluateTransition(state, request) {",
     "  return { allowed: true, code: 'DESKTOP_ALLOWED', workflow: { ...state.workflow, stage: request.target_stage } };",
     "}",
@@ -75,13 +119,33 @@ test("a new legal project type is loaded from data without kernel changes", asyn
   const loaded = await loadRegistry(root);
   assert.equal(resolveRoute(loaded, "desktop-tool").child_skill_id, "desktop-incubator");
   const evaluators = await loadWorkflowEvaluators(root, loaded);
-  assert.equal(evaluators.get("desktop-tool")({}, { target_stage: "D1" }).code, "DESKTOP_ALLOWED");
+  assert.equal(evaluators.get("desktop-tool").evaluateEntry().code, "ENTRY_ALLOWED");
+  assert.equal(evaluators.get("desktop-tool").evaluateTransition({}, { target_stage: "D1" }).code, "DESKTOP_ALLOWED");
 });
 
-test("workflow modules must stay inside the plugin and expose the shared interface", async (t) => {
+test("workflow modules must stay inside the plugin", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "incubator-registry-module-"));
+  try {
+    const value = registry();
+    value.project_types[0].workflow_module = "../outside.mjs";
+    assert.throws(() => validateRegistry(value), /INVALID_WORKFLOW_MODULE_PATH/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("workflow modules must expose both entry and transition evaluators", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "incubator-registry-interface-"));
   t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, "profiles"), { recursive: true });
+  await mkdir(path.join(root, "domains"), { recursive: true });
   const value = registry();
-  value.project_types[0].workflow_module = "../outside.mjs";
-  assert.throws(() => validateRegistry(value), /INVALID_WORKFLOW_MODULE_PATH/);
+  value.project_types[0].workflow_module = "domains/workflow.mjs";
+  await writeFile(path.join(root, "profiles", "registry.json"), JSON.stringify(value));
+
+  await writeFile(path.join(root, "domains", "workflow.mjs"), "export function evaluateTransition() {}\n");
+  await assert.rejects(() => loadWorkflowEvaluators(root, value), /WORKFLOW_EVALUATOR_INVALID/);
+
+  await writeFile(path.join(root, "domains", "workflow.mjs"), "export function evaluateEntry() {}\n");
+  await assert.rejects(() => loadWorkflowEvaluators(root, value), /WORKFLOW_EVALUATOR_INVALID/);
 });
