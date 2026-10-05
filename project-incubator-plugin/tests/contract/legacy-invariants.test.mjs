@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
@@ -18,6 +19,20 @@ const mappings = [
   ["Baseline 与 Confidence", "tests/unit/project-summary.test.mjs", "Baseline"],
   ["Sims 4 经验", "tests/unit/sims4-profile.test.mjs", "Sims 4 delivery"],
 ];
+
+const protectedDigests = new Map([
+  ["skills/mod-incubator/SKILL.md", "304a789b6b28058d5dfa5382ffd718cb8cf4e10cd1f6d592746d75ff8f535017"],
+  ["skills/sims-4-host-profile/SKILL.md", "b159ded0bbb8cc265fec25c1ec9d752668d4416b781c725bbf5f54b84617bc4a"],
+  ["profiles/project-types/mod.json", "a959016c7488031f9f29c3b6f80e2345807ce36a1c54a4d48c0dec4ac231f83a"],
+  ["profiles/hosts/sims-4.json", "f47f129237c272a22cc049a2073ed898ca6d750344105ed8bb236de4e02000bf"],
+]);
+
+test("released Mod and Sims 4 assets remain byte-for-byte unchanged", async () => {
+  for (const [relative, expected] of protectedDigests) {
+    const bytes = await readFile(path.join(root, relative));
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), expected, relative);
+  }
+});
 
 test("every PRESERVE, ADAPT and SPECIALIZE matrix item maps to an automated test", async () => {
   const architecture = await readFile(path.join(root, "ARCHITECTURE.md"), "utf8");

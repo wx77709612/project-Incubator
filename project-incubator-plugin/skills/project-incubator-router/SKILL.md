@@ -13,6 +13,20 @@ description: 当 Maker 要创建、孵化、恢复或判断一个长期项目应
 4. 只有 Maker 在下一轮明确批准该请求后，才调用 `initialize_project`。
 5. 项目已激活后，转交注册表指定的 Child Skill；不得自行替代其领域流程。
 
+## Entry 与 Host 确认
+
+路由提议必须同时说明 `project_type_id`、`host_profile_requirement`、候选 `host_profile_id` 与 Workflow Entry Mode，不得用 Registry 中第一个 Host 或 `windows-desktop` 作为默认值。
+
+- `NEW_PROJECT`：使用 Child Workflow 的标准初始阶段；`desktop-product` 为 P0，`mod` 为 M0。
+- `ADOPT_EXISTING`：Maker 提供项目来源和背景；Agent 检查现有设计、计划、Artifact、实现与 Evidence，判断正常阶段，写入 `assessment_summary` 和至少一个 `evidence_refs`。Kernel 不替 Agent 判断阶段。
+- `REQUIRED`：Maker 未明确确认匹配 Host 时停止，Runtime 返回 `HOST_PROFILE_REQUIRED`。
+- `OPTIONAL`：允许 Host 为空；非空时仍必须匹配 Project Type。
+- `FORBIDDEN`：不得绑定 Host。
+
+当前 `desktop-product` 需要显式选择 `windows-desktop` 才能激活；这表示当前只有一个受支持候选，不表示它是默认值。目标 Host 不受支持时报告并停止，不得回退到 Windows。
+
+浏览器扩展在本版本中不支持，不能路由为 `desktop-product`，也不能作为 Desktop Child Skill 自动接管的 Delivery Surface。若 Maker 同时描述桌面端和浏览器扩展，只路由本轮明确要孵化且已支持的产品形态，并把另一部分标为未路由范围；不得代替未来 Project Type 或跨项目关系设计。
+
 ## 项目状态查询
 
 Maker 询问“项目状态”“当前进度”“下一步做什么”“有什么阻塞”“需要我决定什么”或语义等价问题时，必须调用 `inspect_project`，并按其返回的固定摘要回答。
@@ -31,5 +45,6 @@ Maker 询问“项目状态”“当前进度”“下一步做什么”“有�
 - 普通未激活项目不得留下 Prompt 或运行时记录；只有有效 Pending Activation 可以捕获一次对应 Maker 回复。
 - 调用 `prepare_activation` 前必须以 Runtime 结果确认项目没有任何权威文件；完整的已初始化项目返回 `PROJECT_ALREADY_INITIALIZED`，只存在部分权威文件时返回 `PROJECT_CONTROL_STATE_INCOMPLETE`。两种情况都不得改写项目或继续生成 Request。
 - `prepare_activation.state` 必须描述激活完成后的 revision 0 状态：当前行动和完成条件不得继续要求授权或初始化，`last_change.operation` 必须为 `INITIALIZE_PROJECT`，且不得包含 `ACTIVATION_DRAFT`、等待激活或尚未激活叙述。
+- 新激活必须使用 State 1.1，并包含不可变的 `workflow.entry`。Entry Stage 与 State Stage、`allowed_next` 和 `return_stage` 必须符合已选 Child Workflow。
 - 激活前已确认且由本次激活范围覆盖的 Product Decision 必须通过 `product_decisions` 传入；不得伪造 `authorization_ref`。Runtime 在 Maker 批准该 `request_id` 与 `scope_digest` 后绑定真实 Authorization 并写入 `decisions.active`。
 - MCP 返回错误时，必须报告其稳定错误码，不得改写成成功叙述。

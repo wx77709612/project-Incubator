@@ -1,6 +1,6 @@
 # Project Incubator Plugin 架构契约
 
-状态：`APPROVED`（Maker 于 2026-09-29 确认；Pending Activation Bootstrap 修正于同日确认）
+状态：`APPROVED`（Maker 于 2026-09-29 确认；Desktop Product 扩展于 2026-10-05 确认）
 
 ## 1. 目标
 
@@ -15,10 +15,11 @@ Child Incubator Skill + Host Profile
     -> 提供项目类型和目标宿主的领域流程
 ```
 
-首个可交付组合是：
+当前可交付组合是：
 
 ```text
 Mod Incubator Skill + Sims 4 Host Profile
+Desktop Product Incubator Skill + Windows Desktop Host Profile
 ```
 
 现有 `PROJECT_INCUBATOR/`、V1.1 RC 与历史规格保持原样，作为 Legacy Baseline、迁移输入和回归对照。新 Plugin 必须通过第 13 节的集成矩阵说明旧资产被保留、适配或专门化到哪里；不得以“重新实现”为由无证据丢弃既有治理语义。
@@ -201,13 +202,21 @@ Runtime Assumption 被证据判定失效不等于修改 Maker Decision，但若�
 
 ## 8. Router 与 Child Skill 契约
 
-Router 只能产生 `ROUTE_PROPOSED`，Maker 确认后 Kernel 才写入 `project_type_id`。首版支持：
+Router 只能产生 `ROUTE_PROPOSED`，Maker 确认后 Kernel 才写入 `project_type_id`。当前支持：
 
 ```text
 project_type_id = "mod"
 child_skill_id = "mod-incubator"
 host_profile_id = "sims-4" | null
+
+project_type_id = "desktop-product"
+child_skill_id = "desktop-product-incubator"
+host_profile_id = "windows-desktop"
 ```
+
+Registry 1.1 要求每个 Project Type 显式声明 `host_profile_requirement`：`mod` 为 `OPTIONAL`，`desktop-product` 为 `REQUIRED`。Router 和 Kernel 不得自动选择 Host。新激活使用 State 1.1 的不可变 `workflow.entry`；既有 State 1.0 项目继续运行且不自动迁移。
+
+Desktop Product 原样复用 P0–P6 ID 与名称。Desktop System Model、`FEASIBILITY_PROBE`、Usable Slice、Delivery Hardening 和 Creation Correction 只存在于 Child Skill 的阶段内指导，不形成新的 Runtime Phase。Browser Extension 不属于本版本支持的 Project Type，也不由 Desktop Child Skill 接管。
 
 每个 Child Skill 必须声明：
 
