@@ -3,7 +3,8 @@
 | Field | Value |
 | --- | --- |
 | Target | Project Incubator Plugin Desktop Product Iteration |
-| Status | DRAFT / MAKER APPROVAL REQUIRED |
+| Status | APPROVED / EXECUTION PENDING |
+| Approved By | Maker, 2026-10-05 |
 | Base Candidate | `0.1.0+codex.20261002144305` |
 | Planned Candidate | `0.2.0+codex.<UTC YYYYMMDDHHMMSS>` |
 | Implementation Plan | `SPECS/IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` |
@@ -201,4 +202,4 @@ python -m unittest discover -s tests/e2e -p "test_*.py"
 
 ## 13. Approval Boundary
 
-本计划目前为 DRAFT。Maker 批准 Implementation Plan 与本 Acceptance Test Plan 后，才授权进入实现；批准计划不等于批准未来发现的产品边界或架构变更。
+Maker 于 2026-10-05 确认审阅清单 1–8，并授权按当前会话串行方式执行。批准计划不等于批准未来发现的产品边界或架构变更。

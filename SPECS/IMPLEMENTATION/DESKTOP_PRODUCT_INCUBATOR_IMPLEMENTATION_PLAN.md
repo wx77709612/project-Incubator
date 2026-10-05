@@ -2,7 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Status:** DRAFT / MAKER APPROVAL REQUIRED
+**Status:** APPROVED / IMPLEMENTATION AUTHORIZED
+
+**Approved By:** Maker, 2026-10-05
 
 **Goal:** 在不改变既有 Mod 领域语义的前提下，为 Project Incubator Plugin 增加 `desktop-product`、`desktop-product-incubator`、`windows-desktop`，并实现通用 Workflow Entry 与显式 Host Requirement。
 
@@ -245,4 +247,4 @@ assert.equal(receipt.authorization_ref.request_id, request.request_id);
 
 ## Execution Authorization
 
-本计划目前为 DRAFT。Maker 批准本计划与配套 Acceptance Test Plan 前，不得执行 Task 1–6，不得修改 Plugin Runtime、Schema、Registry、Profile 或 Skill。
+Maker 于 2026-10-05 确认审阅清单 1–8，并选择当前会话串行实施。Task 1–6 仅可在本计划、已批准 Contract 与 Acceptance Test Plan 范围内执行；新发现的 Product 或 Architecture 变更仍需另行确认。
