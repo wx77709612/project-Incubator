@@ -1,7 +1,8 @@
 # Desktop Product Incubator Runtime Specification
 
 > Specification Version: Plugin Desktop Product Iteration
-> Status: DRAFT
+> Status: APPROVED
+> Approved By: Maker, 2026-10-05
 > Depends On: `SPECS/CONTRACTS/DESKTOP_PRODUCT_INCUBATOR_CONTRACT.md`
 > Implementation Authorization: NOT GRANTED
 
@@ -191,4 +192,8 @@ Runtime 不提供：
 
 ## 15. Implementation Boundary
 
-本文档批准前不得修改 Runtime、Schema、Registry 或 Skill。批准后仍须先完成 Implementation Plan 与 Acceptance Test Plan，并获得 Maker 明确批准，才能开始实现。
+Implementation Plan 与 Acceptance Test Plan 获得 Maker 明确批准前，不得修改 Runtime、Schema、Registry 或 Skill。
+
+## 16. Maker Approval
+
+Maker 于 2026-10-05 确认本 Runtime Specification 第 1–8 项审阅清单。本批准授权编写 Implementation Plan 与 Acceptance Test Plan；不授权实现。

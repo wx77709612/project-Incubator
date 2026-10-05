@@ -1,7 +1,8 @@
 # Desktop Product Incubator Contract
 
 > Specification Version: Plugin Desktop Product Iteration
-> Status: DRAFT
+> Status: APPROVED
+> Approved By: Maker, 2026-10-05
 > Depends On: `SPECS/ARCHITECTURE/ARCHITECTURE_DECISIONS.md` Decision 013；`SPECS/PROJECT_TYPES/DESKTOP_PRODUCT_PROFILE.md`
 > Implementation Authorization: NOT GRANTED
 
@@ -195,4 +196,8 @@ Contract 验收必须证明：
 6. Project State 1.0 继续工作；
 7. 现有 Mod 路由、Workflow、Host Profile 与回归行为保持不变。
 
-本文档为 DRAFT；Maker 批准前不进入 Runtime 实现或代码修改。
+## 13. Maker Approval
+
+Maker 于 2026-10-05 确认本 Contract 第 1–8 项审阅清单，包括 Registry 与 Project State 1.1、显式 Host Requirement、Workflow Entry、`evaluateEntry`、双重激活校验、P0–P6、兼容边界和验证义务。
+
+本批准授权进入 Runtime Specification、Implementation Plan 与 Acceptance Test Plan；不授权实现。
