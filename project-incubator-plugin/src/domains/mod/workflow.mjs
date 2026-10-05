@@ -24,6 +24,35 @@ function movedWorkflow(workflow, stage, returnStage = null) {
   };
 }
 
+export function evaluateModEntry(state) {
+  const entry = state?.workflow?.entry;
+  if (!entry) return rejected("WORKFLOW_ENTRY_REQUIRED");
+  if (!new Set(["NEW_PROJECT", "ADOPT_EXISTING"]).has(entry.mode)) {
+    return rejected("WORKFLOW_ENTRY_MODE_INVALID");
+  }
+  if (entry.initial_stage !== state.workflow.stage) {
+    return rejected("WORKFLOW_ENTRY_STATE_MISMATCH");
+  }
+  if (!STAGES.includes(entry.initial_stage)) return rejected("WORKFLOW_ENTRY_STAGE_INVALID");
+  if (entry.mode === "NEW_PROJECT" && entry.initial_stage !== "M0_BOUNDARY") {
+    return rejected("WORKFLOW_ENTRY_STAGE_INVALID");
+  }
+  if (entry.mode === "ADOPT_EXISTING"
+    && (!Array.isArray(entry.evidence_refs) || entry.evidence_refs.length === 0)) {
+    return rejected("WORKFLOW_ENTRY_EVIDENCE_REQUIRED");
+  }
+  return {
+    allowed: true,
+    code: "WORKFLOW_ENTRY_ALLOWED",
+    semantic: "ENTRY",
+    workflow: {
+      stage: entry.initial_stage,
+      allowed_next: allowedNext(entry.initial_stage),
+      return_stage: null,
+    },
+  };
+}
+
 export function evaluateModTransition(state, request) {
   const current = state.workflow.stage;
   if (request.changes_boundary && !request.maker_authorized) return rejected("MAKER_AUTHORIZATION_REQUIRED");
@@ -54,4 +83,5 @@ export function evaluateModTransition(state, request) {
 }
 
 export const evaluateTransition = evaluateModTransition;
+export const evaluateEntry = evaluateModEntry;
 export const modStages = Object.freeze([...STAGES, "MODEL_REVIEW"]);

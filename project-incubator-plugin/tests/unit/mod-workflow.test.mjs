@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { evaluateModTransition } from "../../src/domains/mod/workflow.mjs";
+import { evaluateModEntry, evaluateModTransition } from "../../src/domains/mod/workflow.mjs";
 
 const state = (stage, return_stage = null) => ({ workflow: { stage, return_stage } });
 
@@ -27,4 +27,35 @@ test("M2 through M4 enter and return from MODEL_REVIEW without becoming iteratio
     assert.equal(resumed.allowed, true);
     assert.equal(resumed.workflow.return_stage, null);
   }
+});
+
+function entryState(stage, mode = "ADOPT_EXISTING", evidenceRefs = ["artifact:existing-mod"]) {
+  return {
+    workflow: {
+      stage,
+      entry: {
+        mode,
+        initial_stage: stage,
+        assessment_summary: "Agent 基于已有 Mod Artifact 判断当前阶段。",
+        evidence_refs: evidenceRefs,
+        assessed_at: "2026-10-05T00:00:00.000Z",
+      },
+    },
+  };
+}
+
+test("Mod NEW_PROJECT starts only at M0", () => {
+  assert.equal(evaluateModEntry(entryState("M0_BOUNDARY", "NEW_PROJECT", [])).allowed, true);
+  assert.equal(evaluateModEntry(entryState("M1_RISK_MODEL", "NEW_PROJECT", [])).code, "WORKFLOW_ENTRY_STAGE_INVALID");
+});
+
+test("Mod ADOPT_EXISTING accepts M0-M5 but never MODEL_REVIEW", () => {
+  for (const stage of [
+    "M0_BOUNDARY", "M1_RISK_MODEL", "M2_VERTICAL_SLICE",
+    "M3_BUILD_PACKAGE", "M4_TARGET_VALIDATION", "M5_EXPAND_RELEASE",
+  ]) {
+    assert.equal(evaluateModEntry(entryState(stage)).allowed, true, stage);
+  }
+  assert.equal(evaluateModEntry(entryState("MODEL_REVIEW")).code, "WORKFLOW_ENTRY_STAGE_INVALID");
+  assert.equal(evaluateModEntry(entryState("M3_BUILD_PACKAGE", "ADOPT_EXISTING", [])).code, "WORKFLOW_ENTRY_EVIDENCE_REQUIRED");
 });
