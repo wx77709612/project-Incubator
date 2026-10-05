@@ -93,6 +93,21 @@ function assertWorkflowShape(proposed, evaluated) {
   }
 }
 
+function validateWorkflowEntry(initialState, evaluator) {
+  if (typeof evaluator?.evaluateEntry !== "function") throw new Error("WORKFLOW_EVALUATOR_NOT_FOUND");
+  const evaluation = evaluator.evaluateEntry(initialState);
+  if (!evaluation.allowed) throw new Error(evaluation.code);
+  assertWorkflowShape(initialState.workflow, evaluation.workflow);
+  return evaluation;
+}
+
+function assertWorkflowEntryImmutable(currentState, proposedState) {
+  if (currentState.schema_version !== "1.1") return;
+  if (!sameValues(currentState.workflow.entry, proposedState.workflow.entry)) {
+    throw new Error("WORKFLOW_ENTRY_IMMUTABLE");
+  }
+}
+
 function validateWorkflowTransition(snapshot, proposedState, transition, evaluator, options = {}) {
   const stageChanged = snapshot.state.workflow.stage !== proposedState.workflow.stage;
   if (!stageChanged) {
@@ -142,6 +157,7 @@ export async function createKernelService(options = {}) {
       if (state.project_id !== args.project_id || state.revision !== 0) {
         throw new Error("INITIAL_STATE_ID_OR_REVISION_INVALID");
       }
+      validateWorkflowEntry(state, workflowEvaluators.get(route.project_type_id));
       const request = await prepareActivationRequest({
         runtimeDataRoot, projectRoot: args.project_root, projectId: args.project_id,
         route, sessionId: args.session_id, summary: args.summary,
@@ -165,18 +181,26 @@ export async function createKernelService(options = {}) {
       );
       if (request.scope_digest !== args.scope_digest) throw new Error("SCOPE_DIGEST_MISMATCH");
       if (request.session_id !== args.session_id) throw new Error("PROMPT_CONTEXT_MISMATCH");
+      const route = resolveRoute(
+        registry, request.route.project_type_id, request.route.host_profile_id ?? null,
+      );
+      if (!sameValues(route, request.route)) throw new Error("ACTIVATION_ROUTE_MISMATCH");
+      const state = parsePostActivationInitialState(request.initial_state);
+      if (state.project_id !== request.project_id || state.revision !== 0) {
+        throw new Error("INITIAL_STATE_ID_OR_REVISION_INVALID");
+      }
+      validateWorkflowEntry(state, workflowEvaluators.get(route.project_type_id));
+      const productDecisions = parseActivationProductDecisions(request.product_decisions);
       const promptRef = await findPromptRef(runtimeDataRoot, {
         project_id: request.project_id, session_id: args.session_id, turn_id: args.turn_id,
       });
       const activation = {
         schema_version: "1.0", project_id: request.project_id,
         plugin_id: "project-incubator-plugin", plugin_version: "0.1.0", status: "ACTIVE",
-        project_type_id: request.route.project_type_id,
-        child_skill_id: request.route.child_skill_id,
-        host_profile_id: request.route.host_profile_id,
+        project_type_id: route.project_type_id,
+        child_skill_id: route.child_skill_id,
+        host_profile_id: route.host_profile_id,
       };
-      const state = parseProjectState(request.initial_state);
-      const productDecisions = parseActivationProductDecisions(request.product_decisions);
       const pending = {
         request_id: request.request_id, operation: request.operation,
         scope_digest: request.scope_digest, status: "PENDING",
@@ -221,6 +245,7 @@ export async function createKernelService(options = {}) {
       const snapshot = await readProjectSnapshot(args.project_root);
       const proposedState = parseProjectState(args.proposed_state);
       if (proposedState.project_id !== snapshot.state.project_id) throw new Error("PROJECT_ID_MISMATCH");
+      assertWorkflowEntryImmutable(snapshot.state, proposedState);
       validateWorkflowTransition(
         snapshot, proposedState, args.workflow_transition,
         workflowEvaluators.get(snapshot.activation.project_type_id), {
@@ -261,6 +286,8 @@ export async function createKernelService(options = {}) {
       if (!pending || pending.status !== "PENDING") throw new Error("PENDING_REQUEST_NOT_FOUND");
       if (pending.scope_digest !== args.scope_digest) throw new Error("SCOPE_DIGEST_MISMATCH");
       if (pending.payload?.session_id !== args.session_id) throw new Error("PROMPT_CONTEXT_MISMATCH");
+      const proposedState = parseProjectState(pending.payload.proposed_state);
+      assertWorkflowEntryImmutable(snapshot.state, proposedState);
       const promptRef = await findPromptRef(runtimeDataRoot, {
         project_id: snapshot.state.project_id, session_id: args.session_id, turn_id: args.turn_id,
       });
@@ -273,7 +300,6 @@ export async function createKernelService(options = {}) {
       const authorizationRef = await authorizePreparedChange(prepared, promptRef, {
         now,
       });
-      const proposedState = parseProjectState(pending.payload.proposed_state);
       validateWorkflowTransition(
         snapshot, proposedState, pending.payload.workflow_transition,
         workflowEvaluators.get(snapshot.activation.project_type_id), {
