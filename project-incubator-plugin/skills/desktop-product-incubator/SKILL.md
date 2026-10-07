@@ -52,15 +52,18 @@ description: Use when：Project Incubator Router 已确认 Managed Project 的�
 
 ### P4 `Creation`
 
-按计划创建 Project Artifact，并在适用处检查三个桌面检查点：
+按计划创建 Project Artifact，持续校验 `Desktop System Model` 一致性，并在适用处完成两个桌面检查点。
 
-- `Desktop System Model`：实现仍符合进程、数据、权限与外部依赖边界；
+`Desktop System Model` 一致性约束：实现仍符合 P2 确认的进程、数据、权限与外部依赖边界；发现偏离时不得把它误报为检查点已完成。
+
+两个桌面检查点：
+
 - `Usable Slice`：至少一个核心用户旅程端到端可观察；
 - `Delivery Hardening`：打包、安装、升级、卸载、恢复和安全约束按当前范围落实或明确标为不适用。
 
 若反例推翻局部模型，进入 P4 内部 `Creation Correction`：记录失效 Assumption，暂停同方向补丁，界定影响，修正设计/计划/实现并重放验证。Stage 保持 P4，不创建 `workflow_transition`。若影响 Product Boundary、Architecture Decision、Host 支持或 Runtime Invariant，提出 Maker Scope Review Requirement。
 
-可观察出口：计划内 Artifact 与检查点完成，已知反例和残余风险没有被隐藏。
+可观察出口：计划内 Artifact、模型一致性约束与两个检查点均有结论，已知反例和残余风险没有被隐藏。
 
 ### P5 `Validation`
 

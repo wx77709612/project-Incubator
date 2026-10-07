@@ -140,12 +140,19 @@ test("workflow modules must expose both entry and transition evaluators", async 
   await mkdir(path.join(root, "profiles"), { recursive: true });
   await mkdir(path.join(root, "domains"), { recursive: true });
   const value = registry();
-  value.project_types[0].workflow_module = "domains/workflow.mjs";
   await writeFile(path.join(root, "profiles", "registry.json"), JSON.stringify(value));
 
-  await writeFile(path.join(root, "domains", "workflow.mjs"), "export function evaluateTransition() {}\n");
+  value.project_types[0].workflow_module = "domains/missing-entry.mjs";
+  await writeFile(
+    path.join(root, "domains", "missing-entry.mjs"),
+    "export function evaluateTransition() {}\n",
+  );
   await assert.rejects(() => loadWorkflowEvaluators(root, value), /WORKFLOW_EVALUATOR_INVALID/);
 
-  await writeFile(path.join(root, "domains", "workflow.mjs"), "export function evaluateEntry() {}\n");
+  value.project_types[0].workflow_module = "domains/missing-transition.mjs";
+  await writeFile(
+    path.join(root, "domains", "missing-transition.mjs"),
+    "export function evaluateEntry() {}\n",
+  );
   await assert.rejects(() => loadWorkflowEvaluators(root, value), /WORKFLOW_EVALUATOR_INVALID/);
 });

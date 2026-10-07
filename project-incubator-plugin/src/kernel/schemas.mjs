@@ -138,6 +138,9 @@ export function parsePostActivationInitialState(value) {
   if (value?.schema_version !== "1.1" || value?.workflow?.entry === undefined) {
     throw new Error("WORKFLOW_ENTRY_REQUIRED");
   }
+  if (!["NEW_PROJECT", "ADOPT_EXISTING"].includes(value.workflow.entry.mode)) {
+    throw new Error("WORKFLOW_ENTRY_MODE_INVALID");
+  }
   const state = parseProjectState(value);
   const narrative = [
     state.plan.current_action,

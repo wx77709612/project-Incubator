@@ -40,6 +40,14 @@ export function proposeRoute(registry, input) {
   });
 }
 
+export function activationScopeDigest({
+  project_root, project_id, route, summary, initial_state, product_decisions,
+}) {
+  return hashJson({
+    project_root, project_id, route, summary, initial_state, product_decisions,
+  });
+}
+
 export async function prepareActivationRequest({
   runtimeDataRoot, projectRoot, projectId, route, sessionId, summary, initialState,
   productDecisions, now = new Date(),
@@ -53,7 +61,7 @@ export async function prepareActivationRequest({
   const request = {
     request_id: requestId,
     operation: "ACTIVATE_PROJECT",
-    scope_digest: hashJson(payload),
+    scope_digest: activationScopeDigest(payload),
     project_root: canonicalRoot,
     project_id: projectId,
     session_id: sessionId,

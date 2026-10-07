@@ -231,14 +231,15 @@ assert.equal(receipt.authorization_ref.request_id, request.request_id);
 - [x] **Step 5: Package to a fresh temporary directory, run `npm ci --omit=dev`, then load Registry and both Workflow Modules from outside the repository**
 - [x] **Step 6: Verify package whitelist excludes `SPECS`、tests、legacy runtime and includes the two new Skills/Profiles plus Candidate metadata**
 - [ ] **Step 7: Execute the approved Acceptance Test Plan, record actual evidence and update statuses only from observed results**
-- [ ] **Step 8: Commit `test(plugin): accept desktop product incubator`**
+- [x] **Step 8: Commit `test(plugin): accept desktop product incubator`**
 
 ### Task 6 Execution Record
 
 - 2026-10-07：Desktop E2E 以 `0.1.0 !== 0.2.0` 形成预期 RED；Kernel 改为从候选 `package.json` 读取激活版本后，E2E `5/5` GREEN。
-- Plugin 全量：`125/125`，0 failures。
+- 整分支审阅复现并修复 Activation Scope 合法漂移、State 1.1 Entry 删除错误码、非法 Entry Mode 错误码、ESM 缓存伪覆盖与 MCP 握手旧版本；补齐 D06 完整接管激活证据，并把 P4 恢复为一个模型一致性约束与两个批准检查点。
+- Plugin 全量：`131/131`，0 failures。
 - Legacy：unit `132/132`、integration `32/32`、e2e `3/3`。
-- Candidate：Manifest `0.2.0+codex.20261005142800`、Package `0.2.0`；生产依赖安装成功；白名单、仓库外 Registry/Workflow/Kernel Route/Entry smoke 均通过。
+- Candidate：Manifest `0.2.0+codex.20261007223812`、Package `0.2.0`；安装 94 个生产依赖；白名单、仓库外 Registry/Workflow/Kernel Route/Entry/version smoke 均通过。
 - 自动化 Acceptance Stage A–G 已通过；Manual Behavior Acceptance M1–M6 尚未执行，因此未达到发布 Exit Criteria。
 
 ## Plan Acceptance Criteria

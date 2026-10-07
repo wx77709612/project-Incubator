@@ -18,6 +18,7 @@ import { findPromptRef } from "./kernel/prompt-events.mjs";
 import { buildProjectSummary, renderProjectSummary, writeProjectOverview } from "./kernel/project-summary.mjs";
 import { loadRegistry, loadWorkflowEvaluators, resolveRoute } from "./kernel/registry.mjs";
 import {
+  activationScopeDigest,
   consumeActivationRequest,
   getPendingActivation,
   prepareActivationRequest,
@@ -104,6 +105,9 @@ function validateWorkflowEntry(initialState, evaluator) {
 
 function assertWorkflowEntryImmutable(currentState, proposedState) {
   if (currentState.schema_version !== "1.1") return;
+  if (proposedState.schema_version !== "1.1" || proposedState.workflow.entry === undefined) {
+    throw new Error("WORKFLOW_ENTRY_IMMUTABLE");
+  }
   if (!sameValues(currentState.workflow.entry, proposedState.workflow.entry)) {
     throw new Error("WORKFLOW_ENTRY_IMMUTABLE");
   }
@@ -197,6 +201,9 @@ export async function createKernelService(options = {}) {
       }
       validateWorkflowEntry(state, workflowEvaluators.get(route.project_type_id));
       const productDecisions = parseActivationProductDecisions(request.product_decisions);
+      if (request.scope_digest !== activationScopeDigest(request)) {
+        throw new Error("SCOPE_DIGEST_MISMATCH");
+      }
       const promptRef = await findPromptRef(runtimeDataRoot, {
         project_id: request.project_id, session_id: args.session_id, turn_id: args.turn_id,
       });
@@ -394,6 +401,7 @@ export async function createKernelService(options = {}) {
   };
 
   return {
+    pluginVersion,
     registry,
     async callTool(name, args, context = {}) {
       try {
@@ -409,7 +417,7 @@ export async function createKernelService(options = {}) {
 
 export async function createMcpServer(options = {}) {
   const service = await createKernelService(options);
-  const server = new McpServer({ name: "project-incubator-plugin", version: "0.1.0" });
+  const server = new McpServer({ name: "project-incubator-plugin", version: service.pluginVersion });
   const definitions = {
     propose_route: {
       project_root: z.string(), project_type_id: z.string(), host_profile_id: z.string().nullable().optional(),

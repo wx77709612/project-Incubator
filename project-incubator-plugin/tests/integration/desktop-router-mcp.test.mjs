@@ -118,6 +118,37 @@ test("desktop activation validates NEW_PROJECT and ADOPT_EXISTING entry contract
   assert.equal(invalidAdopt.structuredContent.error.code, "WORKFLOW_ENTRY_EVIDENCE_REQUIRED");
 });
 
+test("desktop activation returns the workflow mode error for an invalid entry mode", async (t) => {
+  const { projectRoot, service } = await fixture(t);
+  const result = await prepareDesktop(
+    service, projectRoot, desktopState("P2", "UNKNOWN", ["evidence://existing-design"]),
+  );
+  assert.equal(result.structuredContent.error.code, "WORKFLOW_ENTRY_MODE_INVALID");
+});
+
+test("ADOPT_EXISTING P3 with evidence initializes from P3 after Maker authorization", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  const initialState = desktopState("P3", "ADOPT_EXISTING", ["evidence://existing-architecture"]);
+  const prepared = await prepareDesktop(service, projectRoot, initialState);
+  const request = prepared.structuredContent;
+  await approve(runtimeDataRoot, projectRoot, request, "adopt-p3");
+
+  const initialized = await service.callTool("initialize_project", {
+    project_root: projectRoot, request_id: request.request_id, scope_digest: request.scope_digest,
+    session_id: "desktop-session", turn_id: "adopt-p3",
+  }, { now: new Date(nowText) });
+  assert.equal(initialized.isError, undefined);
+  assert.equal(initialized.structuredContent.activation.project_type_id, "desktop-product");
+  assert.equal(initialized.structuredContent.activation.host_profile_id, "windows-desktop");
+  assert.equal(initialized.structuredContent.receipt.new_revision, 0);
+
+  const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });
+  assert.equal(snapshot.structuredContent.state.workflow.stage, "P3");
+  assert.deepEqual(snapshot.structuredContent.state.workflow.allowed_next, ["P4"]);
+  assert.deepEqual(snapshot.structuredContent.state.workflow.entry, initialState.workflow.entry);
+  assert.deepEqual(await readdir(runtimeDataRoot), []);
+});
+
 test("initialize revalidates a drifted route and leaves no authority files", async (t) => {
   const { projectRoot, runtimeDataRoot, service } = await fixture(t);
   const prepared = await prepareDesktop(service, projectRoot, desktopState());
@@ -156,6 +187,36 @@ test("initialize revalidates a drifted entry and leaves no authority files", asy
   await assert.rejects(() => access(path.join(projectRoot, ".project-incubator")), /ENOENT/);
 });
 
+test("initialize rejects a structurally valid activation scope drift", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  const prepared = await prepareDesktop(service, projectRoot, desktopState());
+  const request = prepared.structuredContent;
+  const [pendingName] = (await readdir(runtimeDataRoot)).filter((name) => name.startsWith("activation-"));
+  const pendingPath = path.join(runtimeDataRoot, pendingName);
+  const pending = JSON.parse(await readFile(pendingPath, "utf8"));
+  pending.initial_state.workflow = {
+    ...pending.initial_state.workflow,
+    stage: "P3",
+    allowed_next: ["P4"],
+    entry: {
+      ...pending.initial_state.workflow.entry,
+      mode: "ADOPT_EXISTING",
+      initial_stage: "P3",
+      assessment_summary: "已根据现有架构和计划证据判断当前处于执行规划阶段。",
+      evidence_refs: ["evidence://existing-architecture"],
+    },
+  };
+  await writeFile(pendingPath, `${JSON.stringify(pending)}\n`, "utf8");
+  await approve(runtimeDataRoot, projectRoot, request, "valid-scope-drift");
+
+  const result = await service.callTool("initialize_project", {
+    project_root: projectRoot, request_id: request.request_id, scope_digest: request.scope_digest,
+    session_id: "desktop-session", turn_id: "valid-scope-drift",
+  }, { now: new Date(nowText) });
+  assert.equal(result.structuredContent.error.code, "SCOPE_DIGEST_MISMATCH");
+  await assert.rejects(() => access(path.join(projectRoot, ".project-incubator")), /ENOENT/);
+});
+
 test("State 1.1 workflow entry is immutable during prepare_change", async (t) => {
   const { projectRoot, service } = await activatedFixture(t);
   const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });
@@ -163,6 +224,19 @@ test("State 1.1 workflow entry is immutable during prepare_change", async (t) =>
   proposed.workflow.entry.assessment_summary = "试图改写激活时判断";
   const result = await service.callTool("prepare_change", {
     project_root: projectRoot, operation: "ALTER_ENTRY", change_kind: "PRODUCT_DECISION",
+    session_id: "desktop-session", proposed_state: proposed,
+  });
+  assert.equal(result.structuredContent.error.code, "WORKFLOW_ENTRY_IMMUTABLE");
+});
+
+test("State 1.1 cannot be downgraded to remove entry during prepare_change", async (t) => {
+  const { projectRoot, service } = await activatedFixture(t);
+  const snapshot = await service.callTool("get_project_state", { project_root: projectRoot });
+  const proposed = structuredClone(snapshot.structuredContent.state);
+  proposed.schema_version = "1.0";
+  delete proposed.workflow.entry;
+  const result = await service.callTool("prepare_change", {
+    project_root: projectRoot, operation: "REMOVE_ENTRY", change_kind: "PRODUCT_DECISION",
     session_id: "desktop-session", proposed_state: proposed,
   });
   assert.equal(result.structuredContent.error.code, "WORKFLOW_ENTRY_IMMUTABLE");
@@ -191,6 +265,33 @@ test("State 1.1 workflow entry is rechecked during commit_change", async (t) => 
   assert.equal(result.structuredContent.error.code, "WORKFLOW_ENTRY_IMMUTABLE");
   const after = await service.callTool("get_project_state", { project_root: projectRoot });
   assert.equal(after.structuredContent.state.workflow.entry.assessment_summary, current.workflow.entry.assessment_summary);
+});
+
+test("State 1.1 cannot be downgraded to remove entry during commit_change", async (t) => {
+  const current = desktopState("P4", "ADOPT_EXISTING", ["evidence://existing-design"]);
+  const proposed = structuredClone(current);
+  proposed.schema_version = "1.0";
+  delete proposed.workflow.entry;
+  const requestId = "request-remove-entry";
+  const scopeDigest = "c".repeat(64);
+  current.pending_requests = [{
+    request_id: requestId, operation: "REMOVE_ENTRY", scope_digest: scopeDigest, status: "PENDING",
+    created_at: nowText, project_revision: 0,
+    payload: {
+      change_kind: "PRODUCT_DECISION", proposed_state: proposed, session_id: "desktop-session",
+      requires_authorization: true,
+    },
+  }];
+  const { projectRoot, runtimeDataRoot, service } = await activatedFixture(t, current);
+  await approve(runtimeDataRoot, projectRoot, { request_id: requestId, scope_digest: scopeDigest }, "remove-entry");
+  const result = await service.callTool("commit_change", {
+    project_root: projectRoot, request_id: requestId, scope_digest: scopeDigest,
+    session_id: "desktop-session", turn_id: "remove-entry",
+  }, { now: new Date(nowText) });
+  assert.equal(result.structuredContent.error.code, "WORKFLOW_ENTRY_IMMUTABLE");
+  const after = await service.callTool("get_project_state", { project_root: projectRoot });
+  assert.equal(after.structuredContent.state.schema_version, "1.1");
+  assert.equal(after.structuredContent.state.workflow.entry.initial_stage, "P4");
 });
 
 test("P4 Creation Correction remains a same-stage authorized mutation", async (t) => {
