@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Status:** APPROVED / IMPLEMENTATION AUTHORIZED
+**Status:** IMPLEMENTATION CODE COMPLETE / AUTOMATED ACCEPTANCE PASSED / MANUAL M1–M6 PENDING
 
 **Approved By:** Maker, 2026-10-05
 
@@ -218,20 +218,28 @@ assert.equal(await sha256File("profiles/hosts/sims-4.json"), protectedDigests.si
 - Produces: packaged candidate containing both project types and both Host Profiles.
 - Preserves: existing Plugin, Legacy unit, Legacy integration and Legacy e2e behavior.
 
-- [ ] **Step 1: Write a failing E2E test for explicit `desktop-product + windows-desktop`, NEW_PROJECT/P0 Activation, scoped Maker authorization, Receipt verification and legal P0→P1 Transition**
+- [x] **Step 1: Write a failing E2E test for explicit `desktop-product + windows-desktop`, NEW_PROJECT/P0 Activation, scoped Maker authorization, Receipt verification and legal P0→P1 Transition**
 
 ```javascript
 assert.equal(snapshot.activation.project_type_id, "desktop-product");
 assert.equal(snapshot.state.workflow.stage, "P1");
 assert.equal(receipt.authorization_ref.request_id, request.request_id);
 ```
-- [ ] **Step 2: Add E2E negative cases for absent Host, illegal initial phase, altered Entry and Browser-only scope**
-- [ ] **Step 3: Run `npm test`; require zero failures and record the new exact Plugin total, with the previous 88 tests still represented**
-- [ ] **Step 4: From repository root run Legacy unit, integration and e2e commands; require exactly 132/132、32/32、3/3**
-- [ ] **Step 5: Package to a fresh temporary directory, run `npm ci --omit=dev`, then load Registry and both Workflow Modules from outside the repository**
-- [ ] **Step 6: Verify package whitelist excludes `SPECS`、tests、legacy runtime and includes the two new Skills/Profiles plus Candidate metadata**
+- [x] **Step 2: Add E2E negative cases for absent Host, illegal initial phase, altered Entry and Browser-only scope**
+- [x] **Step 3: Run `npm test`; require zero failures and record the new exact Plugin total, with the previous 88 tests still represented**
+- [x] **Step 4: From repository root run Legacy unit, integration and e2e commands; require exactly 132/132、32/32、3/3**
+- [x] **Step 5: Package to a fresh temporary directory, run `npm ci --omit=dev`, then load Registry and both Workflow Modules from outside the repository**
+- [x] **Step 6: Verify package whitelist excludes `SPECS`、tests、legacy runtime and includes the two new Skills/Profiles plus Candidate metadata**
 - [ ] **Step 7: Execute the approved Acceptance Test Plan, record actual evidence and update statuses only from observed results**
 - [ ] **Step 8: Commit `test(plugin): accept desktop product incubator`**
+
+### Task 6 Execution Record
+
+- 2026-10-07：Desktop E2E 以 `0.1.0 !== 0.2.0` 形成预期 RED；Kernel 改为从候选 `package.json` 读取激活版本后，E2E `5/5` GREEN。
+- Plugin 全量：`125/125`，0 failures。
+- Legacy：unit `132/132`、integration `32/32`、e2e `3/3`。
+- Candidate：Manifest `0.2.0+codex.20261005142800`、Package `0.2.0`；生产依赖安装成功；白名单、仓库外 Registry/Workflow/Kernel Route/Entry smoke 均通过。
+- 自动化 Acceptance Stage A–G 已通过；Manual Behavior Acceptance M1–M6 尚未执行，因此未达到发布 Exit Criteria。
 
 ## Plan Acceptance Criteria
 

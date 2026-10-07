@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -139,6 +140,11 @@ function validateWorkflowTransition(snapshot, proposedState, transition, evaluat
 export async function createKernelService(options = {}) {
   const pluginRoot = options.pluginRoot
     ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+  const packageMetadata = JSON.parse(await readFile(path.join(pluginRoot, "package.json"), "utf8"));
+  if (typeof packageMetadata.version !== "string" || packageMetadata.version.length === 0) {
+    throw new Error("PLUGIN_PACKAGE_VERSION_INVALID");
+  }
+  const pluginVersion = packageMetadata.version;
   const runtimeDataRoot = options.runtimeDataRoot
     ?? resolveRuntimeDataRoot(options.env ?? process.env, pluginRoot);
   const registry = await loadRegistry(pluginRoot);
@@ -196,7 +202,7 @@ export async function createKernelService(options = {}) {
       });
       const activation = {
         schema_version: "1.0", project_id: request.project_id,
-        plugin_id: "project-incubator-plugin", plugin_version: "0.1.0", status: "ACTIVE",
+        plugin_id: "project-incubator-plugin", plugin_version: pluginVersion, status: "ACTIVE",
         project_type_id: route.project_type_id,
         child_skill_id: route.child_skill_id,
         host_profile_id: route.host_profile_id,

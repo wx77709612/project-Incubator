@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Target | Project Incubator Plugin Desktop Product Iteration |
-| Status | APPROVED / EXECUTION PENDING |
+| Status | AUTOMATED PASSED / PACKAGE PASSED / MANUAL M1–M6 PENDING |
 | Approved By | Maker, 2026-10-05 |
 | Base Candidate | `0.1.0+codex.20261002144305` |
 | Planned Candidate | `0.2.0+codex.<UTC YYYYMMDDHHMMSS>` |
@@ -203,3 +203,17 @@ python -m unittest discover -s tests/e2e -p "test_*.py"
 ## 13. Approval Boundary
 
 Maker 于 2026-10-05 确认审阅清单 1–8，并授权按当前会话串行方式执行。批准计划不等于批准未来发现的产品边界或架构变更。
+
+## 14. Execution Result — 2026-10-07
+
+| Stage | Result | Observed Evidence |
+| --- | --- | --- |
+| A–E | PASS | 对应 Unit、Integration、Contract 与 E2E 断言进入 Plugin 全量套件 |
+| F / Plugin | PASS | `npm test`：`125/125`，0 failures |
+| F / Legacy | PASS | unit `132/132`、integration `32/32`、e2e `3/3` |
+| G / Candidate | PASS | `0.2.0+codex.20261005142800`；Package `0.2.0`；仓库外加载两个 Project Type、两个 Workflow Entry 与 Desktop Route 成功 |
+| Protected Assets | PASS | 四个 Mod/Sims 文件 SHA-256 与实施前一致 |
+| Browser Boundary | PASS（自动化） | `browser-extension` 返回 `PROJECT_TYPE_NOT_FOUND`；未新增 Browser Type/Skill/Profile |
+| M1–M6 | PENDING | 需要真实 Agent 行为轮次；静态 Skill 文本与自动化断言不能替代人工行为 Evidence |
+
+官方 `quick_validate.py` 在系统与 bundled Python 中均因缺少 `PyYAML` 无法启动；本次没有向仓库安装额外依赖。Skill 的 frontmatter、名称、发现条件、内容边界和打包存在性由 `desktop-guidance.test.mjs` 覆盖。该工具环境限制不改写为 Skill PASS，也不影响 M1–M6 仍为待验的结论。

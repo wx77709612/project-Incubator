@@ -20,7 +20,7 @@
 
 | Layer | Document | Status | 说明 |
 | --- | --- | --- | --- |
-| Architecture | `ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED | 新增 `desktop-product` 与 `desktop-product-incubator`；Workflow Entry 与显式 Host Requirement 修订于 2026-10-05 获批；不授权实现 |
+| Architecture | `ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED / IMPLEMENTED | 新增 `desktop-product` 与 `desktop-product-incubator`；Workflow Entry 与显式 Host Requirement 已进入 0.2.0 候选 |
 
 该提案用于 Project Incubator Plugin 的后续版本化迭代，不改变下方 V1.1 RC 文档的当前状态。提案已获 Maker 批准，可作为下游 Architecture 与 Design 的依据；Contract、Runtime、Implementation 与 Acceptance 仍须按 Change Control 顺序推进。
 
@@ -47,17 +47,17 @@
 | Contract | `CONTRACTS/GATE_CONTRACT.md` | APPROVED | Evidence Input、Evaluation Rule 与 Reason Code |
 | Contract | `CONTRACTS/SCRIPT_CONTRACT.md` | APPROVED | 确定性 Evidence、Failure Signature 与 Structural Drift |
 | Contract | `CONTRACTS/CONTEXT_MUTATION_ORCHESTRATION_CONTRACT.md` | APPROVED | 多 Context Mutation、Authorization Provenance 与闭合结果 Contract |
-| Contract | `CONTRACTS/DESKTOP_PRODUCT_INCUBATOR_CONTRACT.md` | APPROVED | 定义显式 Host Requirement、Workflow Entry、Desktop P0–P6 evaluator、Activation 与兼容契约；Maker 于 2026-10-05 批准，不授权实现 |
+| Contract | `CONTRACTS/DESKTOP_PRODUCT_INCUBATOR_CONTRACT.md` | APPROVED / IMPLEMENTED | 显式 Host Requirement、Workflow Entry、Desktop P0–P6 evaluator、Activation 与兼容契约已实现并通过自动化验收 |
 | Runtime | `RUNTIME/SKILL_RUNTIME_SPEC.md` | APPROVED | V1.1 Evidence、Correction、Baseline、Drift 与 Extension 执行机制 |
 | Runtime | `RUNTIME/CONTEXT_MUTATION_ORCHESTRATION_RUNTIME_SPEC.md` | APPROVED | Prepare、Stage、Commit、Read-back、Rollback 与恢复语义 |
-| Runtime | `RUNTIME/DESKTOP_PRODUCT_INCUBATOR_RUNTIME_SPEC.md` | APPROVED | 定义 Entry/Host 双重校验、Desktop Workflow 执行、失败恢复与验证义务；Maker 于 2026-10-05 批准，不授权实现 |
+| Runtime | `RUNTIME/DESKTOP_PRODUCT_INCUBATOR_RUNTIME_SPEC.md` | APPROVED / IMPLEMENTED | Entry/Host 双重校验、Desktop Workflow、失败恢复与验证义务已实现并通过自动化验收 |
 | Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | V1.1 Tasks 1–10 已完成，等待 Maker 发布审阅 |
 | Implementation | `IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / PACKAGING ACCEPTED | RC 已构建并行安装；195 项矩阵、唯一发现入口、Managed Project RC 绑定和安装后九项检查通过 |
 | Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP CLOSED FOR RC | RC 可发现且独立运行；下一步为人工行为验收 |
 | Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / AUTOMATED ACCEPTANCE PASSED | Tasks 1–8 已完成；RC 1.1.0-rc.2 已构建并行安装，等待 Manual Round 2R |
 | Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | AUTOMATED PASSED / MANUAL ROUND 2R PENDING | Authorization、Rollback、Runtime Routing、Stage F 已通过；Manual Round 2R 尚未执行 |
-| Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | APPROVED / IMPLEMENTATION AUTHORIZED | Desktop Product Incubator Tasks 1–6；Maker 于 2026-10-05 批准当前会话串行实施 |
-| Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | APPROVED / EXECUTION PENDING | Registry、Entry、Workflow、Activation、Skill、回归、候选包与人工行为验收；Maker 于 2026-10-05 批准 |
+| Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | IMPLEMENTATION CODE COMPLETE / AUTOMATED ACCEPTANCE PASSED / MANUAL PENDING | 实现代码、自动化与候选包已完成；Task 6 的 M1–M6 人工行为验收待执行 |
+| Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | AUTOMATED PASSED / PACKAGE PASSED / MANUAL M1–M6 PENDING | Plugin `125/125`、Legacy `132/32/3` 与仓库外 Candidate Smoke 已通过；尚不可声明发布完成 |
 
 ## 人工验收入口
 

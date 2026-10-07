@@ -92,3 +92,18 @@
 - 独立运行：候选已写入个人 Plugin 源与版本化 Codex 缓存；从安装缓存启动 Router、`inspect_project` 和 Hook，恢复 Revision `8`、Receipt 验证通过、只读放行、直接写入拒绝，关键文件哈希与源码一致。
 - 验证工具限制：官方 `quick_validate.py` 在系统与 Codex bundled Python 中都因缺少 `PyYAML` 无法启动；已按该脚本实际规则执行等价 frontmatter、命名、字段和 TODO 检查，三份 Skill 均通过。
 - 人工验收边界：模拟项目停在 `M2_VERTICAL_SLICE / ACTIVE`，未把技术调查升级为宿主语义证据；继续推进属于真实 Mod 工程，不属于本 Plugin MVP 收口。
+
+## Desktop Product 0.2.0 自动验收 — 2026-10-07
+
+| Stage | 结果 | 关键证据 | 下一步 |
+| --- | --- | --- | --- |
+| A–E Registry / Entry / Workflow / Activation / Skill | PASS | 对应测试进入 Plugin 全量；Desktop 显式 Host、NEW/ADOPT Entry、P0–P6、Entry 不可变、P4 Correction 与 Browser 不越界均通过 | 全量回归 |
+| F Plugin Regression | PASS | `npm test`：`125/125`，0 failures；原有 88 项继续在同一套件内执行 | Legacy 回归 |
+| F Legacy Regression | PASS | unit `132/132`、integration `32/32`、e2e `3/3` | Candidate Package |
+| G Candidate Package | PASS | Manifest `0.2.0+codex.20261005142800`；Package `0.2.0`；安装 94 个生产依赖；必需 Skills/Profiles/Workflow 均存在，`SPECS`、tests、Legacy Runtime 与旧归档未进入包 | 人工行为验收 |
+| G Repository-external Smoke | PASS | 从系统临时目录加载 Registry 的 `mod` 与 `desktop-product`，两个 Entry evaluator 均返回 `WORKFLOW_ENTRY_ALLOWED`，Desktop Route 返回 `desktop-product-incubator + windows-desktop` | 清理临时候选 |
+| Protected Mod/Sims Assets | PASS | SHA-256：Mod Skill `304a789b...5017`、Sims Skill `b159ded0...bc4a`、Mod Profile `a959016c...f83a`、Sims Profile `f47f1292...0bf` | 保持冻结 |
+| Skill Validator | BLOCKED（工具环境） | 系统与 Codex bundled Python 均缺少 `PyYAML`，`quick_validate.py` 无法启动；未向仓库安装依赖；等价结构约束由 Contract Test 覆盖 | 有 PyYAML 环境时补跑官方校验器 |
+| Manual M1–M6 | PENDING | 当前串行实现会话没有独立行为测试 Agent；静态文本匹配不能证明真实触发、停下与升级行为 | 用安装候选执行六轮并保存答复、Tool、Result Code 与状态变化 |
+
+自动化与 Candidate Smoke 不能证明未来 Managed Desktop Product 的安装器、权限、签名、升级、卸载、安全软件交互或业务能力。浏览器自动化本轮未运行，因为 Browser Extension Project Type 尚未实现；本轮只证明它不会被错误路由到 Desktop Child。
