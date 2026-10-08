@@ -135,7 +135,11 @@ export function parseActivationProductDecisions(value) {
 const preActivationNarrative = /(?:ACTIVATION_DRAFT|initialize_project|activation request|not yet activated|awaiting activation|pending activation|等待.{0,30}(?:激活|Activation)|尚未激活|激活前)/iu;
 
 export function parsePostActivationInitialState(value) {
-  if (value?.schema_version !== "1.1" || value?.workflow?.entry === undefined) {
+  if (
+    value?.schema_version !== "1.1"
+    || value?.workflow?.entry === undefined
+    || value?.workflow?.entry === null
+  ) {
     throw new Error("WORKFLOW_ENTRY_REQUIRED");
   }
   if (!["NEW_PROJECT", "ADOPT_EXISTING"].includes(value.workflow.entry.mode)) {

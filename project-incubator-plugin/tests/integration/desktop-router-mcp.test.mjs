@@ -126,6 +126,14 @@ test("desktop activation returns the workflow mode error for an invalid entry mo
   assert.equal(result.structuredContent.error.code, "WORKFLOW_ENTRY_MODE_INVALID");
 });
 
+test("desktop activation returns the entry-required error when entry is null", async (t) => {
+  const { projectRoot, service } = await fixture(t);
+  const state = desktopState();
+  state.workflow.entry = null;
+  const result = await prepareDesktop(service, projectRoot, state);
+  assert.equal(result.structuredContent.error.code, "WORKFLOW_ENTRY_REQUIRED");
+});
+
 test("ADOPT_EXISTING P3 with evidence initializes from P3 after Maker authorization", async (t) => {
   const { projectRoot, runtimeDataRoot, service } = await fixture(t);
   const initialState = desktopState("P3", "ADOPT_EXISTING", ["evidence://existing-architecture"]);
