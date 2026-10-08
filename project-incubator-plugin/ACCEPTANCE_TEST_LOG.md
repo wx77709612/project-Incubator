@@ -102,7 +102,7 @@
 | F Legacy Regression | PASS | unit `132/132`、integration `32/32`、e2e `3/3` | Candidate Package |
 | G Candidate Package | PASS | Manifest `0.2.0+codex.20261008084456`；Package `0.2.0`；安装 94 个生产依赖；必需 Skills/Profiles/Workflow 均存在，`SPECS`、tests、Legacy Runtime 与旧归档未进入包 | 人工行为验收 |
 | G Repository-external Smoke | PASS | 从系统临时目录加载 Registry 的 `mod` 与 `desktop-product`，两个 Entry evaluator 均返回 `WORKFLOW_ENTRY_ALLOWED`，Desktop Route 返回 `desktop-product-incubator + windows-desktop`，Kernel package version 为 `0.2.0` | 清理临时候选 |
-| Whole-branch Review Remediation | PASS / FINAL RE-REVIEW PENDING | 首轮 1 个 Important 与 4 个 Minor 已关闭；第二轮新增 `Entry = null` Minor 已以 RED→GREEN 工具级测试修复 | 对最终新 HEAD 复审 |
+| Whole-branch Review Remediation | PASS | 首轮 1 个 Important 与 4 个 Minor、第二轮 `Entry = null` Minor 均已关闭；最终 HEAD `ffc38f2` 整分支复审无新发现 | 人工行为验收 |
 | Protected Mod/Sims Assets | PASS | SHA-256：Mod Skill `304a789b...5017`、Sims Skill `b159ded0...bc4a`、Mod Profile `a959016c...f83a`、Sims Profile `f47f1292...0bf` | 保持冻结 |
 | Skill Validator | BLOCKED（工具环境） | 系统与 Codex bundled Python 均缺少 `PyYAML`，`quick_validate.py` 无法启动；未向仓库安装依赖；等价结构约束由 Contract Test 覆盖 | 有 PyYAML 环境时补跑官方校验器 |
 | Manual M1–M6 | PENDING | 当前串行实现会话没有独立行为测试 Agent；静态文本匹配不能证明真实触发、停下与升级行为 | 用安装候选执行六轮并保存答复、Tool、Result Code 与状态变化 |

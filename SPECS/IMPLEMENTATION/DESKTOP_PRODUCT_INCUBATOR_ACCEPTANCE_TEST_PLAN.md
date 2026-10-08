@@ -214,7 +214,7 @@ Maker 于 2026-10-05 确认审阅清单 1–8，并授权按当前会话串行�
 | G / Candidate | PASS | `0.2.0+codex.20261008084456`；Package `0.2.0`；安装 94 个生产依赖；仓库外加载两个 Project Type、两个 Workflow Entry、Desktop Route 与 Kernel package version 成功 |
 | Protected Assets | PASS | 四个 Mod/Sims 文件 SHA-256 与实施前一致 |
 | Browser Boundary | PASS（自动化） | `browser-extension` 返回 `PROJECT_TYPE_NOT_FOUND`；未新增 Browser Type/Skill/Profile |
-| Whole-branch Review Remediation | PASS / FINAL RE-REVIEW PENDING | 首轮 1 个 Important 与 4 个 Minor 已关闭；第二轮确认首轮全部关闭并发现 `Entry = null` Minor，该项已补真实工具回归并修复；等待最终新 HEAD 复审 |
+| Whole-branch Review Remediation | PASS | 首轮 1 个 Important 与 4 个 Minor、第二轮 `Entry = null` Minor 均已关闭；最终 HEAD `ffc38f2` 整分支复审无新发现 |
 | M1–M6 | PENDING | 需要真实 Agent 行为轮次；静态 Skill 文本与自动化断言不能替代人工行为 Evidence |
 
 官方 `quick_validate.py` 在系统与 bundled Python 中均因缺少 `PyYAML` 无法启动；本次没有向仓库安装额外依赖。Skill 的 frontmatter、名称、发现条件、内容边界和打包存在性由 `desktop-guidance.test.mjs` 覆盖。该工具环境限制不改写为 Skill PASS，也不影响 M1–M6 仍为待验的结论。

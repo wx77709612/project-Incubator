@@ -240,6 +240,7 @@ assert.equal(receipt.authorization_ref.request_id, request.request_id);
 - Plugin 全量：`132/132`，0 failures。
 - Legacy：unit `132/132`、integration `32/32`、e2e `3/3`。
 - Candidate：Manifest `0.2.0+codex.20261008084456`、Package `0.2.0`；安装 94 个生产依赖；白名单、仓库外 Registry/Workflow/Kernel Route/Entry/version smoke 均通过。
+- 最终整分支复审：HEAD `ffc38f2` 相对 `6f4daf0` 无 Critical、Important 或 Minor；工作树干净，临时夹具与候选已清理。
 - 自动化 Acceptance Stage A–G 已通过；Manual Behavior Acceptance M1–M6 尚未执行，因此未达到发布 Exit Criteria。
 
 ## Plan Acceptance Criteria
