@@ -93,7 +93,9 @@
 - 验证工具限制：官方 `quick_validate.py` 在系统与 Codex bundled Python 中都因缺少 `PyYAML` 无法启动；已按该脚本实际规则执行等价 frontmatter、命名、字段和 TODO 检查，三份 Skill 均通过。
 - 人工验收边界：模拟项目停在 `M2_VERTICAL_SLICE / ACTIVE`，未把技术调查升级为宿主语义证据；继续推进属于真实 Mod 工程，不属于本 Plugin MVP 收口。
 
-## Desktop Product 0.2.0 自动验收 — 2026-10-07
+## Desktop Product 0.2.0 历史自动验收 — 2026-10-07
+
+本节是最终人工验收前的历史自动化基线；其中 `MANUAL PENDING` 已被下方 2026-10-09 最终结论取代。
 
 | Stage | 结果 | 关键证据 | 下一步 |
 | --- | --- | --- | --- |
@@ -108,3 +110,18 @@
 | Manual M1–M6 | PENDING | 当前串行实现会话没有独立行为测试 Agent；静态文本匹配不能证明真实触发、停下与升级行为 | 用安装候选执行六轮并保存答复、Tool、Result Code 与状态变化 |
 
 自动化与 Candidate Smoke 不能证明未来 Managed Desktop Product 的安装器、权限、签名、升级、卸载、安全软件交互或业务能力。浏览器自动化本轮未运行，因为 Browser Extension Project Type 尚未实现；本轮只证明它不会被错误路由到 Desktop Child。
+
+## Desktop Product 0.2.0 最终验收 — 2026-10-09
+
+| Stage | 结果 | 关键证据 |
+| --- | --- | --- |
+| Plugin Regression | PASS | `137/137`，0 failures；含 Bootstrap 同轮 Stop、普通中文批准、否定/拒绝消歧与 Router 标准授权句 |
+| Legacy Regression | PASS | unit `132/132`、integration `32/32`、e2e `3/3` |
+| Candidate | PASS | Manifest `0.2.0+codex.20261009161423`；Package/Activation `0.2.0`；94 个生产依赖，0 vulnerabilities；安装缓存与仓库外 smoke 通过 |
+| Manual M1–M5 | PASS | 五个独立 Maker Prompt/Setup 轮次分别验证 Desktop 路由、ADOPT_EXISTING 阶段判断、macOS Host 拒绝、Browser 类型拒绝及自动下载安装更新的授权边界 |
+| Manual M6 | PASS | `P4_CREATION_CORRECTION`，revision `1 -> 2`，P4 保持、无 `workflow_transition`、假设 INVALIDATED、Pending 清空，Receipt `receipt-1f02fdb1-28b3-43e0-83a1-8d5a10c28c2d` 验证成功 |
+| Bootstrap Authorization | PASS | Maker 原句“我批准激活请求……”在唯一 Request/Digest 精确匹配下被识别为 `APPROVE`；P0/revision 0 初始化与 Receipt 验证成功 |
+| Real Stop Hook | PASS | marker `baseline_revision=-1` 且早于 Receipt；最终回复包含 `receipt-6b54ac9f-cf07-495b-80c9-c7d14c4af8d7`；真实宿主轮次完成且未再阻断 |
+| Protected Mod/Sims | PASS | Mod Skill `304a789b...5017`、Sims Skill `b159ded0...bc4a`、Mod Profile `a959016c...f83a`、Sims Profile `f47f1292...0bf`，与实施前一致 |
+
+最终修复提交为 `3cbd14c`（Bootstrap marker）和 `709565d`（授权识别）。M1–M5 来自修复前的独立行为重放；最终全量回归与真实 Bootstrap/Stop 重放覆盖了后续变化。未初始化目录查询仍返回 `INTERNAL_ERROR` / `ENOENT activation.json`，保持为独立 Design Gap。本结论接受 Desktop 0.2.0 候选，不代表 V1.1 RC Round 2R 或发布归档完成。

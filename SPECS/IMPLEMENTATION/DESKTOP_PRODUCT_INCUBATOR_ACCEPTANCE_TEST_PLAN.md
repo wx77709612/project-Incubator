@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Target | Project Incubator Plugin Desktop Product Iteration |
-| Status | AUTOMATED PASSED / PACKAGE PASSED / MANUAL M1–M6 PENDING |
+| Status | PASSED / CANDIDATE ACCEPTED |
 | Approved By | Maker, 2026-10-05 |
 | Base Candidate | `0.1.0+codex.20261002144305` |
 | Planned Candidate | `0.2.0+codex.<UTC YYYYMMDDHHMMSS>` |
@@ -204,17 +204,25 @@ python -m unittest discover -s tests/e2e -p "test_*.py"
 
 Maker 于 2026-10-05 确认审阅清单 1–8，并授权按当前会话串行方式执行。批准计划不等于批准未来发现的产品边界或架构变更。
 
-## 14. Execution Result — 2026-10-07
+## 14. Execution Result — finalized 2026-10-09
 
 | Stage | Result | Observed Evidence |
 | --- | --- | --- |
 | A–E | PASS | 对应 Unit、Integration、Contract 与 E2E 断言进入 Plugin 全量套件 |
-| F / Plugin | PASS | `npm test`：`132/132`，0 failures；包含合法 Activation Scope 漂移拒绝、Entry 降级拒绝、稳定 Entry/Mode 错误码、MCP 0.2.0 握手与 D06 完整激活 |
+| F / Plugin | PASS | `npm test`：`137/137`，0 failures；新增 Bootstrap 同轮 Stop、普通中文批准、否定/拒绝消歧和 Router 标准授权句回归 |
 | F / Legacy | PASS | unit `132/132`、integration `32/32`、e2e `3/3` |
-| G / Candidate | PASS | `0.2.0+codex.20261008084456`；Package `0.2.0`；安装 94 个生产依赖；仓库外加载两个 Project Type、两个 Workflow Entry、Desktop Route 与 Kernel package version 成功 |
+| G / Candidate | PASS | Manifest `0.2.0+codex.20261009161423`；Package 与激活记录 `0.2.0`；安装 94 个生产依赖且 0 vulnerabilities；仓库外加载、白名单与安装缓存验证通过 |
 | Protected Assets | PASS | 四个 Mod/Sims 文件 SHA-256 与实施前一致 |
 | Browser Boundary | PASS（自动化） | `browser-extension` 返回 `PROJECT_TYPE_NOT_FOUND`；未新增 Browser Type/Skill/Profile |
-| Whole-branch Review Remediation | PASS | 首轮 1 个 Important 与 4 个 Minor、第二轮 `Entry = null` Minor 均已关闭；最终 HEAD `ffc38f2` 整分支复审无新发现 |
-| M1–M6 | PENDING | 需要真实 Agent 行为轮次；静态 Skill 文本与自动化断言不能替代人工行为 Evidence |
+| Historical Whole-branch Review | PASS | Task 6 时首轮 1 个 Important 与 4 个 Minor、第二轮 `Entry = null` Minor 均已关闭；当时 HEAD `ffc38f2` 整分支复审无新发现。Task 7 后续变化另由 137 项全量回归和真实宿主重放验证 |
+| M1 | PASS | 独立轮次提议 `desktop-product + windows-desktop`、NEW_PROJECT/P0，保持未激活 |
+| M2 | PASS | 独立轮次根据 Maker 提供的已有仓库/设计/计划/测试事实判为 ADOPT_EXISTING/P4，并明确 Evidence 缺口与不能越过 P4 的边界 |
+| M3 | PASS | 真实 MCP 对 `macos-desktop` 返回 `HOST_PROFILE_NOT_FOUND`；无 Windows 回退、无激活、无权威状态 |
+| M4 | PASS | 真实 MCP 对 `browser-extension` 返回 `PROJECT_TYPE_NOT_FOUND`；无 Desktop/Mod 回退、无激活 |
+| M5 | PASS | 将自动下载安装更新识别为 Product Decision 输入而非开放执行授权；保留来源、权限、恢复、凭据、可执行内容、更新策略与真实 Windows Evidence 七类边界 |
+| M6 | PASS | `P4_CREATION_CORRECTION` Receipt `receipt-1f02fdb1-28b3-43e0-83a1-8d5a10c28c2d` 验证成功；revision `1 -> 2`，阶段保持 P4，无 `workflow_transition`，失效假设与恢复计划已持久化 |
+| Bootstrap / Authorization / Stop | PASS | 最终候选真实轮次识别 Maker 的“我批准激活请求”为 `APPROVE`；初始化 P0/revision 0、Receipt 验证通过，marker `baseline_revision=-1`，最终回复包含 Receipt，宿主轮次完成且 Stop 未再阻断 |
 
-官方 `quick_validate.py` 在系统与 bundled Python 中均因缺少 `PyYAML` 无法启动；本次没有向仓库安装额外依赖。Skill 的 frontmatter、名称、发现条件、内容边界和打包存在性由 `desktop-guidance.test.mjs` 覆盖。该工具环境限制不改写为 Skill PASS，也不影响 M1–M6 仍为待验的结论。
+M1–M5 的独立行为证据产生于候选 `0.2.0+codex.20261009032904`；后续两个修复提交仅涉及 Bootstrap marker、授权解析与 Router 授权文案，最终候选已用全量 Plugin/Legacy 回归和真实 Bootstrap/Stop 重放覆盖这些变化。M6 使用已验证的最终机器证据。人工验收通过不证明未来 Managed Desktop Product 的安装器、权限、签名、升级、卸载、安全软件交互或业务能力。
+
+官方 `quick_validate.py` 在系统与 bundled Python 中均因缺少 `PyYAML` 无法启动；本次没有向仓库安装额外依赖。Skill 的 frontmatter、名称、发现条件、内容边界和打包存在性由 `desktop-guidance.test.mjs` 覆盖。未初始化目录查询的 `INTERNAL_ERROR` / `ENOENT activation.json` 保持为独立 Design Gap，不在本轮实现。此候选验收结论不等于 V1.1 RC Round 2R 完成，也不授权创建发布归档。

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Status:** IMPLEMENTATION CODE COMPLETE / AUTOMATED ACCEPTANCE PASSED / MANUAL M1–M6 PENDING
+**Status:** IMPLEMENTED / ACCEPTANCE PASSED
 
 **Approved By:** Maker, 2026-10-05
 
@@ -230,10 +230,10 @@ assert.equal(receipt.authorization_ref.request_id, request.request_id);
 - [x] **Step 4: From repository root run Legacy unit, integration and e2e commands; require exactly 132/132、32/32、3/3**
 - [x] **Step 5: Package to a fresh temporary directory, run `npm ci --omit=dev`, then load Registry and both Workflow Modules from outside the repository**
 - [x] **Step 6: Verify package whitelist excludes `SPECS`、tests、legacy runtime and includes the two new Skills/Profiles plus Candidate metadata**
-- [ ] **Step 7: Execute the approved Acceptance Test Plan, record actual evidence and update statuses only from observed results**
+- [x] **Step 7: Execute the approved Acceptance Test Plan, record actual evidence and update statuses only from observed results**
 - [x] **Step 8: Commit `test(plugin): accept desktop product incubator`**
 
-### Task 6 Execution Record
+### Task 6 Historical Execution Record
 
 - 2026-10-07：Desktop E2E 以 `0.1.0 !== 0.2.0` 形成预期 RED；Kernel 改为从候选 `package.json` 读取激活版本后，E2E `5/5` GREEN。
 - 整分支审阅复现并修复 Activation Scope 合法漂移、State 1.1 Entry 删除错误码、非法 Entry Mode 错误码、`Entry = null` 内部异常、ESM 缓存伪覆盖与 MCP 握手旧版本；补齐 D06 完整接管激活证据，并把 P4 恢复为一个模型一致性约束与两个批准检查点。
@@ -258,14 +258,25 @@ assert.equal(receipt.authorization_ref.request_id, request.request_id);
 - Produces: a bootstrap-turn marker whose virtual pre-activation revision lets Stop verify a same-turn initialization Receipt.
 - Does not decide: the separate uninitialized `inspect_project` / `get_project_state` error contract.
 
-- [ ] **Step 1: Add an integration test reproducing a Maker-approved initialization followed by Stop in the same turn; verify RED is missing turn marker**
-- [ ] **Step 2: Implement the minimal bootstrap turn marker with virtual pre-activation revision `-1`; require the initialization Receipt ID in the final message**
-- [ ] **Step 3: Run the focused integration test and full Plugin suite; require zero failures**
-- [ ] **Step 4: Build and install a fresh candidate, then reproduce the same-turn activation closure in a real Codex task**
-- [ ] **Step 5: Execute M1–M5 as five distinct Maker Prompt/Setup rounds and preserve each final answer, tool result, state effect and PASS/FAIL reason**
-- [ ] **Step 6: Rewrite the manual acceptance report into one current conclusion plus clearly labelled historical evidence; do not leave competing “latest” conclusions**
-- [ ] **Step 7: Synchronize Active Specifications, exact candidate identity, test totals and acceptance status only from fresh evidence**
-- [ ] **Step 8: Re-run Plugin and Legacy regression, verify protected Mod/Sims digests, and commit the remediation**
+- [x] **Step 1: Add an integration test reproducing a Maker-approved initialization followed by Stop in the same turn; verify RED is missing turn marker**
+- [x] **Step 2: Implement the minimal bootstrap turn marker with virtual pre-activation revision `-1`; require the initialization Receipt ID in the final message**
+- [x] **Step 3: Run the focused integration test and full Plugin suite; require zero failures**
+- [x] **Step 4: Build and install a fresh candidate, then reproduce the same-turn activation closure in a real Codex task**
+- [x] **Step 5: Execute M1–M5 as five distinct Maker Prompt/Setup rounds and preserve each final answer, tool result, state effect and PASS/FAIL reason**
+- [x] **Step 6: Rewrite the manual acceptance report into one current conclusion plus clearly labelled historical evidence; do not leave competing “latest” conclusions**
+- [x] **Step 7: Synchronize Active Specifications, exact candidate identity, test totals and acceptance status only from fresh evidence**
+- [x] **Step 8: Re-run Plugin and Legacy regression, verify protected Mod/Sims digests, and commit the remediation**
+
+### Task 7 Execution Record
+
+- Commit `3cbd14c` 增加 Bootstrap turn marker：虚拟激活前 revision 为 `-1`，同轮初始化后 Stop 必须核验 Receipt 且最终回复包含 Receipt ID。
+- Commit `709565d` 统一结构化 Claim 与 Legacy Fallback 的显式授权识别；`我批准激活请求` 仅在唯一 `request_id` 与 `scope_digest` 精确匹配时成为 `APPROVE`，否定与拒绝仍分别保持 `NONE` / `DECLINE`。
+- 最终候选：Manifest `0.2.0+codex.20261009161423`；Package 与激活记录 `0.2.0`。生产依赖安装 94 个，审计 0 漏洞。
+- 最终自动化：Plugin `137/137`；Legacy unit `132/132`、integration `32/32`、e2e `3/3`，均为 0 failures。
+- M1–M5 以五个独立 Maker Prompt/Setup 轮次通过；M6 的 `P4_CREATION_CORRECTION` 机器证据显示 revision `1 -> 2`、阶段保持 P4、无 `workflow_transition`、失效假设被记录、Pending 清空且 Receipt 验证成功。
+- 最终真实 Bootstrap 重放使用 Maker 原句完成授权、初始化与 Receipt 验证。turn marker 的 `baseline_revision=-1`，Receipt 提交晚于 marker，最终回复包含 `receipt-6b54ac9f-cf07-495b-80c9-c7d14c4af8d7`；宿主轮次完成且 Stop 未再阻断。
+- 四个受保护 Mod/Sims 文件的 SHA-256 与实施前基线一致；未新增 Browser Extension 类型或把其路由到 Desktop。
+- 未初始化目录的 `inspect_project` / `get_project_state` 仍返回 `INTERNAL_ERROR` / `ENOENT activation.json`。该项保持为独立 Design Gap，不在 Task 7 中实现，也不被本次 PASS 隐藏。
 
 ## Plan Acceptance Criteria
 
