@@ -17,6 +17,13 @@ export function turnMarkerPath(runtimeDataRoot, projectId, sessionId, turnId) {
   return path.join(runtimeDataRoot, `turn-${turnKey(projectId, sessionId, turnId)}.json`);
 }
 
+async function writeTurnMarker(runtimeDataRoot, marker) {
+  await mkdir(runtimeDataRoot, { recursive: true });
+  await writeFile(turnMarkerPath(
+    runtimeDataRoot, marker.project_id, marker.session_id, marker.turn_id,
+  ), `${JSON.stringify(marker)}\n`, { encoding: "utf8", flag: "w" });
+}
+
 export async function handleUserPromptSubmit(event, options = {}) {
   const root = await findActivatedProjectRoot(event.cwd ?? ".");
   const runtimeEnv = options.env ?? process.env;
@@ -35,6 +42,14 @@ export async function handleUserPromptSubmit(event, options = {}) {
       role: "maker", project_id: pending.project_id, session_id: event.session_id,
       turn_id: event.turn_id, text: event.prompt, captured_at: timestamp,
     }, pending, runtimeDataRoot, { now: options.now ?? new Date(timestamp) });
+    await writeTurnMarker(runtimeDataRoot, {
+      project_id: pending.project_id,
+      session_id: event.session_id,
+      turn_id: event.turn_id,
+      baseline_revision: -1,
+      baseline_receipt_id: null,
+      started_at: timestamp,
+    });
     return { continue: true };
   }
   const snapshot = await readProjectSnapshot(root);
@@ -48,17 +63,14 @@ export async function handleUserPromptSubmit(event, options = {}) {
     text: event.prompt,
     captured_at: timestamp,
   }, runtimeDataRoot, { now: options.now ?? new Date(timestamp) });
-  await mkdir(runtimeDataRoot, { recursive: true });
-  await writeFile(turnMarkerPath(
-    runtimeDataRoot, snapshot.state.project_id, event.session_id, event.turn_id,
-  ), `${JSON.stringify({
+  await writeTurnMarker(runtimeDataRoot, {
     project_id: snapshot.state.project_id,
     session_id: event.session_id,
     turn_id: event.turn_id,
     baseline_revision: snapshot.state.revision,
     baseline_receipt_id: snapshot.receipt.receipt_id,
     started_at: timestamp,
-  })}\n`, { encoding: "utf8", flag: "w" });
+  });
   return { continue: true };
 }
 

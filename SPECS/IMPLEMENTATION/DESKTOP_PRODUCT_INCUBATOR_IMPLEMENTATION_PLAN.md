@@ -243,6 +243,30 @@ assert.equal(receipt.authorization_ref.request_id, request.request_id);
 - 最终整分支复审：HEAD `ffc38f2` 相对 `6f4daf0` 无 Critical、Important 或 Minor；工作树干净，临时夹具与候选已清理。
 - 自动化 Acceptance Stage A–G 已通过；Manual Behavior Acceptance M1–M6 尚未执行，因此未达到发布 Exit Criteria。
 
+### Task 7: Manual Acceptance Remediation and Hook Closure
+
+**Files:**
+- Modify: `project-incubator-plugin/tests/integration/router-mcp.test.mjs`
+- Modify: `project-incubator-plugin/hooks/user-prompt-submit.mjs`
+- Modify: `project-incubator-plugin/ACCEPTANCE_TEST_LOG.md`
+- Modify: `SPECS/README.md`
+- Modify: `SPECS/IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md`
+- Modify: `SPECS/IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md`
+
+**Interfaces:**
+- Preserves: Pending Activation Prompt provenance, scoped Maker Authorization and three-file atomic initialization.
+- Produces: a bootstrap-turn marker whose virtual pre-activation revision lets Stop verify a same-turn initialization Receipt.
+- Does not decide: the separate uninitialized `inspect_project` / `get_project_state` error contract.
+
+- [ ] **Step 1: Add an integration test reproducing a Maker-approved initialization followed by Stop in the same turn; verify RED is missing turn marker**
+- [ ] **Step 2: Implement the minimal bootstrap turn marker with virtual pre-activation revision `-1`; require the initialization Receipt ID in the final message**
+- [ ] **Step 3: Run the focused integration test and full Plugin suite; require zero failures**
+- [ ] **Step 4: Build and install a fresh candidate, then reproduce the same-turn activation closure in a real Codex task**
+- [ ] **Step 5: Execute M1–M5 as five distinct Maker Prompt/Setup rounds and preserve each final answer, tool result, state effect and PASS/FAIL reason**
+- [ ] **Step 6: Rewrite the manual acceptance report into one current conclusion plus clearly labelled historical evidence; do not leave competing “latest” conclusions**
+- [ ] **Step 7: Synchronize Active Specifications, exact candidate identity, test totals and acceptance status only from fresh evidence**
+- [ ] **Step 8: Re-run Plugin and Legacy regression, verify protected Mod/Sims digests, and commit the remediation**
+
 ## Plan Acceptance Criteria
 
 - Tasks 1–6 have independent red/green evidence and commits.
@@ -257,4 +281,4 @@ assert.equal(receipt.authorization_ref.request_id, request.request_id);
 
 ## Execution Authorization
 
-Maker 于 2026-10-05 确认审阅清单 1–8，并选择当前会话串行实施。Task 1–6 仅可在本计划、已批准 Contract 与 Acceptance Test Plan 范围内执行；新发现的 Product 或 Architecture 变更仍需另行确认。
+Maker 于 2026-10-05 确认审阅清单 1–8，并选择当前会话串行实施。Maker 于 2026-10-09 批准 Task 7 的 Stop Hook 修复、独立 M1–M5 重放、验收记录整理与活动规格同步。未初始化状态查询的替代错误码仍是独立 Design Gap，不在 Task 7 中实现。新发现的 Product 或 Architecture 变更仍需另行确认。

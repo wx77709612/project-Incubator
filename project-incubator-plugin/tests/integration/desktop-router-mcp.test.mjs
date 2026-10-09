@@ -154,7 +154,9 @@ test("ADOPT_EXISTING P3 with evidence initializes from P3 after Maker authorizat
   assert.equal(snapshot.structuredContent.state.workflow.stage, "P3");
   assert.deepEqual(snapshot.structuredContent.state.workflow.allowed_next, ["P4"]);
   assert.deepEqual(snapshot.structuredContent.state.workflow.entry, initialState.workflow.entry);
-  assert.deepEqual(await readdir(runtimeDataRoot), []);
+  const runtimeFiles = await readdir(runtimeDataRoot);
+  assert.equal(runtimeFiles.length, 1);
+  assert.match(runtimeFiles[0], /^turn-[a-f0-9]{64}\.json$/u);
 });
 
 test("initialize revalidates a drifted route and leaves no authority files", async (t) => {

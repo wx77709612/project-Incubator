@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { access, mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { handleStop } from "../../hooks/stop.mjs";
 import { handleUserPromptSubmit } from "../../hooks/user-prompt-submit.mjs";
 import { createKernelService } from "../../src/server.mjs";
 import { initializeProjectState } from "../../src/kernel/state-store.mjs";
@@ -143,7 +144,47 @@ test("pending activation captures one scoped Maker approval and initializes atom
   assert.equal(state.structuredContent.state.decisions.active[0].confirmed_at, approvalTime);
   assert.equal(state.structuredContent.state.last_change.operation, "INITIALIZE_PROJECT");
   assert.equal(state.structuredContent.state.plan.current_action, "确认边界");
-  assert.deepEqual(await readdir(runtimeDataRoot), []);
+  const runtimeFiles = await readdir(runtimeDataRoot);
+  assert.equal(runtimeFiles.length, 1);
+  assert.match(runtimeFiles[0], /^turn-[a-f0-9]{64}\.json$/u);
+  const marker = JSON.parse(await readFile(path.join(runtimeDataRoot, runtimeFiles[0]), "utf8"));
+  assert.equal(marker.project_id, "project-1");
+  assert.equal(marker.session_id, "session-1");
+  assert.equal(marker.turn_id, "turn-2");
+  assert.equal(marker.baseline_revision, -1);
+  assert.equal(marker.baseline_receipt_id, null);
+});
+
+test("Maker-approved initialization closes through Stop in the same bootstrap turn", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  const prepared = await service.callTool("prepare_activation", {
+    project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
+    session_id: "session-1", summary: "激活 Mod 孵化器", state: activationState(),
+    product_decisions: productDecisions(),
+  });
+  const request = prepared.structuredContent;
+  await handleUserPromptSubmit({
+    cwd: projectRoot, session_id: "session-1", turn_id: "turn-bootstrap", timestamp: approvalTime,
+    prompt: `我明确批准 ${request.request_id}，scope_digest: ${request.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(approvalTime) });
+
+  const initialized = await service.callTool("initialize_project", {
+    project_root: projectRoot, request_id: request.request_id,
+    scope_digest: request.scope_digest, session_id: "session-1", turn_id: "turn-bootstrap",
+  }, { now: new Date(approvalTime) });
+  const receiptId = initialized.structuredContent.receipt.receipt_id;
+
+  const missingReceipt = await handleStop({
+    cwd: projectRoot, session_id: "session-1", turn_id: "turn-bootstrap",
+    last_assistant_message: "初始化完成",
+  }, { runtimeDataRoot });
+  assert.equal(missingReceipt.decision, "block");
+  assert.match(missingReceipt.reason, new RegExp(receiptId));
+
+  assert.deepEqual(await handleStop({
+    cwd: projectRoot, session_id: "session-1", turn_id: "turn-bootstrap",
+    last_assistant_message: `初始化完成，receipt_id: ${receiptId}`,
+  }, { runtimeDataRoot }), { continue: true });
 });
 
 test("prepare_activation rejects an activation-draft narrative as authoritative initial state", async (t) => {
