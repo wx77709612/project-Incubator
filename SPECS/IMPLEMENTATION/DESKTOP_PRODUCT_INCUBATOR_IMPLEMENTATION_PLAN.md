@@ -282,3 +282,5 @@ assert.equal(receipt.authorization_ref.request_id, request.request_id);
 ## Execution Authorization
 
 Maker 于 2026-10-05 确认审阅清单 1–8，并选择当前会话串行实施。Maker 于 2026-10-09 批准 Task 7 的 Stop Hook 修复、独立 M1–M5 重放、验收记录整理与活动规格同步。未初始化状态查询的替代错误码仍是独立 Design Gap，不在 Task 7 中实现。新发现的 Product 或 Architecture 变更仍需另行确认。
+
+Maker 于 2026-10-09 进一步确认 Task 7 人工验收发现的授权识别修复：`我批准激活请求` 在同时精确匹配唯一 `request_id` 与 `scope_digest` 时属于显式批准；实现必须保持否定与拒绝语义不被误判，统一结构化 Claim 与 Legacy Fallback 的判断规则，并以真实 Bootstrap / Stop Hook 闭合重放验证。该修复不放宽 Scope、Prompt 来源、Session、Turn、时效或 Maker 身份校验。

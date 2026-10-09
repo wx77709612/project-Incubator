@@ -58,6 +58,7 @@ test("router requires entry mode and explicit host while browser extension remai
   assert.match(router, /不得.*默认.*Host/s);
   assert.match(router, /ADOPT_EXISTING.*Agent.*Evidence.*阶段/s);
   assert.match(router, /浏览器扩展.*不支持/s);
+  assert.match(router, /我明确批准激活请求.*request_id.*scope_digest/s);
 });
 
 test("manifest and package identify the 0.2.0 multi-type candidate", async () => {

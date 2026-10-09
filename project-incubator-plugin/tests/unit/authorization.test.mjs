@@ -139,11 +139,36 @@ test("authorization uses structured scope evidence beyond the excerpt boundary",
   assert.equal(authorization.prompt_digest, ref.prompt_digest);
 });
 
+test("plain first-person activation approval authorizes the exact prepared scope", async (t) => {
+  const root = await runtimeRoot(t);
+  const prepared = prepareChange(snapshot(), proposal());
+  const ref = await recordMakerPrompt(activeEvent(
+    `我批准激活请求 request-1，scope_digest: ${scopeDigest}`,
+  ), root);
+  const authorization = await authorizePreparedChange(prepared, ref, { now: new Date(now) });
+  assert.equal(authorization.request_id, "request-1");
+  assert.equal(authorization.prompt_digest, ref.prompt_digest);
+});
+
 test("authorization keeps excerpt fallback for legacy prompt records", async (t) => {
   const root = await runtimeRoot(t);
   const prepared = prepareChange(snapshot(), proposal());
   const ref = await recordMakerPrompt(activeEvent(
     `我明确批准 request-1，scope_digest: ${scopeDigest}`,
+  ), root);
+  const stored = JSON.parse(await readFile(ref.file_path, "utf8"));
+  delete stored.authorization_claim;
+  await writeFile(ref.file_path, `${JSON.stringify(stored)}\n`, "utf8");
+  await utimes(ref.file_path, new Date(now), new Date(now));
+  const authorization = await authorizePreparedChange(prepared, ref, { now: new Date(now) });
+  assert.equal(authorization.request_id, "request-1");
+});
+
+test("legacy prompt fallback uses the same plain approval semantics", async (t) => {
+  const root = await runtimeRoot(t);
+  const prepared = prepareChange(snapshot(), proposal());
+  const ref = await recordMakerPrompt(activeEvent(
+    `我批准激活请求 request-1，scope_digest: ${scopeDigest}`,
   ), root);
   const stored = JSON.parse(await readFile(ref.file_path, "utf8"));
   delete stored.authorization_claim;

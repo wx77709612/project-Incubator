@@ -165,7 +165,7 @@ test("Maker-approved initialization closes through Stop in the same bootstrap tu
   const request = prepared.structuredContent;
   await handleUserPromptSubmit({
     cwd: projectRoot, session_id: "session-1", turn_id: "turn-bootstrap", timestamp: approvalTime,
-    prompt: `我明确批准 ${request.request_id}，scope_digest: ${request.scope_digest}`,
+    prompt: `我批准激活请求 request_id=${request.request_id}，scope_digest=${request.scope_digest}`,
   }, { runtimeDataRoot, now: new Date(approvalTime) });
 
   const initialized = await service.callTool("initialize_project", {

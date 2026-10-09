@@ -6,16 +6,24 @@ import { parseActivation } from "./schemas.mjs";
 
 const MAX_EXCERPT_LENGTH = 240;
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
-const APPROVAL_PATTERN = /(?:明确批准|正式批准|明确同意|\b(?:approve|approved|authorize|authorized)\b)/iu;
+const APPROVAL_PATTERN = /(?:明确批准|正式批准|明确同意|我批准激活请求|\b(?:approve|approved|authorize|authorized)\b)/iu;
 const DECLINE_PATTERN = /(?:明确拒绝|正式拒绝|明确撤回|正式撤回|拒绝批准|明确不同意|\b(?:reject|rejected|decline|declined|withdraw|withdrawn)\b)/iu;
+
+export function hasExplicitApproval(text) {
+  return APPROVAL_PATTERN.test(text);
+}
+
+export function hasExplicitDecline(text) {
+  return DECLINE_PATTERN.test(text);
+}
 
 function uniqueMatches(text, pattern, transform = (value) => value) {
   return [...new Set([...text.matchAll(pattern)].map((match) => transform(match[0])))];
 }
 
 function extractAuthorizationClaim(text) {
-  const approves = APPROVAL_PATTERN.test(text);
-  const declines = DECLINE_PATTERN.test(text);
+  const approves = hasExplicitApproval(text);
+  const declines = hasExplicitDecline(text);
   const intent = approves && declines ? "AMBIGUOUS"
     : approves ? "APPROVE"
       : declines ? "DECLINE"

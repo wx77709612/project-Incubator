@@ -92,6 +92,27 @@ test("authorization claim is extracted from the full prompt beyond the excerpt b
   assert.equal(JSON.stringify(stored).includes(text), false);
 });
 
+test("plain first-person activation approval is explicit without weakening negative intent", async (t) => {
+  const root = await tempRoot(t);
+  const scopeDigest = "a".repeat(64);
+  const approved = await recordMakerPrompt(event({
+    text: `我批准激活请求 request-1，scope_digest: ${scopeDigest}`,
+  }), root);
+  const approvedStored = JSON.parse(await readFile(approved.file_path, "utf8"));
+  assert.deepEqual(approvedStored.authorization_claim, {
+    intent: "APPROVE", request_id: "request-1", scope_digest: scopeDigest,
+  });
+
+  for (const [turnId, text, intent] of [
+    ["turn-negative", `我不批准激活请求 request-1，scope_digest: ${scopeDigest}`, "NONE"],
+    ["turn-decline", `我拒绝批准 request-1，scope_digest: ${scopeDigest}`, "DECLINE"],
+  ]) {
+    const ref = await recordMakerPrompt(event({ turn_id: turnId, text }), root);
+    const stored = JSON.parse(await readFile(ref.file_path, "utf8"));
+    assert.equal(stored.authorization_claim.intent, intent);
+  }
+});
+
 test("ambiguous intent and multiple scope tokens do not produce an authorization claim", async (t) => {
   const root = await tempRoot(t);
   const digestA = "a".repeat(64);

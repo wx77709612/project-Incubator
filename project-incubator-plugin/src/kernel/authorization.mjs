@@ -1,6 +1,13 @@
 import { randomUUID } from "node:crypto";
 
-import { consumePrompt, promptAgeMs, promptPolicy, readPrompt } from "./prompt-events.mjs";
+import {
+  consumePrompt,
+  hasExplicitApproval,
+  hasExplicitDecline,
+  promptAgeMs,
+  promptPolicy,
+  readPrompt,
+} from "./prompt-events.mjs";
 
 const DECISION_KINDS = new Set(["PRODUCT_DECISION", "ARCHITECTURE_DECISION"]);
 
@@ -38,14 +45,6 @@ export function prepareChange(snapshot, proposal) {
     project_revision: snapshot.state.revision,
     pending_request: structuredClone(pending),
   });
-}
-
-function hasExplicitApproval(text) {
-  return /(?:明确批准|正式批准|明确同意|\b(?:approve|approved|authorize|authorized)\b)/iu.test(text);
-}
-
-function hasExplicitDecline(text) {
-  return /(?:明确拒绝|正式拒绝|明确撤回|正式撤回|拒绝批准|明确不同意|\b(?:reject|rejected|decline|declined|withdraw|withdrawn)\b)/iu.test(text);
 }
 
 async function authorizePreparedPrompt(

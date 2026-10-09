@@ -9,7 +9,7 @@ description: 当 Maker 要创建、孵化、恢复或判断一个长期项目应
 
 1. 调用 `propose_route` 查询注册表中的候选项目类型与 Host Profile。
 2. 用简体中文说明候选路由、适用依据和不适用边界。
-3. Maker 决定首次激活时，调用 `prepare_activation` 形成短期请求，并完整展示 `request_id`、`scope_digest`、范围、将写入 Active Decision View 的 Product Decision 和确认问题。
+3. Maker 决定首次激活时，调用 `prepare_activation` 形成短期请求，并完整展示 `request_id`、`scope_digest`、范围、将写入 Active Decision View 的 Product Decision 和确认问题；提供标准回复句“我明确批准激活请求 request_id=<实际 request_id>，scope_digest=<实际 scope_digest>”，但不得代 Maker 发送。
 4. 只有 Maker 在下一轮明确批准该请求后，才调用 `initialize_project`。
 5. 项目已激活后，转交注册表指定的 Child Skill；不得自行替代其领域流程。
 
