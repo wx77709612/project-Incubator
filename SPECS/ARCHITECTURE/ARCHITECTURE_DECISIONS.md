@@ -46,7 +46,7 @@
 
 当前状态：
 
-V1.0 Architecture Baseline Frozen / V1.1 Architecture Evolution Active
+V1.0 Architecture Baseline Frozen / V1.1 Core Evolution Active / V1.2 Plugin Web Product Extension Active
 
 V1.0 冻结范围：
 
@@ -61,6 +61,12 @@ V1.1 增量来源：
 `SPECS/ARCHITECTURE/ARCHITECTURE_CHANGE_PROPOSAL.md`
 
 提案状态：`APPROVED`（2026-09-23）。
+
+V1.2 Plugin Web Product 增量来源：
+
+`SPECS/ARCHITECTURE/WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md`
+
+提案状态：`APPROVED`（2026-10-13）。
 
 V1.0 Decision 001–006 保留其历史语义。V1.1 通过新增 Decision 扩展或明确边界，不隐式改写历史决策。
 
@@ -2490,6 +2496,97 @@ P0–P6 对桌面产品仍具有完整语义。保留既有 Phase 名称可以�
 ## Status
 
 ACTIVE — Plugin 后续迭代，Maker 于 2026-10-04 批准；Workflow Entry 与 Host Requirement 修订于 2026-10-05 批准
+
+---
+
+# Decision 014: Web Product Project Type、Local Browser Validation 与次级集成界面归属
+
+## Decision
+
+Project Incubator Plugin 新增按主要产品形态划分的 `web-product` Project Type，并由 `web-product-incubator` Child Skill 提供通用浏览器端产品的阶段指导、构建与本地运行边界、验证要求和安全约束。
+
+`web-product` 的成立条件是：主要用户界面由通用浏览器访问，产品同时具有前端与后端逻辑职责，并且至少一条核心用户旅程穿过浏览器界面与后端或数据边界。前端与后端是逻辑职责，不要求前后端分离，也不因 SPA、SSR、MPA、静态生成、全栈框架、单体或多仓库结构产生不同 Project Type。
+
+浏览器扩展、纯后端 API、独立 MCP Service、只有前端静态内容且没有后端逻辑职责的站点、桌面端、移动端、CLI、SDK 与库不属于 `web-product`。Router 只能提议类型；Maker 明确确认后才能激活或迁移。
+
+Web Product Workflow 原样复用 Core P0–P6：
+
+- `P0 Intent Discovery`；
+- `P1 Project Definition`；
+- `P2 Solution Design`；
+- `P3 Execution Planning`；
+- `P4 Creation`；
+- `P5 Validation`；
+- `P6 Iteration`。
+
+Web Product Model、Usable Web Slice、Build Readiness、Local Browser Validation、Secondary Interface Validation 与 Creation Correction 是 Child Skill 对 Core Phase 的领域解释、活动、检查点或 Evidence 条件，不是新的顶层 Phase，不写入 `workflow.stage`，也不产生额外 Transition。
+
+`web-product` 显式声明：
+
+```text
+host_profile_requirement = "FORBIDDEN"
+deployment_capability = "DEFERRED_CAPABILITY"
+```
+
+通用浏览器、localhost、端口、启动命令、构建命令、环境变量与本地依赖属于 Managed Project 的运行配置和 Evidence 条件，不形成 Host Profile。公开部署、生产托管、域名、TLS、CDN、扩缩容、生产密钥和线上迁移不进入 V1.2 完成条件；build、localhost 与本地浏览器成功不得产生部署或生产就绪声明。
+
+P4 至少形成两个可区分检查点：
+
+- `Usable Web Slice`：一条核心浏览器旅程穿过适用的前端、后端与数据边界，结果、失败和副作用可观察；
+- `Build Readiness`：依赖、配置、构建、localhost 启动和 readiness 路径可重复，且失败不会被手工修补掩盖。
+
+P5 必须区分 Logic、Build、Local Service Integration、Local Browser、Secondary Interface 与 Human Evidence 的结论上限。Build-only Evidence 不能满足 P5；真实浏览器核心旅程是 V1.2 Web Product 验证的必要条件。
+
+Project Type 约束主要产品形态，不枚举或禁止后端内部组件与次级协议界面。Web Product 可以在同一业务模型上提供 REST、GraphQL、WebSocket、Webhook、MCP 或等价接口。当 MCP Server 只是封装既有后端 Capability 时，它仍属于同一 `web-product` Managed Project，无论使用 SSE、Streamable HTTP、stdio，或位于独立进程、包或部署单元。它必须拥有独立 Claim、Security Boundary 与真实 Client Evidence，但其 Evidence 不能替代浏览器旅程 Evidence。
+
+只有当 MCP Server 成为具有独立产品目标、消费者、版本支持、发布与回滚边界的主要交付物，且不再以浏览器核心旅程作为当前 Managed Project 的主要结果时，才不属于 `web-product`。当前版本不定义该独立 Project Type。
+
+Shared Kernel 的 Maker Authorization、MCP-only Mutation、Pending Request、Receipt、Hook、Evidence、Workflow Entry 与状态摘要继续复用。Web 规则通过 Project Type Profile、Child Skill、独立 Workflow evaluator、Registry 和既有状态分区表达；不新增 Web 或 MCP 专用权威状态文件，不因阶段副命名增加 Runtime Schema。
+
+## Reason
+
+浏览器端产品在前后端责任边界、本地服务启动、浏览器旅程、网络与数据输入、服务端授权、Secrets、外部依赖和验证结论上限方面具有稳定共性，足以形成独立 Child Incubator；这些共性与具体框架、渲染方式或仓库拓扑无关。
+
+复用 P0–P6 能保持跨 Project Type 的状态、Gate、Evidence 和授权语义一致。把 localhost 或浏览器建成 Host Profile 会把普通运行配置错误提升为路由复杂度；把部署设为必经 Gate 则会超出当前产品目标和验证预算。
+
+MCP、REST 或 Webhook 描述的是能力暴露界面，不天然决定产品的主要形态。将绑定于同一业务模型的次级界面留在 Web Product 边界内，可以避免重复项目状态、重复业务规则与授权分叉，同时仍要求界面级 Evidence。
+
+## Authority Boundary
+
+- Maker 决定 Intent、Product Boundary、Project Type 激活或迁移、Architecture Decision、外部副作用政策、真实账户与付费服务使用、人工验证预算及残余风险接受；
+- Agent 对 `ADOPT_EXISTING` 的阶段判断、Web System Model、工作包、实现细节和 Evidence 解释负责，但不得扩大已批准边界；
+- Child Skill 提供 Web 产品领域指导、检查点、验证要求和风险提示，不选择技术栈，不自动授权部署或次级接口；
+- Runtime 只执行结构、授权、Revision、Mutation、Receipt、Host Requirement 与 Workflow 合法性校验，不替 Maker 或 Agent 完成创造性判断。
+
+## Compatibility and Migration
+
+- 现有 `mod`、`desktop-product`、`sims-4` 与 `windows-desktop` 语义不修改、不迁移、不重新解释；
+- 已激活 Managed Project 不自动迁移到 `web-product`；
+- `NEW_PROJECT` 使用 P0，`ADOPT_EXISTING` 由 Agent 基于可复核 Evidence 判断 P0–P6 正常阶段；
+- `web-product` 激活时必须拒绝非空 Host Profile；
+- 旧状态不要求回填 Web 专用字段，因为本 Decision 不新增 State Schema；
+- V1.2 发布前必须重新确认 V1.1 的实际发布基线、Plugin Package Version 与迁移记录；
+- 未来启用 Deployment Capability 或独立 MCP Service Project Type 时，必须提出新的 Architecture Change Proposal；
+- 下游 Design 若发现现有 Registry、Workflow evaluator、状态分区或 Evidence 机制无法无歧义表达所需语义，必须登记 `DESIGN_GAP` 并返回 Architecture 层。
+
+## Impact
+
+- Web Product Project Type Profile；
+- `web-product-incubator` Child Skill；
+- Web P0–P6 Workflow evaluator；
+- Registry、Router 候选类型与 `FORBIDDEN` Host Requirement；
+- Web Build、localhost、真实浏览器与次级界面 Evidence；
+- Contract、Runtime Specification、Implementation Plan 与 Acceptance Test Plan；
+- Plugin、Legacy、`mod` 与 Desktop 完整回归矩阵；
+- 首个已有 Web 项目的 `ADOPT_EXISTING` Field Validation。
+
+## Source
+
+`SPECS/ARCHITECTURE/WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md`
+
+## Status
+
+ACTIVE — Plugin V1.2 Web Product Extension，Maker 于 2026-10-13 批准
 
 ---
 

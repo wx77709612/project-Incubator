@@ -4,10 +4,10 @@
 
 | 字段 | 值 |
 | --- | --- |
-| 当前研发版本 | V1.1 |
+| 当前研发版本 | V1.2 Plugin Web Product Incubator（独立分支） |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | RC 1.1.0-rc.2 Manual Round 2R Acceptance |
-| 产品实现状态 | 多 Context Mutation 与 Maker Authorization 来源修复已实现；自动化矩阵、RC 构建、并行安装与仓库外烟雾测试通过，等待 Maker 执行 Round 2R |
+| 当前阶段 | Architecture Approved / Project Type Design Draft |
+| 产品实现状态 | V1.2 尚未授权实现；V1.1 RC 状态保持不变，继续等待 Maker 执行 Round 2R |
 | 当前入口 | 本文件 |
 
 ## 版本管理规则
@@ -21,19 +21,20 @@
 | Layer | Document | Status | 说明 |
 | --- | --- | --- | --- |
 | Architecture | `ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED / IMPLEMENTED | 新增 `desktop-product` 与 `desktop-product-incubator`；Workflow Entry 与显式 Host Requirement 已进入 0.2.0 候选 |
-| Architecture | `ARCHITECTURE/WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | DRAFT | V1.2 新增 `web-product` 与 `web-product-incubator` 的书面审阅稿；Implementation Authorization 尚未授予 |
+| Architecture | `ARCHITECTURE/WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED | V1.2 新增 `web-product` 与 `web-product-incubator`；Maker 于 2026-10-13 批准，Implementation Authorization 尚未授予 |
 
-这些提案用于 Project Incubator Plugin 的版本化迭代，不改变下方 V1.1 RC 文档的当前状态。Desktop 提案已获 Maker 批准并实施；Web Product 提案仍为 V1.2 DRAFT，只能作为 Maker 书面审阅对象，不能作为产品实现授权。Contract、Runtime、Implementation 与 Acceptance 必须分别按 Change Control 顺序推进。
+这些提案用于 Project Incubator Plugin 的版本化迭代，不改变 V1.1 RC 的人工验收状态。Desktop 提案已获批准并实施；Web Product 提案已获 Maker 书面批准，当前只授权 Architecture Decisions 与 Design Layer。Contract、Runtime、Implementation 与 Acceptance 必须分别按 Change Control 顺序推进。
 
 ## 当前文档状态
 
 | Layer | Document | Status | 说明 |
 | --- | --- | --- | --- |
 | Architecture | `ARCHITECTURE/ARCHITECTURE_CHANGE_PROPOSAL.md` | APPROVED | V1.1 变更总规格；Maker 于 2026-09-23 批准 |
-| Architecture | `ARCHITECTURE/DOCUMENT_ARCHITECTURE.md` | ACTIVE | 定义 V1.1 文档职责、层级、版本和加载规则 |
-| Architecture | `ARCHITECTURE/ARCHITECTURE_DECISIONS.md` | ACTIVE | 保留 V1.0 Decision 001–006、V1.1 Decision 007–012，并登记 Plugin 后续迭代 Decision 013 |
+| Architecture | `ARCHITECTURE/DOCUMENT_ARCHITECTURE.md` | ACTIVE | 定义活动规格职责、层级、版本和加载规则，并登记 V1.2 Plugin Extension Track |
+| Architecture | `ARCHITECTURE/ARCHITECTURE_DECISIONS.md` | ACTIVE | 保留 V1.0 Decision 001–006、V1.1 Decision 007–012，并登记 Plugin Decision 013–014 |
 | Architecture | `ARCHITECTURE/CONTEXT_MUTATION_ORCHESTRATION_CHANGE_PROPOSAL.md` | APPROVED | Round 2 授权误判与多 Context 不闭合的 RC 修复提案；Maker 于 2026-09-24 批准 |
 | Project Type Design | `PROJECT_TYPES/DESKTOP_PRODUCT_PROFILE.md` | APPROVED | 定义 P0–P6 Phase Profile、Workflow Entry、显式 Host Requirement、Creation Checkpoint、Evidence 与安全边界；Maker 于 2026-10-05 批准 |
+| Project Type Design | `PROJECT_TYPES/WEB_PRODUCT_PROFILE.md` | DRAFT | 定义 Web Product Model、P0–P6 Profile、Build/localhost/Browser/MCP Evidence 与部署挂起边界；等待 Maker 审阅 |
 | Design | `DESIGN/PROJECT_INCUBATOR_DESIGN.md` | APPROVED | V1.0 非冲突设计与 V1.1 Evidence-driven Evolution 总体关系 |
 | Design | `DESIGN/EVIDENCE_MODEL_DESIGN.md` | APPROVED | V1.1 Core Evidence、Claim、Assumption、Baseline 与 Drift 模型 |
 | Design | `DESIGN/WORKFLOW_DESIGN.md` | APPROVED | P4 Creation Correction 内部活动模型 |
@@ -72,23 +73,25 @@ Maker 专用答案不得加入模拟项目或发送给被测 Agent。
 
 ## 当前 Source of Truth 解释
 
-在 V1.1 最终验收审阅期间：
+在 V1.2 Plugin Web Product 独立分支的规格阶段：
 
-1. V1.0 已发布行为以 `_V1.0` 与当前产品实现为基线证据；
-2. V1.1 架构、设计、契约和 Runtime 规格均已批准，产品实现与仓库内自动化验收已按 Implementation Plan 完成；
-3. 活动层文档是当前实现依据，`_V1.0` 仅用于回归比较、迁移分析和历史追踪；
-4. 若下游实现与上游规格冲突，必须先登记并解决 Design Gap；
-5. RC 自包含打包、仓库外安装烟雾测试和 Maker 人工验收完成前，不创建 V1.1 发布归档，也不将当前活动规格标记为已发布。
-6. 四份增量规格与两份 remediation Plan 已经 Maker 批准并实施；自动化通过不替代 Maker 的 Round 2R 人工行为验收。
+1. V1.0 已发布行为以 `_V1.0` 与当前产品实现为发布基线证据；
+2. V1.1 架构、设计、契约和 Runtime 规格及其已完成实现构成 V1.2 的开发基础，但 V1.1 Round 2R 人工验收与发布归档仍在并行轨道中，不得被 V1.2 提前声明为已发布；
+3. Web Product Architecture Change Proposal 已获批准，Decision 014 已进入活动架构；
+4. `PROJECT_TYPES/WEB_PRODUCT_PROFILE.md` 当前为 `DRAFT`，只能作为 Maker 审阅对象，不能作为 Contract、Runtime 或实现授权；
+5. 活动层文档是当前规格依据，`_V1.0` 仅用于回归比较、迁移分析和历史追踪；
+6. 若下游规格或实现与上游冲突，必须先登记并解决 `DESIGN_GAP`；
+7. V1.1 RC 自动化通过不替代 Maker 的 Round 2R 人工行为验收；V1.2 也不得改变或关闭该验收状态。
 
-## V1.1 文档推进顺序
+## V1.2 Web Product 文档推进顺序
 
-1. 审批 Architecture Change Proposal；
-2. 更新 Architecture Decisions 与 Document Architecture；
-3. 更新 Core Design，并新增 Opaque Capability Extension；
-4. 更新 Contract 与 Runtime Specification；
-5. 编写 V1.1 Implementation Plan 与 Acceptance Test Plan；
-6. 审批计划后进入 Skill、Runtime、Template 与 Test 实现。
+1. Architecture Change Proposal 已批准；
+2. Architecture Decisions 与 Document Architecture 已更新；
+3. 编写并审批 Web Product Project Type Design；
+4. Design 获批后编写并审批 Contract 与 Runtime Specification；
+5. 编写并审批 Implementation Plan 与 Acceptance Test Plan；
+6. 两份 Plan 获批后进入 Skill、Runtime、Profile、Registry、Router、Manifest 与 Test 实现；
+7. 完成自动化、候选包、仓库外安装和真实已有 Web 项目验收后，才评估 V1.2 发布归档。
 
 ## 历史基线
 

@@ -6,14 +6,14 @@
 | --- | --- |
 | Specification Version | V1.2 |
 | Specification Track | Project Incubator Plugin Web Product Incubator |
-| Status | DRAFT |
+| Status | APPROVED |
 | Development Base | Desktop Product Incubator accepted commit `3482f3b6fce98452d5f9f64e7d5c8142a4079c31` |
 | Released Baseline | `SPECS/_V1.0/` |
 | Plugin Candidate Baseline | `0.2.0+codex.20261009161423` |
 | Change Type | Project Type Extension |
 | Implementation Authorization | NOT GRANTED |
 | Maker Discussion Baseline | 2026-10-13 |
-| Written Proposal Approval | PENDING |
+| Written Proposal Approval | Maker 于 2026-10-13 明确批准 |
 
 本文档把 Maker 已确认的 Web 产品方向固化为 V1.2 Architecture Change Proposal。它定义 `web-product` 项目类型、`web-product-incubator` 的职责边界、P0–P6 解释、验证结论上限、部署挂起语义以及对现有 Plugin 的预计影响。
 
@@ -506,7 +506,7 @@ P4 中的有界模型反例使用 Creation Correction；P5 形成完整 Validati
 17. 次级集成界面复用后端业务、授权、审计、数据和外部副作用边界，不形成未记录的第二套业务规则；
 18. `mod`、Desktop、Host、Kernel 与 Legacy 回归保持通过。
 
-## 20. 待 Maker 书面审阅
+## 20. Maker 书面审批记录
 
 Maker 已在 2026-10-13 的讨论中确认以下方向，可作为本提案的讨论基线：
 
@@ -521,4 +521,12 @@ Maker 已在 2026-10-13 的讨论中确认以下方向，可作为本提案的�
 9. Project Type 约束主要产品形态而不限制内部组件或次级协议界面；Web Product 后端为既有业务能力增加 MCP Server 时，仍由同一 `web-product-incubator` 的 P0–P6 设计、实现和验证；
 10. MCP Server 只有在成为具有独立产品目标和生命周期的主要交付物时才不属于 `web-product`，本提案不定义该独立类型。
 
-上述讨论批准不等于对本文档逐条书面批准。Maker 需要审阅本文档并明确确认后，Status 才能改为 `APPROVED`；批准只授权继续 Architecture Decisions 与 Design Layer，不授权实现。
+Maker 于 2026-10-13 完成本文档审阅，并明确批准当前提交 `29705c8` 中的 Web Product Architecture Change Proposal。
+
+本次批准的授权范围仅包括：
+
+1. 将本提案标记为 `APPROVED`；
+2. 更新 Architecture Decisions 与 Document Architecture；
+3. 编写 Web Product Project Type Design Layer 审阅稿。
+
+本次批准不授权 Contract、Runtime Specification、Implementation Plan、Acceptance Test Plan 或 Implementation Code。Design Layer 必须另行完成 Maker 审阅与批准，才能继续下游规格。

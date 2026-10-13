@@ -4,10 +4,11 @@
 
 | 字段 | 值 |
 | --- | --- |
-| Specification Version | V1.1 |
+| Specification Version | V1.2 Plugin Web Product Extension Track |
 | Status | ACTIVE |
-| Previous Baseline | `SPECS/_V1.0/ARCHITECTURE/DOCUMENT_ARCHITECTURE.md` |
-| Architecture Proposal | `SPECS/ARCHITECTURE/ARCHITECTURE_CHANGE_PROPOSAL.md` |
+| Released Baseline | `SPECS/_V1.0/ARCHITECTURE/DOCUMENT_ARCHITECTURE.md` |
+| Development Base | Desktop Product Incubator accepted commit `3482f3b6fce98452d5f9f64e7d5c8142a4079c31` |
+| Architecture Proposals | `SPECS/ARCHITECTURE/ARCHITECTURE_CHANGE_PROPOSAL.md`、`SPECS/ARCHITECTURE/WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` |
 
 ## 2. 目的
 
@@ -61,7 +62,7 @@ SPECS/
 
 ### 3.3 文档元数据
 
-V1.1 新建或实质性重写的规格至少声明：
+V1.1 及后续版本新建或实质性重写的规格至少声明：
 
 - `Specification Version`；
 - `Status`；
@@ -115,6 +116,8 @@ Extension Design 和 Project Type Profile 都必须服从 Architecture 与 Core 
 | --- | --- |
 | `ARCHITECTURE_CHANGE_PROPOSAL.md` | 描述 V1.1 变化动机、范围、Impact、兼容策略和批准边界 |
 | `CONTEXT_MUTATION_ORCHESTRATION_CHANGE_PROPOSAL.md` | 描述人工验收发现的授权来源与多 Context 闭合缺口及修复边界 |
+| `DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | 描述 Desktop Product Project Type、Host Requirement 与 Workflow Entry 的架构边界 |
+| `WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | 描述 V1.2 Web Product Project Type、localhost 验证、部署挂起与次级集成界面归属 |
 | `ARCHITECTURE_DECISIONS.md` | 保存当前有效 Architecture Decision 及其状态、关系和影响 |
 | `DOCUMENT_ARCHITECTURE.md` | 定义规格体系、层级职责、版本管理和加载规则 |
 
@@ -193,6 +196,13 @@ Project Type 不决定 Opaque Extension 是否对整个项目永久启用。Exte
 
 Project Type Profile 不得放宽 Core Gate、Evidence、Authority 或 Correction Threshold。
 
+当前文档：
+
+| Document | Status | 职责 |
+| --- | --- | --- |
+| `DESKTOP_PRODUCT_PROFILE.md` | APPROVED | 定义 Desktop Product Domain Model、P0–P6 Profile、Host 接口、交付检查点与真实环境 Evidence |
+| `WEB_PRODUCT_PROFILE.md` | DRAFT | 定义 Web Product Domain Model、P0–P6 Profile、构建与 localhost 检查点、浏览器和次级界面 Evidence；等待 Maker 审批 |
+
 ## 9. Contract Layer
 
 路径：`SPECS/CONTRACTS/`
@@ -215,6 +225,7 @@ Project Type Profile 不得放宽 Core Gate、Evidence、Authority 或 Correctio
 | `GATE_CONTRACT.md` | Gate Input、Evidence、Evaluation Result 和非控制性边界 |
 | `SCRIPT_CONTRACT.md` | Script Input / Output、确定性证据和禁止路径 |
 | `CONTEXT_MUTATION_ORCHESTRATION_CONTRACT.md` | Multi-Context Event、Mutation Set、Authorization Provenance、Closure Result 与错误语义 |
+| `DESKTOP_PRODUCT_INCUBATOR_CONTRACT.md` | Desktop Project Type、Workflow Entry、Host Requirement、激活与 evaluator 交互契约 |
 
 Contract 必须由上游 Design 推导，不得自行创造 Domain Rule。
 
@@ -225,7 +236,10 @@ Contract 必须由上游 Design 推导，不得自行创造 Domain Rule。
 当前文档：
 
 - `SKILL_RUNTIME_SPEC.md`；
-- `CONTEXT_MUTATION_ORCHESTRATION_RUNTIME_SPEC.md`。
+- `CONTEXT_MUTATION_ORCHESTRATION_RUNTIME_SPEC.md`；
+- `DESKTOP_PRODUCT_INCUBATOR_RUNTIME_SPEC.md`。
+
+Web Product Runtime Specification 尚未编写；在 Project Type Design 与 Contract 获批前不得创建为实现依据。
 
 职责：
 
@@ -253,10 +267,14 @@ Runtime 不判断产品目标、技术解释或语义 Evidence 是否真实，�
 
 | Document | 当前状态 |
 | --- | --- |
-| `IMPLEMENTATION_PLAN.md` | V1.1 计划尚未编写，不构成实施授权 |
-| `LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | V1.1 验收计划尚未编写 |
-| `CONTEXT_MUTATION_ORCHESTRATION_IMPLEMENTATION_PLAN.md` | RC 人工验收 Release Blocking 缺陷的增量实施计划 |
-| `CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | Multi-Context Mutation 自动化与人工重放验收计划 |
+| `IMPLEMENTATION_PLAN.md` | V1.1 已实施并通过仓库内验收；不授权 V1.2 Web Product 实现 |
+| `LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | V1.1 RC Packaging Gap 已关闭；人工验收仍按索引执行 |
+| `CONTEXT_MUTATION_ORCHESTRATION_IMPLEMENTATION_PLAN.md` | V1.1 RC Remediation 已实施，等待 Round 2R 人工闭合 |
+| `CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | 自动化通过，Manual Round 2R Pending |
+| `DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | Desktop Product 已实施并通过候选验收 |
+| `DESKTOP_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | Desktop Product Candidate Accepted |
+
+Web Product Implementation Plan 与 Acceptance Test Plan 尚未编写。它们必须等待 Architecture、Design、Contract 和 Runtime Specification 获批，并需 Maker 单独审批后才能授权实现。
 
 Implementation Plan 必须等待 Architecture、Design、Contract 和 Runtime Specification 获批后编写。
 
