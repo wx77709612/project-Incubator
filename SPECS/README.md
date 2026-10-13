@@ -21,8 +21,9 @@
 | Layer | Document | Status | 说明 |
 | --- | --- | --- | --- |
 | Architecture | `ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED / IMPLEMENTED | 新增 `desktop-product` 与 `desktop-product-incubator`；Workflow Entry 与显式 Host Requirement 已进入 0.2.0 候选 |
+| Architecture | `ARCHITECTURE/WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | DRAFT | V1.2 新增 `web-product` 与 `web-product-incubator` 的书面审阅稿；Implementation Authorization 尚未授予 |
 
-该提案用于 Project Incubator Plugin 的后续版本化迭代，不改变下方 V1.1 RC 文档的当前状态。提案已获 Maker 批准，可作为下游 Architecture 与 Design 的依据；Contract、Runtime、Implementation 与 Acceptance 仍须按 Change Control 顺序推进。
+这些提案用于 Project Incubator Plugin 的版本化迭代，不改变下方 V1.1 RC 文档的当前状态。Desktop 提案已获 Maker 批准并实施；Web Product 提案仍为 V1.2 DRAFT，只能作为 Maker 书面审阅对象，不能作为产品实现授权。Contract、Runtime、Implementation 与 Acceptance 必须分别按 Change Control 顺序推进。
 
 ## 当前文档状态
 
