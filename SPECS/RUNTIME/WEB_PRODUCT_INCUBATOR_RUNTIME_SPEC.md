@@ -257,8 +257,9 @@ Build、localhost、Browser 或 Secondary Interface 验证失败是 Evidence / G
 - State 1.0/1.1 兼容；
 - P4 Checkpoint 不形成 Stage；
 - Build-only、localhost-only、Browser-only 和 Secondary Interface-only 的结论上限；
+- P5 Evidence 的结构绑定覆盖代码 Revision、Artifact、依赖与工具版本、关键配置、localhost URL/端口/协议、目标浏览器名称与版本，以及前端、后端、数据和外部依赖状态；
 - 含 MCP Server 的 Web Product 保持 Web 路由，独立 MCP Service 不被误路由；
-- Browser 与真实 MCP Client Evidence 不互相替代；
+- Browser 与真实 MCP Client Evidence 不互相替代；Secondary Interface Evidence 绑定真实 Client/版本、Transport、Capability、非敏感授权上下文、允许路径、未授权或越权拒绝路径、结果、失败、审计、副作用及与后端授权政策的一致性；
 - Deployment Deferred 不产生 Runtime 字段或生产结论；
 - Plugin、Legacy、Mod、Desktop、Host、Hook、Receipt 和受保护文件完整回归；
 - 候选包安装后能加载 Web Profile、Skill、Workflow 与 Registry；

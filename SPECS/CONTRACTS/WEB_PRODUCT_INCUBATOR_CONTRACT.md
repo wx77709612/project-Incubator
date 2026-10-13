@@ -194,14 +194,22 @@ HUMAN_VALIDATION
 这些标识用于 Artifact、Gate Input 和 Evidence 引用，不增加 Core Runtime 枚举。每项材料至少包含：
 
 - Channel；
-- 被测 Revision 与 Artifact；
-- 环境与关键配置摘要；
-- 场景、步骤和观察结果；
-- 后端、数据或外部副作用；
+- 被测代码 Revision 与构建 Artifact；
+- 依赖和关键工具名称与版本；
+- 环境与关键配置摘要，敏感值只能记录来源类别或脱敏标识；
+- 场景、步骤、观察结果和关键失败反馈；
+- 前端、后端、数据、外部依赖和外部副作用的适用状态；
 - Evidence Refs；
 - Claim Scope 与 Known Limitations；
 - 观察事实、Script Validation Result（仅适用确定性 Script 时）或未形成结论的 Reason；
 - 适用性及其与 Product Boundary 一致的理由。
+
+Channel-specific Binding：
+
+- `LOCAL_INTEGRATION_VALIDATION` 必须绑定 localhost URL、端口、协议、启动配置摘要以及前端、后端、数据和适用外部依赖状态；
+- `LOCAL_BROWSER_VALIDATION` 必须绑定目标浏览器名称与版本、localhost URL、端口、协议、入口、用户步骤、可见结果和对应后端或数据结果；
+- `SECONDARY_INTERFACE_VALIDATION` 必须绑定真实 Client 名称与版本、Transport、Capability、非敏感授权上下文、输入、允许路径结果、未授权或越权拒绝路径、协议失败、业务失败、审计和外部副作用；
+- `HUMAN_VALIDATION` 必须绑定观察者角色、被测场景、环境和明确观察，不得用无范围的口头结论替代 Evidence。
 
 P5 最低要求：
 
@@ -223,7 +231,7 @@ REST、GraphQL、WebSocket、Webhook、MCP 等次级界面只有在以下条件�
 - 共享主要版本与变更生命周期；
 - 不是当前 Managed Project 的主要独立交付物。
 
-每个次级 Capability 必须具有独立 Claim、Security Boundary 与 Evidence Ref。MCP Validation 必须绑定真实 Client、Transport、Tool/Resource 或等价能力、输入、结果、失败和副作用。
+每个次级 Capability 必须具有独立 Claim、Security Boundary 与 Evidence Ref。MCP Validation 必须绑定真实 Client、Transport、Tool/Resource 或等价能力、非敏感授权上下文、允许路径、未授权或越权拒绝路径、结果、协议失败、业务失败、审计和副作用，并证明观察到的授权行为与同一后端授权政策一致。
 
 Transport、进程、包或部署单元变化不触发自动迁移。若独立产品条件成立，Agent 输出 Maker Project Type Review Requirement；Router 和 Kernel 不自动改写激活状态。
 
