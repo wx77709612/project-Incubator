@@ -201,7 +201,7 @@ Project Type Profile 不得放宽 Core Gate、Evidence、Authority 或 Correctio
 | Document | Status | 职责 |
 | --- | --- | --- |
 | `DESKTOP_PRODUCT_PROFILE.md` | APPROVED | 定义 Desktop Product Domain Model、P0–P6 Profile、Host 接口、交付检查点与真实环境 Evidence |
-| `WEB_PRODUCT_PROFILE.md` | DRAFT | 定义 Web Product Domain Model、P0–P6 Profile、构建与 localhost 检查点、浏览器和次级界面 Evidence；等待 Maker 审批 |
+| `WEB_PRODUCT_PROFILE.md` | APPROVED | 定义 Web Product Domain Model、P0–P6 Profile、构建与 localhost 检查点、浏览器和次级界面 Evidence；Maker 于 2026-10-13 批准 |
 
 ## 9. Contract Layer
 
@@ -226,6 +226,7 @@ Project Type Profile 不得放宽 Core Gate、Evidence、Authority 或 Correctio
 | `SCRIPT_CONTRACT.md` | Script Input / Output、确定性证据和禁止路径 |
 | `CONTEXT_MUTATION_ORCHESTRATION_CONTRACT.md` | Multi-Context Event、Mutation Set、Authorization Provenance、Closure Result 与错误语义 |
 | `DESKTOP_PRODUCT_INCUBATOR_CONTRACT.md` | Desktop Project Type、Workflow Entry、Host Requirement、激活与 evaluator 交互契约 |
+| `WEB_PRODUCT_INCUBATOR_CONTRACT.md` | Web Project Type、Host Forbidden、Workflow Entry、P0–P6、P4 Checkpoint、P5 Evidence 与次级界面契约；当前为 DRAFT |
 
 Contract 必须由上游 Design 推导，不得自行创造 Domain Rule。
 
@@ -237,9 +238,10 @@ Contract 必须由上游 Design 推导，不得自行创造 Domain Rule。
 
 - `SKILL_RUNTIME_SPEC.md`；
 - `CONTEXT_MUTATION_ORCHESTRATION_RUNTIME_SPEC.md`；
-- `DESKTOP_PRODUCT_INCUBATOR_RUNTIME_SPEC.md`。
+- `DESKTOP_PRODUCT_INCUBATOR_RUNTIME_SPEC.md`；
+- `WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md`（DRAFT）。
 
-Web Product Runtime Specification 尚未编写；在 Project Type Design 与 Contract 获批前不得创建为实现依据。
+Web Product Contract 与 Runtime Specification 当前只用于 Maker 书面审阅；两者获批前不得编写 Implementation Plan 或 Acceptance Test Plan，也不得作为实现依据。
 
 职责：
 

@@ -6,7 +6,7 @@
 | --- | --- |
 | Specification Version | V1.2 |
 | Layer | Project Type Design |
-| Status | DRAFT |
+| Status | APPROVED |
 | Project Type ID | `web-product` |
 | Child Skill ID | `web-product-incubator` |
 | Architecture Source | `SPECS/ARCHITECTURE/WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` |
@@ -15,11 +15,11 @@
 | Host Profile Requirement | `FORBIDDEN` |
 | Deployment Capability | `DEFERRED_CAPABILITY` |
 | Implementation Authorization | NOT GRANTED |
-| Maker Review | PENDING |
+| Maker Approval | 2026-10-13 |
 
 本文档把已批准的 Web Product Architecture Decision 具体化为 Project Type Domain Model、P0–P6 Phase Profile、P4 检查点、Evidence 结论上限、安全边界和现有权威状态映射。
 
-本文档是 Design Layer 审阅稿，不定义字段级 Contract、Runtime Algorithm、文件实现位置或具体产品功能。只有 Maker 明确批准本文档后，才能继续编写 Web Product Contract 与 Runtime Specification；本次 Design 工作不授权任何产品代码、Runtime、Template、JSON、Registry、Router、Skill、Manifest 或测试变更。
+本文档不定义字段级 Contract、Runtime Algorithm、文件实现位置或具体产品功能。Maker 于 2026-10-13 明确批准本 Design；该批准只授权继续编写 Web Product Contract 与 Runtime Specification，不授权 Implementation Plan、Acceptance Test Plan、产品代码、Runtime、Template、JSON、Registry、Router、Skill、Manifest 或测试变更。
 
 ## 2. 设计目标
 
@@ -557,9 +557,9 @@ Agent 可以在批准边界内决定 Implementation Detail、Probe 设计、测�
 17. 现有状态分区原则上足够，没有创建第二份权威状态；
 18. Shared Kernel、现有 Project Type 和历史基线未被 Web 领域规则重定义。
 
-## 17. Maker 审阅事项
+## 17. Maker 审批记录
 
-Maker 审阅本 Design 时需要确认：
+Maker 于 2026-10-13 明确确认：
 
 1. Web Product Domain Model 与最低 Web System Model 维度；
 2. P0–P6 Web Phase Profile 的职责和出口；
@@ -570,4 +570,4 @@ Maker 审阅本 Design 时需要确认：
 7. MCP 等次级界面的归属、独立 Evidence 和 Project Type Review 触发条件；
 8. 安全、外部副作用与 Maker Authority；
 9. 现有状态映射和不新增 Web/MCP 专用 Schema 的原则；
-10. 批准后只授权继续 Contract 与 Runtime Specification，不授权实现。
+10. 本批准只授权继续 Contract 与 Runtime Specification，不授权 Implementation Plan、Acceptance Test Plan 或实现。
