@@ -17,7 +17,7 @@
 
 本文档把 Maker 已确认的 Web 产品方向固化为 V1.2 Architecture Change Proposal。它定义 `web-product` 项目类型、`web-product-incubator` 的职责边界、P0–P6 解释、验证结论上限、部署挂起语义以及对现有 Plugin 的预计影响。
 
-本提案不直接授权修改 Plugin Runtime、Registry、Router、Skill、Profile、Manifest 或测试。Maker 审阅并批准本文档后，只允许继续更新 Architecture Decisions 与 Design Layer；Contract、Runtime Specification、Implementation Plan 与 Acceptance Test Plan 仍须按 Change Control 顺序完成和审批。
+本提案不直接授权修改 Plugin Runtime、Registry、Router、Skill、Profile、Manifest 或测试。Maker 审阅并批准本文档后，只允许更新 Architecture Decisions、Document Architecture，并编写 Design Layer 审阅稿；Contract、Runtime Specification、Implementation Plan 与 Acceptance Test Plan 仍须按 Change Control 顺序完成和审批。
 
 ## 2. 变更动机
 
@@ -43,7 +43,7 @@ V1.2 的首个真实验证对象是一个已有 Web 项目。该项目用于验�
 
 1. 编写和审阅本 Architecture Change Proposal；
 2. 进行只读影响分析和现有基线调查；
-3. 在本提案获批后更新 Architecture Decisions 与 Design Layer。
+3. 在本提案获批后更新 Architecture Decisions 与 Document Architecture，并编写 Design Layer 审阅稿。
 
 当前不允许编写或修改产品实现。任何实现前工作必须先完成 Contract、Runtime Specification、Implementation Plan 与 Acceptance Test Plan，并取得对应批准。
 

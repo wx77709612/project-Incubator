@@ -2535,7 +2535,7 @@ P4 至少形成两个可区分检查点：
 - `Usable Web Slice`：一条核心浏览器旅程穿过适用的前端、后端与数据边界，结果、失败和副作用可观察；
 - `Build Readiness`：依赖、配置、构建、localhost 启动和 readiness 路径可重复，且失败不会被手工修补掩盖。
 
-P5 必须区分 Logic、Build、Local Service Integration、Local Browser、Secondary Interface 与 Human Evidence 的结论上限。Build-only Evidence 不能满足 P5；真实浏览器核心旅程是 V1.2 Web Product 验证的必要条件。
+P5 必须区分 `LOGIC_AUTOMATION`、`BUILD_VALIDATION`、`LOCAL_INTEGRATION_VALIDATION`、`LOCAL_BROWSER_VALIDATION`、`SECONDARY_INTERFACE_VALIDATION` 与 `HUMAN_VALIDATION` 的结论上限。Build-only Evidence 不能满足 P5；真实浏览器核心旅程是 V1.2 Web Product 验证的必要条件。
 
 Project Type 约束主要产品形态，不枚举或禁止后端内部组件与次级协议界面。Web Product 可以在同一业务模型上提供 REST、GraphQL、WebSocket、Webhook、MCP 或等价接口。当 MCP Server 只是封装既有后端 Capability 时，它仍属于同一 `web-product` Managed Project，无论使用 SSE、Streamable HTTP、stdio，或位于独立进程、包或部署单元。它必须拥有独立 Claim、Security Boundary 与真实 Client Evidence，但其 Evidence 不能替代浏览器旅程 Evidence。
 

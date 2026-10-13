@@ -156,7 +156,7 @@ Web Product 区分以下 Evidence 通道：
 
 1. `LOGIC_AUTOMATION`：纯逻辑、状态转换、解析、授权规则和确定性失败恢复；
 2. `BUILD_VALIDATION`：依赖准备、编译、打包、静态检查与构建 Artifact；
-3. `LOCAL_SERVICE_INTEGRATION`：localhost 服务、前后端职责、数据和外部依赖之间的集成；
+3. `LOCAL_INTEGRATION_VALIDATION`：localhost 服务、前后端职责、数据和外部依赖之间的集成；
 4. `LOCAL_BROWSER_VALIDATION`：真实浏览器中的核心用户旅程、呈现、交互、错误反馈和可观察结果；
 5. `SECONDARY_INTERFACE_VALIDATION`：通过真实适用 Client 验证 REST、Webhook、MCP 等次级界面的协议、授权、结果、失败和副作用；
 6. `HUMAN_VALIDATION`：Maker 或目标用户对结果、可理解性和业务可接受性的人工观察。
@@ -310,7 +310,7 @@ Implementation Plan 至少区分：
 - 核心浏览器用户旅程；
 - Usable Web Slice 完成条件；
 - Build Readiness 完成条件；
-- Logic、Build、Local Integration、Local Browser、Secondary Interface 与 Human Validation；
+- `LOGIC_AUTOMATION`、`BUILD_VALIDATION`、`LOCAL_INTEGRATION_VALIDATION`、`LOCAL_BROWSER_VALIDATION`、`SECONDARY_INTERFACE_VALIDATION` 与 `HUMAN_VALIDATION`；
 - 本地运行命令、端口、readiness、数据和清理；
 - 外部依赖、模拟边界与不可控条件；
 - Known-Good Baseline 和回归集合；
@@ -357,7 +357,7 @@ Validation Result 必须绑定：
 V1.2 P5 的最低组合为：
 
 1. Build Validation 成功；
-2. Local Service Integration 能证明前端与后端职责在受控配置中协作；
+2. `LOCAL_INTEGRATION_VALIDATION` 能证明前端与后端职责在受控配置中协作；
 3. Local Browser Validation 在真实浏览器中完成至少一条核心用户旅程；
 4. 对适用的关键失败路径观察用户反馈和无未授权副作用；
 5. 若存在 MCP 等次级界面，使用真实 Client 单独验证协议、授权、结果、失败和副作用；
@@ -410,7 +410,7 @@ P4 中出现以下情况时进入 Correction Review：
 | --- | --- | --- |
 | Logic Automation | 确定性规则、解析、授权判定、状态和失败恢复 | 构建可用、服务集成或真实浏览器行为 |
 | Build Validation | 指定环境与 Revision 的构建成功和 Artifact 产生 | localhost 可用、核心旅程或生产可用 |
-| Local Service Integration | 指定本地配置中的服务、数据和依赖协作 | 浏览器呈现、用户交互或跨环境兼容 |
+| `LOCAL_INTEGRATION_VALIDATION` | 指定本地配置中的服务、数据和依赖协作 | 浏览器呈现、用户交互或跨环境兼容 |
 | Local Browser Validation | 指定构建、浏览器和 localhost 配置中的真实用户旅程 | 未测浏览器、部署、容量、生产安全或长期稳定性 |
 | Secondary Interface Validation | 指定 Transport、Client 和 Capability 的协议、授权、结果与副作用 | 浏览器核心旅程或该接口的独立产品成立性 |
 | Human Validation | 被测结果的可理解性与业务接受观察 | 未绑定环境的普遍正确性或 Runtime Gate 自动通过 |
