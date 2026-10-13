@@ -69,13 +69,30 @@ Web 产品至少具有：
 
 上述职责可以位于同一代码库、同一进程或同一框架，也可以前后端分离。Child Incubator 不以 SPA、SSR、MPA、静态生成、BFF、Serverless 或其他实现方式作为项目类型分支。
 
-### 4.3 Shared Kernel 保持领域中立
+### 4.3 Project Type 与次级集成界面分离
+
+Project Type 约束 Managed Project 的主要产品形态和项目级孵化流程，不枚举或禁止工程内部组件、进程或次级协议界面。一个 `web-product` 可以在同一后端业务模型上同时提供 REST、GraphQL、WebSocket、Webhook、MCP 或等价接口。
+
+当 MCP Server 只是把 Web Product 已有的后端业务能力封装为 MCP Tools、Resources 或其他 MCP 能力时，它属于：
+
+- Web Product 的后端组件；
+- 次级集成界面；
+- 需要独立 Claim、Security Boundary 和 Evidence 的 Capability；
+- 同一 `web-product` Managed Project 的 P0–P6 范围。
+
+MCP Server 使用 SSE、Streamable HTTP、stdio 或其他 Transport，不改变上述归属。MCP Server 位于独立进程、包或部署单元，也不自动改变 Project Type；只要它仍共享同一 Product Boundary、业务模型、数据、授权政策和主要生命周期，就继续由 `web-product-incubator` 受控推进。
+
+只有当 MCP Server 本身成为主要独立交付物，拥有独立产品目标、消费者、版本支持、发布与回滚边界，且不再以通用浏览器核心产品旅程作为当前 Managed Project 的主要结果时，才不属于 `web-product`。该独立服务需要未来相应 Project Type；当前 Router 不得将其强制归入 Web Product。
+
+该分类先使用现有 `boundary`、`capabilities`、`assumptions`、`plan`、`gates`、`risks` 与 Evidence 表达，不新增 `primary_surface`、`integration_surface` 或 MCP 专用 Runtime Schema 字段。若下游 Design 证明现有状态无法恢复必要语义，必须登记 `DESIGN_GAP`。
+
+### 4.4 Shared Kernel 保持领域中立
 
 Maker Authorization、MCP-only Mutation、Pending Request、Receipt、Hook、Evidence、状态摘要和权威状态继续由 Shared Kernel 提供。Web 项目的浏览器、HTTP、认证、数据和本地运行规则不得进入 Kernel。
 
 V1.2 原则上不修改 Shared Kernel Schema 或通用授权语义。若下游设计发现 Web Project Type 无法通过现有 Registry、Workflow evaluator、状态分区和 Evidence 机制表达，必须登记 `DESIGN_GAP` 并返回 Architecture 层，不得在实现中隐式扩展 Kernel。
 
-### 4.4 Host Profile 对 `web-product` 禁止
+### 4.5 Host Profile 对 `web-product` 禁止
 
 本提案采用：
 
@@ -87,7 +104,7 @@ host_profile_requirement = "FORBIDDEN"
 
 Host Profile 禁止只表示路由和权威状态中不得绑定 Host，不表示项目可以忽略目标浏览器或本地运行环境。相关信息仍是 P1–P5 的项目配置与 Evidence 条件。
 
-### 4.5 部署能力挂起
+### 4.6 部署能力挂起
 
 V1.2 将公开部署定义为：
 
@@ -117,12 +134,13 @@ V1.2 不要求域名、DNS、TLS、CDN、生产托管、扩缩容、生产监控
 
 - 浏览器扩展；
 - 只有服务端 API、后台任务或基础设施而没有浏览器用户界面的项目；
+- 以 MCP Server 本身作为主要独立交付物、且没有通用浏览器核心产品旅程的项目；
 - 只有前端静态内容且没有后端逻辑职责的站点；
 - 桌面应用、移动应用、CLI、SDK 或库；
 - 游戏 Mod 或依赖特定游戏宿主的内容；
 - 仅有设计稿、文档或原型而不形成可运行 Web 产品的项目。
 
-外部 API、第三方身份服务、数据库和内容服务可以是 Web 产品依赖，但不会因此改变 Project Type。若主要交付形态发生变化，Router 只能提议迁移；Maker 确认后才能改变已激活 Project Type。
+外部 API、第三方身份服务、数据库和内容服务可以是 Web 产品依赖，但不会因此改变 Project Type。Web Product 后端新增用于封装既有业务能力的 MCP Server，也不会使项目退出 `web-product`。若主要交付形态发生变化，Router 只能提议迁移；Maker 确认后才能改变已激活 Project Type。
 
 ## 6. Child Incubator 职责
 
@@ -135,14 +153,16 @@ V1.2 不要求域名、DNS、TLS、CDN、生产托管、扩缩容、生产监控
 5. 确认构建与 localhost 启动路径可重复；
 6. 区分构建、逻辑自动化、服务集成和真实浏览器 Evidence；
 7. 管理不可信输入、服务端授权、Secrets、日志和外部副作用风险；
-8. 在 P4 使用 Creation Correction，在 P6 使用合法返回点；
-9. 使用 Shared Kernel 完成状态读取、授权、Mutation 与 Receipt 闭合。
+8. 对 REST、GraphQL、WebSocket、MCP 等适用的次级集成界面维护与后端业务模型一致的授权、失败和 Evidence 边界；
+9. 在 P4 使用 Creation Correction，在 P6 使用合法返回点；
+10. 使用 Shared Kernel 完成状态读取、授权、Mutation 与 Receipt 闭合。
 
 `web-product-incubator` 不负责：
 
 - 选择或偏好具体前端、后端、数据库或构建技术栈；
 - 要求前后端分离或合并；
 - 把 SPA、SSR、MPA 或全栈框架建成不同 Workflow；
+- 因后端增加 MCP Server 或其他次级接口而自动迁移 Project Type；
 - 负责浏览器扩展、纯后端服务、桌面端或移动端的领域流程；
 - 承诺公开部署、生产可用、生产安全或规模化能力；
 - 替 Maker 决定产品功能、业务领域、外部写入或付费服务使用；
@@ -154,13 +174,13 @@ V1.2 不要求域名、DNS、TLS、CDN、生产托管、扩缩容、生产监控
 
 ### 7.1 P0 `Intent Discovery`
 
-明确用户问题、核心结果、成功标准，以及为什么浏览器产品是合适载体。区分已观察事实、可推翻假设和 Maker Product Decision。
+明确用户问题、核心结果、成功标准，以及为什么浏览器产品是合适载体。若计划通过 MCP 或其他次级界面向 Agent、自动化客户端或外部系统暴露能力，同时明确该能力服务的用户结果及其与浏览器产品 Intent 的关系。区分已观察事实、可推翻假设和 Maker Product Decision。
 
 可观察出口：Maker 已确认 Intent、核心结果、主要排除项和浏览器载体理由。
 
 ### 7.2 P1 `Project Definition`
 
-明确目标用户、核心旅程、前端与后端职责、数据边界、身份与授权要求、外部依赖、本地运行标准和部署挂起范围。
+明确目标用户、核心旅程、前端与后端职责、数据边界、身份与授权要求、外部依赖、本地运行标准和部署挂起范围。若存在 MCP 等次级集成界面，同时明确消费者、暴露能力、禁止能力、外部副作用、版本边界和它是否属于同一 Product Boundary。
 
 项目级配置至少应能定位目标浏览器、构建命令、启动命令、localhost 端口或 URL、必要环境变量以及本地依赖。具体存储位置由下游 Design 决定，当前不新增权威配置文件。
 
@@ -175,6 +195,8 @@ V1.2 不要求域名、DNS、TLS、CDN、生产托管、扩缩容、生产监控
 - 请求、响应、状态和数据流；
 - 身份、认证、服务端授权和会话边界；
 - 数据持久化与外部依赖；
+- 次级集成界面的 Adapter 边界、协议契约、业务层复用和失败语义；
+- 浏览器、普通后端接口与 MCP 等次级界面之间的授权一致性；
 - Secrets、日志和不可信输入边界；
 - 构建、启动、失败恢复和最小可观察性；
 - 部署能力的明确挂起范围。
@@ -190,7 +212,7 @@ V1.2 不要求域名、DNS、TLS、CDN、生产托管、扩缩容、生产监控
 - `Usable Web Slice`：至少一个核心用户旅程从浏览器交互穿过后端或数据边界，到达用户可观察结果；
 - `Build Readiness`：依赖安装、构建命令、必要配置、localhost 启动和失败诊断达到可重复验证条件。
 
-计划必须识别自动化验证、真实浏览器验证、需要 Maker 参与的验证、外部副作用授权、停止条件和回滚或恢复路径。
+计划必须识别自动化验证、真实浏览器验证、适用的次级集成界面契约与客户端验证、需要 Maker 参与的验证、外部副作用授权、停止条件和回滚或恢复路径。
 
 可观察出口：任务、依赖、完成条件、验证层级、风险和停止点可执行。
 
@@ -214,6 +236,13 @@ V1.2 不要求域名、DNS、TLS、CDN、生产托管、扩缩容、生产监控
 - 启动失败、缺少配置和依赖不可用具有可诊断结果；
 - 构建产物和运行证据不会被表述为公开部署完成。
 
+若当前 Product Boundary 包含 MCP Server 或其他次级集成界面，P4 还必须保持以下模型一致性：
+
+- Adapter 复用后端业务能力，不形成未记录的第二套业务规则；
+- Tool、Resource 或等价接口只暴露 Maker 已批准的 Capability Boundary；
+- 次级界面不能绕过服务端授权、审计、数据和外部副作用控制；
+- Transport、进程或包边界不会被误写成新的 Project Type 或顶层 Phase。
+
 若 Evidence 推翻局部模型，进入 P4 内部 `Creation Correction`：记录失效 Assumption，暂停同方向修补，界定影响，修正设计、计划和实现，并重放受影响验证。Stage 保持 P4，不创建新的 Workflow Phase。若影响 Product Boundary、Architecture Decision、部署边界或 Runtime Invariant，提出 Maker Scope Review Requirement。
 
 ### 7.6 P5 `Validation`
@@ -224,9 +253,10 @@ P5 按结论层级执行：
 2. `LOGIC_AUTOMATION`：证明确定性规则、解析、状态变化与失败恢复；
 3. `LOCAL_INTEGRATION_VALIDATION`：证明前端、后端、数据和本地依赖在 localhost 环境中的集成；
 4. `LOCAL_BROWSER_VALIDATION`：使用真实浏览器执行核心用户旅程并观察后端或数据结果；
-5. `HUMAN_VALIDATION`：当产品语义或用户结果不能由自动化充分判断时，由 Maker 提供受控观察。
+5. `SECONDARY_INTERFACE_VALIDATION`：当 Product Boundary 包含 MCP 等次级界面时，证明协议契约、真实 Client 调用、授权、失败、副作用以及与后端业务语义的一致性；
+6. `HUMAN_VALIDATION`：当产品语义或用户结果不能由自动化充分判断时，由 Maker 提供受控观察。
 
-这些名称是 Design 语义，不要求新增 Runtime 枚举。构建成功只能支持 Build Claim；逻辑自动化不能单独证明浏览器旅程；接口探测不能替代用户可观察结果；localhost 成功不能证明公开部署或生产可用。
+这些名称是 Design 语义，不要求新增 Runtime 枚举。构建成功只能支持 Build Claim；逻辑自动化不能单独证明浏览器旅程；接口探测不能替代用户可观察结果；localhost 成功不能证明公开部署或生产可用。浏览器旅程成功不能自动证明 MCP Capability 成立，MCP Client 调用成功也不能替代 Web Product 的真实浏览器核心旅程。
 
 进入 P6 前的最低验证集合为：
 
@@ -234,6 +264,7 @@ P5 按结论层级执行：
 - localhost 服务可访问；
 - 至少一个真实浏览器核心旅程完成；
 - 对应后端、数据或业务结果可观察；
+- Product Boundary 包含次级集成界面时，对应 Capability 已取得协议契约和真实 Client 调用 Evidence；
 - 已知限制、失败和残余风险被记录。
 
 ### 7.7 P6 `Iteration`
@@ -266,6 +297,7 @@ P5 按结论层级执行：
 | 逻辑自动化 | 确定性业务规则、解析、状态转换和受控失败恢复 | 浏览器、网络、真实后端或数据边界成立 |
 | 本地集成验证 | localhost 环境中的组件连接、接口和本地依赖行为 | 浏览器用户结果、公开部署或生产环境行为 |
 | 真实浏览器验证 | 指定浏览器、构建、配置和 localhost 环境中的用户旅程 Observed Working | 未测试浏览器、生产部署、规模、安全或长期稳定性 |
+| 次级集成界面验证 | 指定版本、Transport、Client、授权和 Capability Boundary 下的 MCP 或等价接口行为 | 浏览器产品旅程、未测试 Client、独立服务产品成立或生产稳定性 |
 | Maker 人工观察 | 指定场景中的产品语义与用户可感知结果 | 自动外推到未测试范围或替代技术根因分析 |
 
 所有 Evidence 继续使用 E0–E5 语义并绑定具体 Claim、Scope、Artifact 和环境。任何结论不得超过其证据层级；一次 localhost 成功不能升级为“生产就绪”。
@@ -275,7 +307,9 @@ P5 按结论层级执行：
 下游 Design 至少必须处理：
 
 - 浏览器输入、URL、查询参数、表单、上传、Cookie、Header、网络响应和第三方内容均视为不可信；
+- MCP Tool 参数、Resource 请求、Client 元数据和其他次级接口输入同样视为不可信；
 - 身份认证结果不等于资源授权，关键授权必须由后端职责执行；
+- 浏览器、普通 API 与 MCP 等界面必须共享或明确映射同一后端授权和副作用政策，次级界面不得成为绕过路径；
 - Secrets、服务端凭据和高权限令牌不得进入客户端构建产物、浏览器存储或可公开日志；
 - 日志、错误响应和诊断证据不得泄露敏感数据、令牌或内部实现细节；
 - 输入验证、输出编码、文件访问和重定向必须受明确边界约束；
@@ -331,6 +365,8 @@ Agent 可以在获批规格和计划内决定 Implementation Detail、测试组�
 - 不修改 Shared Kernel 的授权、Receipt 或状态权威边界；
 - 不新增第二套项目状态或 Web 专用权威文件；
 - 不新增 SPA、SSR、前后端分离等 Project Type；
+- 不因 Web Product 包含 MCP Server 或其他次级集成界面而新增 Project Type、Host Profile 或顶层 Phase；
+- 不新增 MCP 专用 Runtime Schema 字段；
 - 不新增 Deployment Phase；
 - 不增加 P6→P0/P1 Transition；
 - 不把首个真实项目的业务字段写入 Registry、Schema 或 Child Skill；
@@ -341,7 +377,7 @@ Agent 可以在获批规格和计划内决定 Implementation Detail、测试组�
 | Layer | 预计影响 | 本提案后的动作 |
 | --- | --- | --- |
 | Architecture | 新增 `web-product`，明确无 Host Profile 与部署挂起边界 | Maker 批准后更新 Architecture Decisions 与 Document Architecture |
-| Design | 定义 Web Product Model、P0–P6 Profile、两个 P4 Checkpoint、验证层级、安全和 Failure Routing | 新增 `WEB_PRODUCT_PROFILE.md` 或等价活动 Design 文档 |
+| Design | 定义 Web Product Model、P0–P6 Profile、两个 P4 Checkpoint、次级集成界面、验证层级、安全和 Failure Routing | 新增 `WEB_PRODUCT_PROFILE.md` 或等价活动 Design 文档 |
 | Contract | 定义 Web Entry、Workflow evaluator、阶段转换、Host Forbidden、验证输入输出与错误码 | Design 获批后编写 |
 | Runtime Specification | 定义 Registry 加载、Entry/Transition 校验、失败关闭和安装后运行语义 | Contract 获批后编写 |
 | Implementation Plan | 冻结 Profile、Skill、Workflow、Registry、Router、Manifest 和测试范围 | 上游规格获批后编写 |
@@ -369,11 +405,14 @@ P4 中的有界模型反例使用 Creation Correction；P5 形成完整 Validati
 
 - Registry 能发现 `web-product` 且 Host Requirement 为 `FORBIDDEN`；
 - Router 能区分 Web 产品、浏览器扩展、纯后端 API 与桌面产品；
+- 含 MCP Server 的 Web Product 仍路由为 `web-product`，独立 MCP Service 不因使用 HTTP 或附带辅助页面而被误路由；
 - `NEW_PROJECT` 只能从 P0 开始；
 - `ADOPT_EXISTING` 可基于 Evidence 进入 P0–P6 的正常阶段；
 - P0–P6 顺序、P6→P2–P5 与 Maker Authority 保持不变；
 - P4 Creation Correction 不产生新 Phase；
 - Build-only Evidence 不能满足 P5；
+- 浏览器 Evidence 与 MCP 等次级界面 Evidence 不互相替代；
+- 次级 MCP Capability 复用后端业务和授权边界，并能通过真实 MCP Client 验证；
 - 不要求部署且不能产生生产就绪声明；
 - Web Skill 不按 SPA、SSR、分离或技术栈分裂流程；
 - `mod`、Desktop、Host、Kernel、Hook、Receipt 和安装候选完整回归通过；
@@ -390,8 +429,9 @@ P4 中的有界模型反例使用 Creation Correction；P5 形成完整 Validati
 5. 使用真实浏览器完成至少一个核心用户旅程；
 6. 观察并记录对应后端、数据或业务结果；
 7. 验证关键失败反馈和无未授权外部副作用；
-8. 形成绑定构建、浏览器、配置、URL、步骤和结果的 Evidence；
-9. 明确声明未执行公开部署，结论不包含生产就绪。
+8. 若现有项目包含 MCP Server 或其他次级集成界面，使用真实 Client 验证其协议契约、授权、结果、失败和副作用，并确认其未绕过后端业务边界；
+9. 形成绑定构建、浏览器、配置、URL、步骤和结果的 Evidence；适用时另绑定次级界面的 Transport、Client、Capability 与结果；
+10. 明确声明未执行公开部署，结论不包含生产就绪。
 
 该真实项目只提供 Field Evidence，不替代 Plugin Unit、Contract、Integration、E2E 和安装候选回归。
 
@@ -435,7 +475,8 @@ P4 中的有界模型反例使用 Creation Correction；P5 形成完整 Validati
 - 宣称生产可用、生产安全、规模化或高可用；
 - 决定具体 Web 技术栈、框架、数据库或仓库布局；
 - 把 SPA、SSR、MPA、前后端分离或全栈框架定义为不同类型；
-- 支持浏览器扩展、纯后端 API、静态前端站点、桌面端或移动端；
+- 将独立 MCP Service、浏览器扩展、纯后端 API、静态前端站点、桌面端或移动端强制归入 `web-product`；
+- 为独立 MCP Service 定义新的 Project Type 或孵化流程；
 - 修改 Shared Kernel Invariant；
 - 新增 Web 专用权威状态文件；
 - 把首个真实项目的业务领域或实现细节固化为通用规则；
@@ -448,11 +489,11 @@ P4 中的有界模型反例使用 Creation Correction；P5 形成完整 Validati
 
 1. `web-product` 按产品形态定义，不依赖业务领域或技术栈；
 2. 前端与后端作为逻辑职责表达，不要求特定工程拓扑；
-3. 浏览器扩展、纯后端、静态前端、桌面、移动、CLI、SDK 与库被明确排除；
+3. 浏览器扩展、纯后端、独立 MCP Service、静态前端、桌面、移动、CLI、SDK 与库被明确排除；
 4. `host_profile_requirement = FORBIDDEN`，且目标浏览器与 localhost 配置仍可追踪；
 5. P0–P6 原样复用，Web 副命名不形成新 Phase；
 6. P4 的 Usable Web Slice 与 Build Readiness 具有独立完成条件；
-7. Build、Logic、Local Integration、Local Browser 与 Human Evidence 的结论上限清晰；
+7. Build、Logic、Local Integration、Local Browser、Secondary Interface 与 Human Evidence 的结论上限清晰；
 8. Build-only 不能通过 P5，localhost 成功不能产生部署或生产就绪结论；
 9. Deployment 保持 `DEFERRED_CAPABILITY`，不进入 V1.2 完成 Gate；
 10. 不可信输入、服务端授权、Secrets、日志和外部副作用边界清晰；
@@ -460,7 +501,10 @@ P4 中的有界模型反例使用 Creation Correction；P5 形成完整 Validati
 12. `NEW_PROJECT` 与 `ADOPT_EXISTING` 都可恢复且符合现有 Entry Contract；
 13. 首个已有项目能够作为真实 `ADOPT_EXISTING` Field Validation，但不成为通用规则来源；
 14. 新类型通过 Registry 与独立 evaluator 扩展，Shared Kernel 不出现 Web 领域分支；
-15. `mod`、Desktop、Host、Kernel 与 Legacy 回归保持通过。
+15. Web Product 可以在同一 P0–P6 中设计和验证 MCP Server 等次级界面，不因 Transport、进程、包或部署单元自动改变 Project Type；
+16. 浏览器旅程 Evidence 与 MCP Capability Evidence 分别建立且不能互相替代；
+17. 次级集成界面复用后端业务、授权、审计、数据和外部副作用边界，不形成未记录的第二套业务规则；
+18. `mod`、Desktop、Host、Kernel 与 Legacy 回归保持通过。
 
 ## 20. 待 Maker 书面审阅
 
@@ -473,6 +517,8 @@ Maker 已在 2026-10-13 的讨论中确认以下方向，可作为本提案的�
 5. 使用 P0–P6、Usable Web Slice、Build Readiness、分层 Evidence、安全边界和受控 Failure Routing；
 6. 新增 Project Type Profile、Child Skill、Workflow evaluator、Registry、Router 与元数据，不新增 Host Profile；
 7. 真实已有 Web 项目作为首个 `ADOPT_EXISTING` Field Validation；
-8. V1.1 与 V1.2 分支和版本工作分离。
+8. V1.1 与 V1.2 分支和版本工作分离；
+9. Project Type 约束主要产品形态而不限制内部组件或次级协议界面；Web Product 后端为既有业务能力增加 MCP Server 时，仍由同一 `web-product-incubator` 的 P0–P6 设计、实现和验证；
+10. MCP Server 只有在成为具有独立产品目标和生命周期的主要交付物时才不属于 `web-product`，本提案不定义该独立类型。
 
 上述讨论批准不等于对本文档逐条书面批准。Maker 需要审阅本文档并明确确认后，Status 才能改为 `APPROVED`；批准只授权继续 Architecture Decisions 与 Design Layer，不授权实现。
