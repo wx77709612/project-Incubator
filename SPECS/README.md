@@ -6,7 +6,7 @@
 | --- | --- |
 | 当前研发版本 | V1.2 Plugin Web Product Incubator（独立分支） |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | Project Type Design Approved / Contract and Runtime Draft |
+| 当前阶段 | Contract and Runtime Approved / Implementation and Acceptance Plan Draft |
 | 产品实现状态 | V1.2 尚未授权实现；V1.1 RC 状态保持不变，继续等待 Maker 执行 Round 2R |
 | 当前入口 | 本文件 |
 
@@ -23,7 +23,7 @@
 | Architecture | `ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED / IMPLEMENTED | 新增 `desktop-product` 与 `desktop-product-incubator`；Workflow Entry 与显式 Host Requirement 已进入 0.2.0 候选 |
 | Architecture | `ARCHITECTURE/WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED | V1.2 新增 `web-product` 与 `web-product-incubator`；Maker 于 2026-10-13 批准，Implementation Authorization 尚未授予 |
 
-这些提案用于 Project Incubator Plugin 的版本化迭代，不改变 V1.1 RC 的人工验收状态。Desktop 提案已获批准并实施；Web Product Architecture 与 Project Type Design 已获 Maker 书面批准，当前只授权编写 Contract 与 Runtime Specification 审阅稿。Implementation Plan、Acceptance Test Plan 与实现仍未授权。
+这些提案用于 Project Incubator Plugin 的版本化迭代，不改变 V1.1 RC 的人工验收状态。Desktop 提案已获批准并实施；Web Product Architecture、Project Type Design、Contract 与 Runtime Specification 已获 Maker 书面批准，当前只授权编写 Implementation Plan 与 Acceptance Test Plan 审阅稿。实现仍未授权。
 
 ## 当前文档状态
 
@@ -50,11 +50,11 @@
 | Contract | `CONTRACTS/SCRIPT_CONTRACT.md` | APPROVED | 确定性 Evidence、Failure Signature 与 Structural Drift |
 | Contract | `CONTRACTS/CONTEXT_MUTATION_ORCHESTRATION_CONTRACT.md` | APPROVED | 多 Context Mutation、Authorization Provenance 与闭合结果 Contract |
 | Contract | `CONTRACTS/DESKTOP_PRODUCT_INCUBATOR_CONTRACT.md` | APPROVED / IMPLEMENTED | 显式 Host Requirement、Workflow Entry、Desktop P0–P6 evaluator、Activation 与兼容契约已实现并通过自动化验收 |
-| Contract | `CONTRACTS/WEB_PRODUCT_INCUBATOR_CONTRACT.md` | DRAFT | Web Registry、Entry、P0–P6、P4 Checkpoint、P5 Evidence、次级界面和部署挂起契约；等待 Maker 审阅 |
+| Contract | `CONTRACTS/WEB_PRODUCT_INCUBATOR_CONTRACT.md` | APPROVED | Web Registry、Entry、P0–P6、P4 Checkpoint、P5 Evidence、次级界面和部署挂起契约；Maker 于 2026-10-14 批准 |
 | Runtime | `RUNTIME/SKILL_RUNTIME_SPEC.md` | APPROVED | V1.1 Evidence、Correction、Baseline、Drift 与 Extension 执行机制 |
 | Runtime | `RUNTIME/CONTEXT_MUTATION_ORCHESTRATION_RUNTIME_SPEC.md` | APPROVED | Prepare、Stage、Commit、Read-back、Rollback 与恢复语义 |
 | Runtime | `RUNTIME/DESKTOP_PRODUCT_INCUBATOR_RUNTIME_SPEC.md` | APPROVED / IMPLEMENTED | Entry/Host 双重校验、Desktop Workflow、失败恢复与验证义务已实现并通过自动化验收 |
-| Runtime | `RUNTIME/WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md` | DRAFT | Web Route、Entry/Activation、P0–P6、Evidence 协调、失败关闭和兼容运行语义；等待 Maker 审阅 |
+| Runtime | `RUNTIME/WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md` | APPROVED | Web Route、Entry/Activation、P0–P6、Evidence 协调、失败关闭和兼容运行语义；Maker 于 2026-10-14 批准 |
 | Implementation | `IMPLEMENTATION/IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | V1.1 Tasks 1–10 已完成，等待 Maker 发布审阅 |
 | Implementation | `IMPLEMENTATION/RC_PACKAGING_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / PACKAGING ACCEPTED | RC 已构建并行安装；195 项矩阵、唯一发现入口、Managed Project RC 绑定和安装后九项检查通过 |
 | Implementation | `IMPLEMENTATION/LAYER2_RUNTIME_ACCEPTANCE_TEST_PLAN.md` | PASSED / PACKAGING GAP CLOSED FOR RC | RC 可发现且独立运行；下一步为人工行为验收 |
@@ -62,6 +62,8 @@
 | Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | AUTOMATED PASSED / MANUAL ROUND 2R PENDING | Authorization、Rollback、Runtime Routing、Stage F 已通过；Manual Round 2R 尚未执行 |
 | Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | Tasks 1–7 已实施；M1–M6、Bootstrap Activation、Receipt 与真实 Stop Hook 闭合验收通过 |
 | Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | PASSED / CANDIDATE ACCEPTED | Plugin `137/137`、Legacy `132/32/3`、受保护文件、M1–M6 与候选 `0.2.0+codex.20261009161423` 均通过；该结论不等于 V1.1 RC Round 2R 或发布归档完成 |
+| Implementation | `IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | DRAFT | Web Product 实现任务、文件范围、依赖顺序、回归和候选包计划；等待 Maker 审阅，不授权实现 |
+| Implementation | `IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | DRAFT | 自动化、候选包、仓库外安装与真实已有 Web 项目验收计划；等待 Maker 审阅，不授权执行实现 |
 
 ## 人工验收入口
 
@@ -80,19 +82,20 @@ Maker 专用答案不得加入模拟项目或发送给被测 Agent。
 1. V1.0 已发布行为以 `_V1.0` 与当前产品实现为发布基线证据；
 2. V1.1 架构、设计、契约和 Runtime 规格及其已完成实现构成 V1.2 的开发基础，但 V1.1 Round 2R 人工验收与发布归档仍在并行轨道中，不得被 V1.2 提前声明为已发布；
 3. Web Product Architecture Change Proposal 已获批准，Decision 014 已进入活动架构；
-4. `PROJECT_TYPES/WEB_PRODUCT_PROFILE.md` 已获批准，授权编写 Contract 与 Runtime Specification 审阅稿；
-5. `CONTRACTS/WEB_PRODUCT_INCUBATOR_CONTRACT.md` 与 `RUNTIME/WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md` 当前为 `DRAFT`，不能作为 Implementation Plan、Acceptance Test Plan 或实现授权；
-6. 活动层文档是当前规格依据，`_V1.0` 仅用于回归比较、迁移分析和历史追踪；
-7. 若下游规格或实现与上游冲突，必须先登记并解决 `DESIGN_GAP`；
-8. V1.1 RC 自动化通过不替代 Maker 的 Round 2R 人工行为验收；V1.2 也不得改变或关闭该验收状态。
+4. `PROJECT_TYPES/WEB_PRODUCT_PROFILE.md` 已获批准；
+5. `CONTRACTS/WEB_PRODUCT_INCUBATOR_CONTRACT.md` 与 `RUNTIME/WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md` 已于 2026-10-14 获批，可作为 Implementation Plan 与 Acceptance Test Plan 的上游依据；
+6. 两份 Web Product Plan 当前为 `DRAFT`，不得作为实现授权；
+7. 活动层文档是当前规格依据，`_V1.0` 仅用于回归比较、迁移分析和历史追踪；
+8. 若下游规格或实现与上游冲突，必须先登记并解决 `DESIGN_GAP`；
+9. V1.1 RC 自动化通过不替代 Maker 的 Round 2R 人工行为验收；V1.2 也不得改变或关闭该验收状态。
 
 ## V1.2 Web Product 文档推进顺序
 
 1. Architecture Change Proposal 已批准；
 2. Architecture Decisions 与 Document Architecture 已更新；
 3. Web Product Project Type Design 已批准；
-4. 编写并审批 Contract 与 Runtime Specification；
-5. 编写并审批 Implementation Plan 与 Acceptance Test Plan；
+4. Contract 与 Runtime Specification 已于 2026-10-14 批准；
+5. Implementation Plan 与 Acceptance Test Plan 正在编写并等待审批；
 6. 两份 Plan 获批后进入 Skill、Runtime、Profile、Registry、Router、Manifest 与 Test 实现；
 7. 完成自动化、候选包、仓库外安装和真实已有 Web 项目验收后，才评估 V1.2 发布归档。
 

@@ -226,7 +226,7 @@ Project Type Profile 不得放宽 Core Gate、Evidence、Authority 或 Correctio
 | `SCRIPT_CONTRACT.md` | Script Input / Output、确定性证据和禁止路径 |
 | `CONTEXT_MUTATION_ORCHESTRATION_CONTRACT.md` | Multi-Context Event、Mutation Set、Authorization Provenance、Closure Result 与错误语义 |
 | `DESKTOP_PRODUCT_INCUBATOR_CONTRACT.md` | Desktop Project Type、Workflow Entry、Host Requirement、激活与 evaluator 交互契约 |
-| `WEB_PRODUCT_INCUBATOR_CONTRACT.md` | Web Project Type、Host Forbidden、Workflow Entry、P0–P6、P4 Checkpoint、P5 Evidence 与次级界面契约；当前为 DRAFT |
+| `WEB_PRODUCT_INCUBATOR_CONTRACT.md` | Web Project Type、Host Forbidden、Workflow Entry、P0–P6、P4 Checkpoint、P5 Evidence 与次级界面契约；Maker 于 2026-10-14 批准 |
 
 Contract 必须由上游 Design 推导，不得自行创造 Domain Rule。
 
@@ -239,9 +239,9 @@ Contract 必须由上游 Design 推导，不得自行创造 Domain Rule。
 - `SKILL_RUNTIME_SPEC.md`；
 - `CONTEXT_MUTATION_ORCHESTRATION_RUNTIME_SPEC.md`；
 - `DESKTOP_PRODUCT_INCUBATOR_RUNTIME_SPEC.md`；
-- `WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md`（DRAFT）。
+- `WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md`（APPROVED，Maker 于 2026-10-14 批准）。
 
-Web Product Contract 与 Runtime Specification 当前只用于 Maker 书面审阅；两者获批前不得编写 Implementation Plan 或 Acceptance Test Plan，也不得作为实现依据。
+Web Product Contract 与 Runtime Specification 已成为当前活动实现依据；它们只授权编写 Implementation Plan 与 Acceptance Test Plan，不构成实现授权。
 
 职责：
 
@@ -275,8 +275,10 @@ Runtime 不判断产品目标、技术解释或语义 Evidence 是否真实，�
 | `CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | 自动化通过，Manual Round 2R Pending |
 | `DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | Desktop Product 已实施并通过候选验收 |
 | `DESKTOP_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | Desktop Product Candidate Accepted |
+| `WEB_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | DRAFT；等待 Maker 审批，不授权实现 |
+| `WEB_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | DRAFT；等待 Maker 审批，不授权实现或验收结论 |
 
-Web Product Implementation Plan 与 Acceptance Test Plan 尚未编写。它们必须等待 Architecture、Design、Contract 和 Runtime Specification 获批，并需 Maker 单独审批后才能授权实现。
+Web Product Implementation Plan 与 Acceptance Test Plan 已进入草案阶段。它们依赖已批准的 Architecture、Design、Contract 和 Runtime Specification，并需 Maker 单独审批后才能授权实现。
 
 Implementation Plan 必须等待 Architecture、Design、Contract 和 Runtime Specification 获批后编写。
 

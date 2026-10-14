@@ -1,8 +1,8 @@
 # Web Product Incubator Runtime Specification
 
 > Specification Version: Plugin Web Product V1.2
-> Status: DRAFT
-> Maker Review: PENDING
+> Status: APPROVED
+> Approved By: Maker，2026-10-14
 > Depends On: `SPECS/CONTRACTS/WEB_PRODUCT_INCUBATOR_CONTRACT.md`
 > Implementation Authorization: NOT GRANTED
 
@@ -271,8 +271,8 @@ Build、localhost、Browser 或 Secondary Interface 验证失败是 Evidence / G
 
 Implementation Plan 与 Acceptance Test Plan 获得 Maker 明确批准前，不得修改 Runtime、Schema、Registry、Router、Skill、Profile、Manifest、Template、Hook 或测试。
 
-## 19. Maker Review
+## 19. Maker Approval
 
-Maker 需要确认第 1–18 节，尤其是 Runtime 不解释 Evidence 语义、P4/P5 只复用现有控制面、Secondary Interface 不改变类型，以及 Deployment Deferred 不进入 Runtime Schema。
+Maker 于 2026-10-14 明确批准第 1–18 节，包括 Runtime 不解释 Evidence 语义、P4/P5 只复用现有控制面、Secondary Interface 不改变类型，以及 Deployment Deferred 不进入 Runtime Schema。
 
-本 Runtime Specification 当前为 `DRAFT`。Maker 批准后只授权编写 Implementation Plan 与 Acceptance Test Plan；在两份 Plan 获得明确批准前，不授权实现。
+本批准授权编写 Implementation Plan 与 Acceptance Test Plan；两份 Plan 获得 Maker 明确批准前，不授权实现。

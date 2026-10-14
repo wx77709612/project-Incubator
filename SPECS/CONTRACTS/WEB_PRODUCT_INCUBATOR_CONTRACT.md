@@ -1,8 +1,8 @@
 # Web Product Incubator Contract
 
 > Specification Version: Plugin Web Product V1.2
-> Status: DRAFT
-> Maker Review: PENDING
+> Status: APPROVED
+> Approved By: Maker，2026-10-14
 > Depends On: `SPECS/ARCHITECTURE/ARCHITECTURE_DECISIONS.md` Decision 014；`SPECS/PROJECT_TYPES/WEB_PRODUCT_PROFILE.md`
 > Implementation Authorization: NOT GRANTED
 
@@ -295,8 +295,8 @@ Contract 验收必须证明：
 11. Kernel 不解释 Evidence 语义，Gate Result 不直接修改状态；
 12. 现有 Project Type、State 1.0 和完整回归保持兼容。
 
-## 16. Maker Review
+## 16. Maker Approval
 
-Maker 需要确认第 1–15 节，尤其是 Host Forbidden、P4 Checkpoint 表达、P5 最低 Evidence、Secondary Interface 与 Deployment Deferral Contract。
+Maker 于 2026-10-14 明确批准第 1–15 节，包括 Host Forbidden、P4 Checkpoint 表达、P5 最低 Evidence、Secondary Interface 与 Deployment Deferral Contract。
 
-本 Contract 当前为 `DRAFT`。Maker 批准后只授权将其作为 Runtime Specification 和后续 Implementation/Acceptance Planning 的上游依据；在 Runtime Specification、Implementation Plan 与 Acceptance Test Plan 分别获批前，不授权实现。
+本批准使该 Contract 成为当前活动实现依据，并授权编写 Implementation Plan 与 Acceptance Test Plan。Implementation Plan 与 Acceptance Test Plan 分别获得 Maker 明确批准前，仍不授权实现。
