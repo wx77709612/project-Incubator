@@ -2,10 +2,10 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development`（推荐）或 `superpowers:executing-plans` 按任务实施；每个任务都必须使用 `superpowers:test-driven-development`，完成声明前使用 `superpowers:verification-before-completion`。
 
-> Specification Version: Plugin Web Product V1.2  
-> Status: DRAFT  
-> Maker Review: PENDING  
-> Implementation Authorization: NOT GRANTED  
+> Specification Version: Plugin Web Product V1.2
+> Status: APPROVED
+> Approved By: Maker，2026-10-14
+> Implementation Authorization: GRANTED FOR TASKS 1–7
 > Depends On: `SPECS/PROJECT_TYPES/WEB_PRODUCT_PROFILE.md`、`SPECS/CONTRACTS/WEB_PRODUCT_INCUBATOR_CONTRACT.md`、`SPECS/RUNTIME/WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md`
 
 ## 1. 一页摘要
@@ -336,7 +336,9 @@ node scripts/verify-candidate.mjs --full <candidate-root> <temporary-managed-pro
 - Acceptance Test Plan 的全部 Exit Criteria 通过；
 - Maker 审阅验收证据后再决定是否发布和归档。
 
-## 7. Maker Approval Gate
+## 7. Maker Approval
 
-当前计划为 `DRAFT`。Maker 需要明确批准本计划与 `WEB_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md`，并选择执行方式后，才可开始 Task 1。
+Maker 于 2026-10-14 批准本计划与 `WEB_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md`，并要求：存在依赖关系的任务串行实施，没有依赖关系的任务并行实施。
+
+本批准授权 Tasks 1–7 的实现与验收，不授权超出已批准 Product Boundary、Deployment Boundary、Core Schema、Tool Shape 或 Runtime Invariant 的变化；发现此类变化时仍须按 Change Control 停止受影响部分。
 

@@ -6,8 +6,8 @@
 | --- | --- |
 | 当前研发版本 | V1.2 Plugin Web Product Incubator（独立分支） |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | Contract and Runtime Approved / Implementation and Acceptance Plan Draft |
-| 产品实现状态 | V1.2 尚未授权实现；V1.1 RC 状态保持不变，继续等待 Maker 执行 Round 2R |
+| 当前阶段 | Implementation and Acceptance Plans Approved / Implementation Authorized |
+| 产品实现状态 | V1.2 Tasks 1–7 已授权、尚未完成；V1.1 RC 状态保持不变，继续等待 Maker 执行 Round 2R |
 | 当前入口 | 本文件 |
 
 ## 版本管理规则
@@ -62,8 +62,8 @@
 | Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | AUTOMATED PASSED / MANUAL ROUND 2R PENDING | Authorization、Rollback、Runtime Routing、Stage F 已通过；Manual Round 2R 尚未执行 |
 | Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | Tasks 1–7 已实施；M1–M6、Bootstrap Activation、Receipt 与真实 Stop Hook 闭合验收通过 |
 | Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | PASSED / CANDIDATE ACCEPTED | Plugin `137/137`、Legacy `132/32/3`、受保护文件、M1–M6 与候选 `0.2.0+codex.20261009161423` 均通过；该结论不等于 V1.1 RC Round 2R 或发布归档完成 |
-| Implementation | `IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | DRAFT | Web Product 实现任务、文件范围、依赖顺序、回归和候选包计划；等待 Maker 审阅，不授权实现 |
-| Implementation | `IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | DRAFT | 自动化、候选包、仓库外安装与真实已有 Web 项目验收计划；等待 Maker 审阅，不授权执行实现 |
+| Implementation | `IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | APPROVED / IMPLEMENTATION AUTHORIZED | Web Product Tasks 1–7、文件范围、依赖顺序、回归和候选包计划；Maker 于 2026-10-14 批准 |
+| Implementation | `IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | APPROVED / ACCEPTANCE AUTHORIZED | 自动化、候选包、仓库外安装与真实已有 Web 项目验收计划；Maker 于 2026-10-14 批准 |
 
 ## 人工验收入口
 
@@ -84,7 +84,7 @@ Maker 专用答案不得加入模拟项目或发送给被测 Agent。
 3. Web Product Architecture Change Proposal 已获批准，Decision 014 已进入活动架构；
 4. `PROJECT_TYPES/WEB_PRODUCT_PROFILE.md` 已获批准；
 5. `CONTRACTS/WEB_PRODUCT_INCUBATOR_CONTRACT.md` 与 `RUNTIME/WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md` 已于 2026-10-14 获批，可作为 Implementation Plan 与 Acceptance Test Plan 的上游依据；
-6. 两份 Web Product Plan 当前为 `DRAFT`，不得作为实现授权；
+6. 两份 Web Product Plan 已于 2026-10-14 获批，授权按依赖串行、无依赖并行的方式实施 Tasks 1–7；
 7. 活动层文档是当前规格依据，`_V1.0` 仅用于回归比较、迁移分析和历史追踪；
 8. 若下游规格或实现与上游冲突，必须先登记并解决 `DESIGN_GAP`；
 9. V1.1 RC 自动化通过不替代 Maker 的 Round 2R 人工行为验收；V1.2 也不得改变或关闭该验收状态。
@@ -95,8 +95,8 @@ Maker 专用答案不得加入模拟项目或发送给被测 Agent。
 2. Architecture Decisions 与 Document Architecture 已更新；
 3. Web Product Project Type Design 已批准；
 4. Contract 与 Runtime Specification 已于 2026-10-14 批准；
-5. Implementation Plan 与 Acceptance Test Plan 正在编写并等待审批；
-6. 两份 Plan 获批后进入 Skill、Runtime、Profile、Registry、Router、Manifest 与 Test 实现；
+5. Implementation Plan 与 Acceptance Test Plan 已于 2026-10-14 批准；
+6. Skill、Runtime、Profile、Registry、Router、Manifest 与 Test 实现已获授权并开始；
 7. 完成自动化、候选包、仓库外安装和真实已有 Web 项目验收后，才评估 V1.2 发布归档。
 
 ## 历史基线

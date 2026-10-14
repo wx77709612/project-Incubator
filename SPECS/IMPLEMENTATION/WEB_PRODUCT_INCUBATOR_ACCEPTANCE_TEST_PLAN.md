@@ -1,9 +1,9 @@
 # Web Product Incubator Acceptance Test Plan
 
-> Specification Version: Plugin Web Product V1.2  
-> Status: DRAFT  
-> Maker Review: PENDING  
-> Acceptance Authorization: NOT GRANTED  
+> Specification Version: Plugin Web Product V1.2
+> Status: APPROVED
+> Approved By: Maker，2026-10-14
+> Acceptance Authorization: GRANTED
 > Depends On: `SPECS/IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md`
 
 ## 1. 验收目标
@@ -300,7 +300,9 @@ V1.2 Web Product Candidate 只有在以下条件全部满足时可判定 `ACCEPT
 10. `ACCEPTANCE_TEST_LOG.md` 包含可复核的版本、命令摘要、环境、Evidence、限制和最终判定；
 11. Maker 审阅验收结果后决定发布、继续修复或保持候选状态。
 
-## 9. Maker Approval Gate
+## 9. Maker Approval
 
-当前计划为 `DRAFT`。Maker 明确批准本计划和 Implementation Plan 之前，不开始实现或验收执行。本计划获批只授权按既定边界验证，不预先授予发布或部署权限。
+Maker 于 2026-10-14 批准本计划和 Implementation Plan，并要求按依赖关系串行、无依赖关系并行执行。
+
+本批准只授权按既定边界实施和验证，不预先授予发布、推送、部署或 Production Ready 声明权限。
 

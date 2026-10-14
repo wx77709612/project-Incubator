@@ -275,10 +275,10 @@ Runtime 不判断产品目标、技术解释或语义 Evidence 是否真实，�
 | `CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | 自动化通过，Manual Round 2R Pending |
 | `DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | Desktop Product 已实施并通过候选验收 |
 | `DESKTOP_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | Desktop Product Candidate Accepted |
-| `WEB_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | DRAFT；等待 Maker 审批，不授权实现 |
-| `WEB_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | DRAFT；等待 Maker 审批，不授权实现或验收结论 |
+| `WEB_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | APPROVED；Maker 于 2026-10-14 批准 Tasks 1–7 实施 |
+| `WEB_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | APPROVED；Maker 于 2026-10-14 批准按既定边界验收 |
 
-Web Product Implementation Plan 与 Acceptance Test Plan 已进入草案阶段。它们依赖已批准的 Architecture、Design、Contract 和 Runtime Specification，并需 Maker 单独审批后才能授权实现。
+Web Product Implementation Plan 与 Acceptance Test Plan 已获批准。它们依赖已批准的 Architecture、Design、Contract 和 Runtime Specification，并授权按依赖串行、无依赖并行实施；不授权发布或部署。
 
 Implementation Plan 必须等待 Architecture、Design、Contract 和 Runtime Specification 获批后编写。
 
