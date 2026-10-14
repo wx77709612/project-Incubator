@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import fs, { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { syncBuiltinESMExports } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -7,6 +8,7 @@ import test from "node:test";
 import {
   loadRegistry, loadWorkflowEvaluators, resolveRoute, validateRegistry,
 } from "../../src/kernel/registry.mjs";
+import { createKernelService } from "../../src/server.mjs";
 
 function registry() {
   return {
@@ -19,6 +21,7 @@ function registry() {
     child_skills: [{ id: "mod-incubator", skill_path: "skills/mod-incubator/SKILL.md" }],
     project_types: [{
       id: "mod", child_skill_id: "mod-incubator", host_profile_requirement: "OPTIONAL",
+      profile_path: "profiles/project-types/mod.json",
       workflow_module: "src/domains/mod/workflow.mjs",
     }],
     host_profiles: [{
@@ -26,6 +29,48 @@ function registry() {
       kernel_constraints: {},
     }],
   };
+}
+
+const references = [
+  { name: "Child Skill", get: (value) => value.child_skills[0].skill_path,
+    set: (value, target) => { value.child_skills[0].skill_path = target; } },
+  { name: "Project Type Profile", get: (value) => value.project_types[0].profile_path,
+    set: (value, target) => { value.project_types[0].profile_path = target; } },
+  { name: "Host Profile", get: (value) => value.host_profiles[0].profile_path,
+    set: (value, target) => { value.host_profiles[0].profile_path = target; } },
+  { name: "Workflow", get: (value) => value.project_types[0].workflow_module,
+    set: (value, target) => { value.project_types[0].workflow_module = target; } },
+];
+
+async function writeReferences(root, value) {
+  const files = [
+    ...value.child_skills.map((item) => [item.skill_path, "# 测试 Child Skill\n"]),
+    ...value.project_types.filter((item) => item.profile_path).map((item) => [item.profile_path, "{}"]),
+    ...value.host_profiles.map((item) => [item.profile_path, "{}"]),
+    ...value.project_types.map((item) => [item.workflow_module, [
+      "export function evaluateEntry() { return { allowed: true, code: 'ENTRY_ALLOWED' }; }",
+      "export function evaluateTransition() { return { allowed: true, code: 'DESKTOP_ALLOWED' }; }",
+    ].join("\n")]),
+  ];
+  for (const [relative, contents] of files) {
+    const target = path.join(root, relative);
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, contents);
+  }
+}
+
+async function fixture(t) {
+  const root = await mkdtemp(path.join(os.tmpdir(), "incubator-registry-refs-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const value = registry();
+  await writeReferences(root, value);
+  await writeFile(path.join(root, "package.json"), JSON.stringify({ version: "0.3.0" }));
+  await saveRegistry(root, value);
+  return { root, value };
+}
+
+async function saveRegistry(root, value) {
+  await writeFile(path.join(root, "profiles", "registry.json"), JSON.stringify(value));
 }
 
 test("registry rejects unknown child skills and duplicate identifiers", () => {
@@ -106,6 +151,7 @@ test("a new legal project type is loaded from data without kernel changes", asyn
     id: "desktop-tool", child_skill_id: "desktop-incubator", host_profile_requirement: "OPTIONAL",
     workflow_module: "domains/desktop-workflow.mjs",
   });
+  await writeReferences(root, value);
   await mkdir(path.join(root, "domains"), { recursive: true });
   await writeFile(path.join(root, "domains", "desktop-workflow.mjs"), [
     "export function evaluateEntry() {",
@@ -122,6 +168,76 @@ test("a new legal project type is loaded from data without kernel changes", asyn
   assert.equal(evaluators.get("desktop-tool").evaluateEntry().code, "ENTRY_ALLOWED");
   assert.equal(evaluators.get("desktop-tool").evaluateTransition({}, { target_stage: "D1" }).code, "DESKTOP_ALLOWED");
 });
+
+test("Mod 和 Desktop 的合法 Registry 引用继续加载并执行 Workflow", async () => {
+  const root = path.resolve(import.meta.dirname, "../..");
+  const loaded = await loadRegistry(root);
+  const evaluators = await loadWorkflowEvaluators(root, loaded);
+  assert.equal(resolveRoute(loaded, "mod", "sims-4").child_skill_id, "mod-incubator");
+  assert.equal(resolveRoute(loaded, "desktop-product", "windows-desktop").child_skill_id,
+    "desktop-product-incubator");
+  assert.equal(typeof evaluators.get("mod").evaluateEntry, "function");
+  assert.equal(typeof evaluators.get("desktop-product").evaluateTransition, "function");
+});
+
+for (const reference of references) {
+  test(`${reference.name} 缺失时 Registry 加载和 Kernel 启动失败关闭`, async (t) => {
+    const { root, value } = await fixture(t);
+    await rm(path.join(root, reference.get(value)));
+    await assert.rejects(() => loadRegistry(root), /ENOENT/);
+    await assert.rejects(() => createKernelService({ pluginRoot: root }), /ENOENT/);
+  });
+
+  test(`${reference.name} 无读取权限时 Registry 加载和 Kernel 启动失败关闭`, async (t) => {
+    const { root, value } = await fixture(t);
+    const deniedPath = await fs.realpath(path.join(root, reference.get(value)));
+    const originalReadFile = fs.readFile;
+    // Windows 的 chmod 不提供 POSIX 读取权限；仅注入目标文件的 EACCES，其余 I/O 保持真实。
+    t.mock.method(fs, "readFile", async (target, ...args) => {
+      if (path.resolve(String(target)) === deniedPath) {
+        throw Object.assign(new Error("EACCES: permission denied"), { code: "EACCES" });
+      }
+      return originalReadFile(target, ...args);
+    });
+    syncBuiltinESMExports();
+    t.after(() => { t.mock.restoreAll(); syncBuiltinESMExports(); });
+    await assert.rejects(() => loadRegistry(root), /EACCES/);
+    await assert.rejects(() => createKernelService({ pluginRoot: root }), /EACCES/);
+  });
+
+  test(`${reference.name} 指向目录时 Registry 加载和 Kernel 启动失败关闭`, async (t) => {
+    const { root, value } = await fixture(t);
+    const target = path.join(root, reference.get(value));
+    await rm(target);
+    await mkdir(target);
+    await assert.rejects(() => loadRegistry(root));
+    await assert.rejects(() => createKernelService({ pluginRoot: root }));
+  });
+
+  test(`${reference.name} 通过相对路径逃逸 Plugin Root 时启动失败关闭`, async (t) => {
+    const { root, value } = await fixture(t);
+    reference.set(value, `../outside/${path.basename(reference.get(value))}`);
+    await saveRegistry(root, value);
+    await assert.rejects(() => loadRegistry(root), /INVALID_.*PATH/);
+    await assert.rejects(() => createKernelService({ pluginRoot: root }), /INVALID_.*PATH/);
+  });
+
+  test(`${reference.name} 通过目录链接逃逸 Plugin Root 时启动失败关闭`, async (t) => {
+    const { root, value } = await fixture(t);
+    const outside = await mkdtemp(path.join(os.tmpdir(), "incubator-registry-outside-"));
+    t.after(() => rm(outside, { recursive: true, force: true }));
+    const filename = path.basename(reference.get(value));
+    await writeFile(path.join(outside, filename), "export function evaluateEntry() {}\nexport function evaluateTransition() {}\n");
+    await symlink(outside, path.join(root, "linked"), process.platform === "win32" ? "junction" : "dir");
+    reference.set(value, `linked/${filename}`);
+    await saveRegistry(root, value);
+    await assert.rejects(() => loadRegistry(root), /INVALID_.*PATH/);
+    await assert.rejects(() => createKernelService({ pluginRoot: root }), /INVALID_.*PATH/);
+    if (reference.name === "Workflow") {
+      await assert.rejects(() => loadWorkflowEvaluators(root, value), /INVALID_.*PATH/);
+    }
+  });
+}
 
 test("workflow modules must stay inside the plugin", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "incubator-registry-module-"));

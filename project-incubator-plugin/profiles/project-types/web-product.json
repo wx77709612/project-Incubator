@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "project_type_id": "web-product",
+  "child_skill_id": "web-product-incubator",
+  "stages": ["P0", "P1", "P2", "P3", "P4", "P5", "P6"],
+  "subflows": [],
+  "evidence_levels": ["E0", "E1", "E2", "E3", "E4", "E5"],
+  "human_validation_default": "UNSET"
+}

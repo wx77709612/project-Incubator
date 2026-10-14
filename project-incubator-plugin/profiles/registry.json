@@ -13,6 +13,10 @@
     {
       "id": "desktop-product-incubator",
       "skill_path": "skills/desktop-product-incubator/SKILL.md"
+    },
+    {
+      "id": "web-product-incubator",
+      "skill_path": "skills/web-product-incubator/SKILL.md"
     }
   ],
   "project_types": [
@@ -29,6 +33,13 @@
       "host_profile_requirement": "REQUIRED",
       "profile_path": "profiles/project-types/desktop-product.json",
       "workflow_module": "src/domains/desktop/workflow.mjs"
+    },
+    {
+      "id": "web-product",
+      "child_skill_id": "web-product-incubator",
+      "host_profile_requirement": "FORBIDDEN",
+      "profile_path": "profiles/project-types/web-product.json",
+      "workflow_module": "src/domains/web/workflow.mjs"
     }
   ],
   "host_profiles": [

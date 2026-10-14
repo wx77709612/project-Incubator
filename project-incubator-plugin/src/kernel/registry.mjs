@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { z } from "zod";
@@ -34,6 +34,24 @@ function assertUnique(values, code) {
   if (new Set(values).size !== values.length) throw new Error(code);
 }
 
+function assertInsidePlugin(root, target, code) {
+  const relative = path.relative(root, target);
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error(code);
+  }
+}
+
+async function resolveReadableReference(pluginRoot, reference, code = "INVALID_REGISTRY_REFERENCE_PATH") {
+  const root = await realpath(pluginRoot);
+  const requested = path.resolve(root, reference);
+  assertInsidePlugin(root, requested, code);
+  const target = await realpath(requested);
+  assertInsidePlugin(root, target, code);
+  if (!(await stat(target)).isFile()) throw new Error(code);
+  await readFile(target);
+  return target;
+}
+
 export function validateRegistry(value) {
   const parsed = registrySchema.parse(value);
   assertUnique(parsed.child_skills.map((item) => item.id), "DUPLICATE_CHILD_SKILL_ID");
@@ -64,17 +82,28 @@ export async function loadRegistry(pluginRoot) {
     if (error instanceof SyntaxError) throw new Error("REGISTRY_INVALID_JSON", { cause: error });
     throw error;
   }
-  return validateRegistry(value);
+  const registry = validateRegistry(value);
+  for (const childSkill of registry.child_skills) {
+    await resolveReadableReference(pluginRoot, childSkill.skill_path);
+  }
+  for (const projectType of registry.project_types) {
+    if (projectType.profile_path !== undefined) {
+      await resolveReadableReference(pluginRoot, projectType.profile_path);
+    }
+    await resolveReadableReference(pluginRoot, projectType.workflow_module, "INVALID_WORKFLOW_MODULE_PATH");
+  }
+  for (const hostProfile of registry.host_profiles) {
+    await resolveReadableReference(pluginRoot, hostProfile.profile_path);
+  }
+  return registry;
 }
 
 export async function loadWorkflowEvaluators(pluginRoot, registry) {
   const evaluators = new Map();
   for (const projectType of registry.project_types) {
-    const modulePath = path.resolve(pluginRoot, projectType.workflow_module);
-    const relative = path.relative(pluginRoot, modulePath);
-    if (relative.startsWith("..") || path.isAbsolute(relative)) {
-      throw new Error("INVALID_WORKFLOW_MODULE_PATH");
-    }
+    const modulePath = await resolveReadableReference(
+      pluginRoot, projectType.workflow_module, "INVALID_WORKFLOW_MODULE_PATH",
+    );
     const module = await import(pathToFileURL(modulePath).href);
     if (typeof module.evaluateEntry !== "function" || typeof module.evaluateTransition !== "function") {
       throw new Error("WORKFLOW_EVALUATOR_INVALID");
