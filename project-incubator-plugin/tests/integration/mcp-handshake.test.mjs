@@ -23,7 +23,7 @@ test("MCP handshake reports the installed package version", async (t) => {
   await server.connect(serverTransport);
   await client.connect(clientTransport);
 
-  assert.equal(client.getServerVersion()?.version, "0.2.0");
+  assert.equal(client.getServerVersion()?.version, "0.3.0");
 });
 
 test("installed MCP manifest launches the real server and exposes kernel tools", async (t) => {

@@ -69,7 +69,7 @@ test("desktop route, activation, receipt and P0-P1 transition close end to end",
     session_id: "desktop-e2e-session", turn_id: "activate",
   }, { now: new Date(activatedAt) });
   assert.equal(initialized.isError, undefined);
-  assert.equal(initialized.structuredContent.activation.plugin_version, "0.2.0");
+  assert.equal(initialized.structuredContent.activation.plugin_version, "0.3.0");
 
   const initialSnapshot = await service.callTool("get_project_state", { project_root: root });
   assert.equal(initialSnapshot.structuredContent.activation.project_type_id, "desktop-product");

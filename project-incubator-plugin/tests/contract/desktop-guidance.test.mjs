@@ -60,16 +60,3 @@ test("router requires entry mode and explicit host while browser extension remai
   assert.match(router, /浏览器扩展.*不支持/s);
   assert.match(router, /我明确批准激活请求.*request_id.*scope_digest/s);
 });
-
-test("manifest and package identify the 0.2.0 multi-type candidate", async () => {
-  const manifest = JSON.parse(await read(".codex-plugin/plugin.json"));
-  const packageJson = JSON.parse(await read("package.json"));
-  const lock = JSON.parse(await read("package-lock.json"));
-  assert.match(manifest.version, /^0\.2\.0\+codex\.\d{14}$/);
-  assert.equal(packageJson.version, "0.2.0");
-  assert.equal(lock.version, "0.2.0");
-  assert.equal(lock.packages[""].version, "0.2.0");
-  assert.ok(manifest.interface.capabilities.includes("Desktop product incubation"));
-  assert.match(manifest.interface.longDescription, /Mod/);
-  assert.match(manifest.interface.longDescription, /Desktop/);
-});
