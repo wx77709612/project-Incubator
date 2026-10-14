@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { realpathSync } from "node:fs";
+import { createHash, randomUUID } from "node:crypto";
+import { realpathSync, writeSync } from "node:fs";
 import { lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm } from "node:fs/promises";
 import { createRequire, isBuiltin, registerHooks } from "node:module";
 import os from "node:os";
@@ -11,6 +11,7 @@ const allowedRoots = new Set([
   ".codex-plugin", ".mcp.json", "hooks", "profiles", "scripts", "skills", "src",
   "package.json", "package-lock.json", "CANDIDATE.json", "node_modules",
 ]);
+const auditPrefix = "\x1ePROJECT_INCUBATOR_CANDIDATE_AUDIT ";
 
 function check(condition, code) {
   if (!condition) throw new Error(code);
@@ -21,7 +22,7 @@ function inside(root, target) {
   return relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
 }
 
-function isolateModules(root) {
+function isolateModules(root, reportEscape = () => {}) {
   const audit = { sourceFallbackDetected: false };
   registerHooks({
     resolve(specifier, context, nextResolve) {
@@ -31,12 +32,26 @@ function isolateModules(root) {
         && inside(root, realpathSync(fileURLToPath(resolved.url)));
       if (!permitted) {
         audit.sourceFallbackDetected = true;
+        reportEscape();
         throw new Error("CANDIDATE_MODULE_ESCAPE");
       }
       return resolved;
     },
   });
   return audit;
+}
+
+function readChildAudit(stderr, root, nonce, childPid) {
+  const records = stderr.split(auditPrefix).slice(1)
+    .map((fragment) => JSON.parse(fragment.split("\n", 1)[0]));
+  check(records.length > 0, "CANDIDATE_AUDIT_MISSING");
+  check(records[0].event === "READY" && records.filter(({ event }) => event === "READY").length === 1, "CANDIDATE_AUDIT_INVALID");
+  for (const record of records) {
+    check(record.nonce === nonce && record.candidate_root === root
+      && record.pid === childPid && record.parent_pid === process.pid
+      && ["READY", "ESCAPE"].includes(record.event), "CANDIDATE_AUDIT_INVALID");
+  }
+  return records.some(({ event }) => event === "ESCAPE");
 }
 
 async function reference(root, relative) {
@@ -161,22 +176,28 @@ async function full(root, managedRoot) {
   const { getDefaultEnvironment, StdioClientTransport } = await candidateImport(root, "@modelcontextprotocol/sdk/client/stdio.js");
   const { handleUserPromptSubmit } = await import(pathToFileURL(await reference(root, "hooks/user-prompt-submit.mjs")).href);
   const pluginData = await mkdtemp(path.join(os.tmpdir(), "candidate-verifier-runtime-"));
+  const auditNonce = randomUUID();
   const client = new Client({ name: "project-incubator-candidate-verifier", version: "1.0.0" });
   const definition = (await json(root, ".mcp.json")).mcpServers.project_incubator;
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: ["--import", pathToFileURL(await reference(root, "scripts/verify-candidate.mjs")).href, ...definition.args], cwd: root,
-    env: { ...getDefaultEnvironment(), PLUGIN_DATA: pluginData }, stderr: "pipe",
+    env: { ...getDefaultEnvironment(), PLUGIN_DATA: pluginData, PROJECT_INCUBATOR_AUDIT_NONCE: auditNonce }, stderr: "pipe",
   });
-  let stderr = "";
-  transport.stderr?.on("data", (chunk) => { stderr += chunk.toString(); });
+  const stderrChunks = [];
+  transport.stderr?.on("data", (chunk) => { stderrChunks.push(Buffer.from(chunk)); });
+  const capturedStderr = () => Buffer.concat(stderrChunks).toString("utf8");
   const call = async (name, args) => {
     const result = await client.callTool({ name, arguments: args });
     check(!result.isError, result.structuredContent?.error?.code ?? "CANDIDATE_MCP_CALL_FAILED");
     return result.structuredContent;
   };
+  let outcome;
+  let childPid;
   try {
+    try {
     await client.connect(transport);
+    childPid = transport.pid;
     const version = client.getServerVersion()?.version;
     check(version === "0.3.0", "CANDIDATE_MCP_VERSION_INVALID");
     const route = async (type, host) => (await call("propose_route", { project_root: managedRoot, project_type_id: type, host_profile_id: host })).route;
@@ -211,13 +232,19 @@ async function full(root, managedRoot) {
     check(readback.state.schema_version === "1.1" && readback.state.decisions.active[0].authorization_ref === initialized.receipt.authorization_ref.authorization_id, "CANDIDATE_READBACK_INVALID");
     const receipt = await call("verify_receipt", { project_root: managedRoot, receipt_id: initialized.receipt.receipt_id });
     check(receipt.verified === true, "CANDIDATE_RECEIPT_INVALID");
-    return { mcp_server_version: version, mod_route: mod, desktop_route: desktop, web_route: web, host_forbidden_verified: true, activation: readback.activation, receipt_verified: true };
+    outcome = { mcp_server_version: version, mod_route: mod, desktop_route: desktop, web_route: web, host_forbidden_verified: true, activation: readback.activation, receipt_verified: true };
+    } finally {
+      await client.close();
+      await transport.close();
+    }
+    const childFallback = readChildAudit(capturedStderr(), root, auditNonce, childPid);
+    outcome.source_fallback_detected = moduleAudit.sourceFallbackDetected || childFallback;
+    check(!outcome.source_fallback_detected, "CANDIDATE_MODULE_ESCAPE");
+    return outcome;
   } catch (error) {
-    if (stderr) process.stderr.write(stderr);
+    if (stderrChunks.length) process.stderr.write(capturedStderr());
     throw error;
   } finally {
-    await client.close();
-    await transport.close();
     await rm(pluginData, { recursive: true, force: true });
   }
 }
@@ -225,7 +252,18 @@ async function full(root, managedRoot) {
 // 作为真实 MCP 子进程的 preload 时，只安装同一模块闭包约束，不执行 CLI。
 let moduleAudit;
 if (path.resolve(process.argv[1] ?? "") !== fileURLToPath(import.meta.url)) {
-  moduleAudit = isolateModules(await realpath(path.resolve(import.meta.dirname, "..")));
+  const root = await realpath(path.resolve(import.meta.dirname, ".."));
+  const nonce = process.env.PROJECT_INCUBATOR_AUDIT_NONCE;
+  check(typeof nonce === "string" && /^[0-9a-f-]{36}$/u.test(nonce), "CANDIDATE_AUDIT_INVALID");
+  const writeAudit = writeSync;
+  const terminate = process.exit.bind(process);
+  const binding = { nonce, candidate_root: root, pid: process.pid, parent_pid: process.ppid };
+  const emitAudit = (event) => {
+    try { writeAudit(2, `${auditPrefix}${JSON.stringify({ ...binding, event })}\n`); }
+    catch { terminate(1); }
+  };
+  moduleAudit = isolateModules(root, () => emitAudit("ESCAPE"));
+  emitAudit("READY");
 } else try {
   const [mode, candidateRoot, managedRoot, ...extra] = process.argv.slice(2);
   check(extra.length === 0 && candidateRoot && (["--structure-only", "--full"].includes(mode)), "CANDIDATE_ARGUMENTS_INVALID");
@@ -234,8 +272,8 @@ if (path.resolve(process.argv[1] ?? "") !== fileURLToPath(import.meta.url)) {
   moduleAudit = isolateModules(root);
   const result = await structure(root);
   if (mode === "--full") Object.assign(result, await full(root, path.resolve(managedRoot)));
-  check(!moduleAudit.sourceFallbackDetected, "CANDIDATE_MODULE_ESCAPE");
-  result.source_fallback_detected = moduleAudit.sourceFallbackDetected;
+  result.source_fallback_detected ||= moduleAudit.sourceFallbackDetected;
+  check(!result.source_fallback_detected, "CANDIDATE_MODULE_ESCAPE");
   process.stdout.write(`${JSON.stringify(result)}\n`);
 } catch (error) {
   process.stdout.write(`${JSON.stringify({ error: { code: error.code ?? error.message, message: error.message } })}\n`);

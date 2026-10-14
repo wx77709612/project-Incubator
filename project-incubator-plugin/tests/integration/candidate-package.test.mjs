@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { spawnSync } from "node:child_process";
+import { execFile, spawnSync } from "node:child_process";
 import { cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -167,6 +167,82 @@ test("完整模式的真实 MCP 子进程也在执行前拒绝 Candidate 外 imp
   await assert.rejects(readFile(marker), { code: "ENOENT" }, "MCP 子进程不能执行 Candidate 外模块");
 });
 
+test("真实 MCP 子进程捕获越界 dynamic import 或 require 后继续服务仍使 Full 失败", async (t) => {
+  for (const mechanism of ["dynamic import", "require", "require after unterminated diagnostic"]) {
+    await t.test(mechanism, async (t) => {
+      const { root, managed } = await candidate(t);
+      await cp(path.join(pluginRoot, "node_modules"), path.join(root, "node_modules"), { recursive: true });
+      const outside = path.join(path.dirname(root), "caught-outside.cjs");
+      const marker = path.join(path.dirname(root), "caught-outside-executed.txt");
+      const runtimeEvidence = path.join(path.dirname(root), "runtime-location.json");
+      await writeFile(outside, `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'executed');\n`);
+      const attempt = mechanism === "dynamic import"
+        ? `await import(${JSON.stringify(pathToFileURL(outside).href)})`
+        : `createRequire(import.meta.url)(${JSON.stringify(outside)})`;
+      const server = path.join(root, "src/server.mjs");
+      await writeFile(server, `${await readFile(server, "utf8")}\nimport { createRequire } from 'node:module';\nimport { writeFileSync, writeSync } from 'node:fs';\n${mechanism.endsWith("diagnostic") ? "writeSync(2, 'diagnostic without newline');" : ""}\ntry { ${attempt}; } catch {}\nwriteFileSync(${JSON.stringify(runtimeEvidence)}, JSON.stringify({ runtime: process.env.PLUGIN_DATA }));\n`);
+      const result = verify(root, "--full", managed);
+      assert.equal(result.status, 1, result.stdout);
+      assert.equal(result.json?.error?.code, "CANDIDATE_MODULE_ESCAPE", result.stderr);
+      await assert.rejects(readFile(marker), { code: "ENOENT" }, "被拦截的外部模块不能执行");
+      const { runtime } = JSON.parse(await readFile(runtimeEvidence, "utf8"));
+      await assert.rejects(readdir(runtime), { code: "ENOENT" }, "失败路径清理独立 Runtime/Audit 临时目录");
+    });
+  }
+});
+
+test("子进程审计记录缺失或绑定陈旧 nonce、其他候选根时 Full 失败关闭", async (t) => {
+  for (const mutation of ["missing", "nonce", "candidate_root"]) {
+    await t.test(mutation, async (t) => {
+      const { root, managed } = await candidate(t);
+      await cp(path.join(pluginRoot, "node_modules"), path.join(root, "node_modules"), { recursive: true });
+      const server = path.join(root, "src/server.mjs");
+      if (mutation === "missing") {
+        // 仅子进程的 preload 被替换为不报告审计；父验证器仍为被测实现。
+        await writeFile(path.join(root, "scripts/verify-candidate.mjs"), "import 'node:fs';\n");
+      } else {
+        await writeFile(server, `${await readFile(server, "utf8")}\nimport { writeSync } from 'node:fs';\nconst audit = { event: 'READY', nonce: process.env.PROJECT_INCUBATOR_AUDIT_NONCE, candidate_root: ${JSON.stringify(await realpath(root))}, pid: process.pid, parent_pid: process.ppid };\naudit[${JSON.stringify(mutation)}] = 'stale-or-foreign';\nwriteSync(2, '\\x1ePROJECT_INCUBATOR_CANDIDATE_AUDIT ' + JSON.stringify(audit) + '\\n');\n`);
+      }
+      const result = verify(root, "--full", managed);
+      assert.equal(result.status, 1, result.stdout);
+      assert.ok(result.json?.error, result.stderr);
+    });
+  }
+});
+
+test("同一 Candidate 的并发 Full 使用独立子进程审计且忽略外来 Runtime 路径和 nonce", async (t) => {
+  const { root, managed } = await candidate(t);
+  await cp(path.join(pluginRoot, "node_modules"), path.join(root, "node_modules"), { recursive: true });
+  const foreignRoot = path.join(path.dirname(root), "foreign-shared");
+  await mkdir(foreignRoot);
+  await writeFile(path.join(foreignRoot, "sentinel.txt"), "外来共享目录不得被审计或清理");
+  const server = path.join(root, "src/server.mjs");
+  await writeFile(server, `${await readFile(server, "utf8")}\nimport { writeFileSync } from 'node:fs';\nwriteFileSync(path.join(${JSON.stringify(path.dirname(root))}, 'audit-run-' + process.ppid + '.json'), JSON.stringify({ nonce: process.env.PROJECT_INCUBATOR_AUDIT_NONCE, runtime: process.env.PLUGIN_DATA }));\n`);
+  const run = (project) => new Promise((resolve, reject) => {
+    execFile(process.execPath, [verifier, "--full", root, project], {
+      cwd: os.tmpdir(), encoding: "utf8", timeout: 30000,
+      env: { ...process.env, PLUGIN_DATA: foreignRoot, PROJECT_INCUBATOR_AUDIT_NONCE: "stale-injected-nonce" },
+    }, (error, stdout, stderr) => {
+      if (error) reject(new Error(`${error.message}\n${stdout}\n${stderr}`));
+      else resolve(JSON.parse(stdout));
+    });
+  });
+  const results = await Promise.all([run(managed), run(`${managed}-other`)]);
+  for (const result of results) assert.equal(result.source_fallback_detected, false);
+  const reports = await Promise.all((await readdir(path.dirname(root))).filter((name) => name.startsWith("audit-run-"))
+    .map(async (name) => JSON.parse(await readFile(path.join(path.dirname(root), name), "utf8"))));
+  assert.equal(reports.length, 2);
+  assert.notEqual(reports[0].nonce, reports[1].nonce);
+  assert.notEqual(reports[0].runtime, reports[1].runtime);
+  for (const report of reports) {
+    assert.match(report.nonce, /^[0-9a-f-]{36}$/u);
+    assert.notEqual(report.runtime, foreignRoot);
+    await assert.rejects(readdir(report.runtime), { code: "ENOENT" }, "成功路径清理自身临时 Runtime");
+  }
+  assert.deepEqual(await readdir(foreignRoot), ["sentinel.txt"]);
+  assert.equal(await readFile(path.join(foreignRoot, "sentinel.txt"), "utf8"), "外来共享目录不得被审计或清理");
+});
+
 test("完整模式通过真实 stdio MCP 验证三种 Route、Host Forbidden、Web Activation 和 Receipt", async (t) => {
   const { root, managed } = await candidate(t);
   // 仓库内测试只复制已安装依赖，避免网络服务；Stage G 另行执行全新 npm ci。
@@ -183,6 +259,7 @@ test("完整模式通过真实 stdio MCP 验证三种 Route、Host Forbidden、W
   assert.equal(full.json.host_forbidden_verified, true);
   assert.equal(full.json.activation.plugin_version, "0.3.0");
   assert.equal(full.json.receipt_verified, true);
+  assert.equal(full.json.source_fallback_detected, false);
   const activation = JSON.parse(await readFile(path.join(managed, ".project-incubator/activation.json"), "utf8"));
   assert.deepEqual(full.json.activation, activation);
 });
