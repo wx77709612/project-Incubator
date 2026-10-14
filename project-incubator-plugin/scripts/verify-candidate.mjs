@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { realpathSync } from "node:fs";
 import { lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm } from "node:fs/promises";
-import { createRequire } from "node:module";
+import { createRequire, isBuiltin, registerHooks } from "node:module";
 import os from "node:os";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const allowedRoots = new Set([
   ".codex-plugin", ".mcp.json", "hooks", "profiles", "scripts", "skills", "src",
@@ -18,6 +19,24 @@ function check(condition, code) {
 function inside(root, target) {
   const relative = path.relative(root, target);
   return relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+}
+
+function isolateModules(root) {
+  const audit = { sourceFallbackDetected: false };
+  registerHooks({
+    resolve(specifier, context, nextResolve) {
+      const resolved = nextResolve(specifier, context);
+      if (isBuiltin(resolved.url)) return resolved;
+      const permitted = resolved.url.startsWith("file:")
+        && inside(root, realpathSync(fileURLToPath(resolved.url)));
+      if (!permitted) {
+        audit.sourceFallbackDetected = true;
+        throw new Error("CANDIDATE_MODULE_ESCAPE");
+      }
+      return resolved;
+    },
+  });
+  return audit;
 }
 
 async function reference(root, relative) {
@@ -102,7 +121,7 @@ async function structure(root) {
     candidate_hash: await aggregateHash(root, files),
     manifest_version: manifest.version,
     package_version: metadata.version,
-    source_fallback_detected: false,
+    source_fallback_detected: moduleAudit.sourceFallbackDetected,
     web_profile_verified: true,
     web_skill_verified: true,
     web_workflow_verified: true,
@@ -145,7 +164,8 @@ async function full(root, managedRoot) {
   const client = new Client({ name: "project-incubator-candidate-verifier", version: "1.0.0" });
   const definition = (await json(root, ".mcp.json")).mcpServers.project_incubator;
   const transport = new StdioClientTransport({
-    command: process.execPath, args: definition.args, cwd: root,
+    command: process.execPath,
+    args: ["--import", pathToFileURL(await reference(root, "scripts/verify-candidate.mjs")).href, ...definition.args], cwd: root,
     env: { ...getDefaultEnvironment(), PLUGIN_DATA: pluginData }, stderr: "pipe",
   });
   let stderr = "";
@@ -202,13 +222,20 @@ async function full(root, managedRoot) {
   }
 }
 
-try {
+// 作为真实 MCP 子进程的 preload 时，只安装同一模块闭包约束，不执行 CLI。
+let moduleAudit;
+if (path.resolve(process.argv[1] ?? "") !== fileURLToPath(import.meta.url)) {
+  moduleAudit = isolateModules(await realpath(path.resolve(import.meta.dirname, "..")));
+} else try {
   const [mode, candidateRoot, managedRoot, ...extra] = process.argv.slice(2);
   check(extra.length === 0 && candidateRoot && (["--structure-only", "--full"].includes(mode)), "CANDIDATE_ARGUMENTS_INVALID");
   check(mode === "--full" ? Boolean(managedRoot) : !managedRoot, "CANDIDATE_ARGUMENTS_INVALID");
   const root = await realpath(path.resolve(candidateRoot));
+  moduleAudit = isolateModules(root);
   const result = await structure(root);
   if (mode === "--full") Object.assign(result, await full(root, path.resolve(managedRoot)));
+  check(!moduleAudit.sourceFallbackDetected, "CANDIDATE_MODULE_ESCAPE");
+  result.source_fallback_detected = moduleAudit.sourceFallbackDetected;
   process.stdout.write(`${JSON.stringify(result)}\n`);
 } catch (error) {
   process.stdout.write(`${JSON.stringify({ error: { code: error.code ?? error.message, message: error.message } })}\n`);

@@ -5,6 +5,7 @@ import { cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from "
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { pathToFileURL } from "node:url";
 
 const pluginRoot = path.resolve(import.meta.dirname, "../..");
 const verifier = path.join(pluginRoot, "scripts/verify-candidate.mjs");
@@ -114,6 +115,56 @@ test("完整模式没有候选自身生产依赖时失败而不使用源码依�
   const result = verify(root, "--full", managed);
   assert.equal(result.status, 1);
   assert.ok(result.json?.error, result.stderr);
+});
+
+test("两种模式都在执行前拒绝 Workflow 经传递 re-export 加载 Candidate 外源码", async (t) => {
+  for (const mode of ["--structure-only", "--full"]) {
+    await t.test(mode, async (t) => {
+      const { root, managed } = await candidate(t);
+      const workflow = "src/domains/web/workflow.mjs";
+      const outside = path.join(path.dirname(root), "outside-workflow.mjs");
+      const marker = path.join(path.dirname(root), "outside-executed.txt");
+      await writeFile(outside, `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(marker)}, 'executed');\nexport * from ${JSON.stringify(pathToFileURL(path.join(pluginRoot, workflow)).href)};\n`);
+      await writeFile(path.join(root, workflow), "export * from './bridge.mjs';\n");
+      await writeFile(path.join(root, "src/domains/web/bridge.mjs"), `export * from ${JSON.stringify(pathToFileURL(outside).href)};\n`);
+      if (mode === "--full") await cp(path.join(pluginRoot, "node_modules"), path.join(root, "node_modules"), { recursive: true });
+      const result = verify(root, mode, mode === "--full" ? managed : undefined);
+      assert.equal(result.status, 1, result.stdout);
+      assert.equal(result.json?.error?.code, "CANDIDATE_MODULE_ESCAPE", result.stderr);
+      await assert.rejects(readFile(marker), { code: "ENOENT" }, "Candidate 外模块不能执行副作用");
+    });
+  }
+});
+
+test("完整模式拒绝缺失 zod 或 SDK 传递依赖时从祖先 node_modules 回退", async (t) => {
+  for (const missing of ["zod", "fast-deep-equal"]) {
+    await t.test(missing, async (t) => {
+      const { root, managed } = await candidate(t);
+      await cp(path.join(pluginRoot, "node_modules"), path.join(root, "node_modules"), { recursive: true });
+      const parentModules = path.join(path.dirname(root), "node_modules");
+      await mkdir(parentModules, { recursive: true });
+      await cp(path.join(root, "node_modules", missing), path.join(parentModules, missing), { recursive: true });
+      await rm(path.join(root, "node_modules", missing), { recursive: true });
+      const result = verify(root, "--full", managed);
+      assert.equal(result.status, 1, result.stdout);
+      assert.equal(result.json?.error?.code, "CANDIDATE_MODULE_ESCAPE", result.stderr);
+    });
+  }
+});
+
+test("完整模式的真实 MCP 子进程也在执行前拒绝 Candidate 外 import", async (t) => {
+  const { root, managed } = await candidate(t);
+  await cp(path.join(pluginRoot, "node_modules"), path.join(root, "node_modules"), { recursive: true });
+  const outside = path.join(path.dirname(root), "outside-server.mjs");
+  const marker = path.join(path.dirname(root), "server-outside-executed.txt");
+  await writeFile(outside, `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(marker)}, 'executed');\n`);
+  const entry = path.join(root, "src/server.mjs");
+  await writeFile(entry, `${await readFile(entry, "utf8")}\nimport ${JSON.stringify(pathToFileURL(outside).href)};\n`);
+  const result = verify(root, "--full", managed);
+  assert.equal(result.status, 1, result.stdout);
+  assert.ok(result.json?.error, result.stderr);
+  assert.match(result.stderr, /CANDIDATE_MODULE_ESCAPE/u, "必须由子进程隔离约束拒绝，而不是其他启动错误");
+  await assert.rejects(readFile(marker), { code: "ENOENT" }, "MCP 子进程不能执行 Candidate 外模块");
 });
 
 test("完整模式通过真实 stdio MCP 验证三种 Route、Host Forbidden、Web Activation 和 Receipt", async (t) => {
