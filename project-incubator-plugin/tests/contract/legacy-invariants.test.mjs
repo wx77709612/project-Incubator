@@ -25,13 +25,56 @@ const protectedDigests = new Map([
   ["skills/sims-4-host-profile/SKILL.md", "b159ded0bbb8cc265fec25c1ec9d752668d4416b781c725bbf5f54b84617bc4a"],
   ["profiles/project-types/mod.json", "a959016c7488031f9f29c3b6f80e2345807ce36a1c54a4d48c0dec4ac231f83a"],
   ["profiles/hosts/sims-4.json", "f47f129237c272a22cc049a2073ed898ca6d750344105ed8bb236de4e02000bf"],
+  ["src/domains/mod/workflow.mjs", "d5484e450bdd8585ba5c2a8876676f52119ab54c589a1c0f15b9953d8cf95672"],
+  ["src/domains/mod/opacity.mjs", "8216c9d905283d6b0a2f1ed0fa1286b3d85c959ab6d9fc5d36be0b7c0004b291"],
+  ["src/domains/mod/sims4-profile.mjs", "251d8d0ea2e9c594302edae5bd327f9bf403d6a86c2078b1cfe3ded004308283"],
+  ["skills/desktop-product-incubator/SKILL.md", "896b94d6d93d343aef6887d21dfaa0d3761495cf7e37b499c0129d58f3b4149e"],
+  ["skills/windows-desktop-host-profile/SKILL.md", "f48b0da3d5c810f59edbbf34d7e82b544b53ce5ddf1c451cf78c09dc1e86bb31"],
+  ["profiles/project-types/desktop-product.json", "a6cbfdb1cde85cb7dadf88a67fab209afdaddca7d1858af1bb69f8e02773c134"],
+  ["profiles/hosts/windows-desktop.json", "2c2f294c41086dd642e7f59bf93e88ede917ddb283fa63b9c9dc2cce5344fb6c"],
+  ["src/domains/desktop/workflow.mjs", "045ef3da14204c4a96b6130c10f55997917275a554822b4486a6c557feb01cde"],
 ]);
 
-test("released Mod and Sims 4 assets remain byte-for-byte unchanged", async () => {
+test("Mod/Sims 4 与 Desktop/Windows 领域资产保持 byte-for-byte 不变", async () => {
   for (const [relative, expected] of protectedDigests) {
     const bytes = await readFile(path.join(root, relative));
     assert.equal(createHash("sha256").update(bytes).digest("hex"), expected, relative);
   }
+});
+
+test("Web Child Skill 的 P4 Completion 必须由两项独立 Gate 满足后声明", async () => {
+  const skill = await readFile(path.join(root, "skills/web-product-incubator/SKILL.md"), "utf8");
+  const p4 = skill.split("### P4 `Creation`")[1]?.split("### P5 `Validation`")[0];
+  assert.ok(p4, "缺少 P4 合同");
+  for (const checkpoint of ["Usable Web Slice", "Build Readiness"]) {
+    const row = p4.split("\n").find((line) => line.startsWith(`| ${checkpoint} |`));
+    assert.ok(row, checkpoint);
+    for (const field of ["Evidence Refs", "Claim Scope", "Known Limitations", "Failure Routing", "独立 Gate Evaluation", "REQUIREMENT_SATISFIED"]) assert.ok(row.includes(field), `${checkpoint}: ${field}`);
+  }
+  assert.match(p4, /Completion Conditions：只有两项均为 `REQUIREMENT_SATISFIED`[^\n]*P4→P5/);
+  assert.match(p4, /不得[^\n]*不适用[^\n]*绕过/);
+  assert.match(p4, /两项分别[^\n]*留在 P4[^\n]*不用一项成功替代另一项/);
+});
+
+test("Web P5 各项必需或适用 Requirement 分别满足，四种 only 均不构成 Completion", async () => {
+  const skill = await readFile(path.join(root, "skills/web-product-incubator/SKILL.md"), "utf8");
+  const p5 = skill.split("### P5 `Validation`")[1]?.split("### P6 `Iteration`")[0];
+  assert.ok(p5, "缺少 P5 合同");
+  assert.match(p5, /Completion Conditions：[^\n]*Requirement 必须分别评估[^\n]*不能仅列出 Channel/);
+  const requirements = ["Build Requirement", "Local Integration Requirement", "Local Browser Requirement", "Secondary Interface Requirement"];
+  for (const [only, available] of [["Build-only", "Build Requirement"], ["localhost-only", "Local Integration Requirement"], ["Browser-only", "Local Browser Requirement"], ["Secondary-interface-only", "Secondary Interface Requirement"]]) {
+    assert.doesNotMatch(p5, new RegExp(`${only}[^。\\n]*(?<!不)(?:能满足|可以满足|足以通过|足以满足|即可满足|可通过|已满足)[^。\\n]*P5`, "i"), `${only} 不得被声明为完整 P5`);
+    for (const missing of requirements.filter((item) => item !== available)) {
+      const row = p5.split("\n").find((line) => line.startsWith("- ") && line.includes(missing));
+      assert.ok(row && /Gate Evaluation[^\n]*为 `REQUIREMENT_SATISFIED`/.test(row), `${only} 仍需 ${missing}`);
+      if (missing === "Secondary Interface Requirement") assert.match(row, /Product Boundary 包含次级界面时，适用/);
+    }
+  }
+  assert.match(p5, /Local Browser Requirement[^\n]*至少覆盖一条真实浏览器核心旅程/);
+  assert.match(p5, /Build、Logic、Browser、Secondary Interface 与 Human Evidence 不能互相替代/);
+  assert.match(p5, /Script Validation Result、Observation 或 Human Judgment 不能直接替代 Gate Evaluation Result/);
+  assert.match(p5, /未满足必要 Requirement 则留在 P5[^\n]*不得伪称通过/);
+  assert.match(skill, /Gate Result 不直接修改状态/);
 });
 
 test("every PRESERVE, ADAPT and SPECIALIZE matrix item maps to an automated test", async () => {
