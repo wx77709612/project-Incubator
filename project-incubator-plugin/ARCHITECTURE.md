@@ -1,6 +1,6 @@
 # Project Incubator Plugin 架构契约
 
-状态：`APPROVED`（Maker 于 2026-09-29 确认；Desktop Product 扩展于 2026-10-05 确认）
+状态：`APPROVED`（Maker 于 2026-09-29 确认；Desktop Product 扩展于 2026-10-05 确认；Web Product Decision 014 与下游规格及实现计划于 2026-10-13 至 2026-10-14 获批）
 
 ## 1. 目标
 
@@ -20,6 +20,7 @@ Child Incubator Skill + Host Profile
 ```text
 Mod Incubator Skill + Sims 4 Host Profile
 Desktop Product Incubator Skill + Windows Desktop Host Profile
+Web Product Incubator Skill（无 Host Profile）
 ```
 
 现有 `PROJECT_INCUBATOR/`、V1.1 RC 与历史规格保持原样，作为 Legacy Baseline、迁移输入和回归对照。新 Plugin 必须通过第 13 节的集成矩阵说明旧资产被保留、适配或专门化到哪里；不得以“重新实现”为由无证据丢弃既有治理语义。
@@ -212,11 +213,25 @@ host_profile_id = "sims-4" | null
 project_type_id = "desktop-product"
 child_skill_id = "desktop-product-incubator"
 host_profile_id = "windows-desktop"
+
+project_type_id = "web-product"
+child_skill_id = "web-product-incubator"
+host_profile_id = null
 ```
 
-Registry 1.1 要求每个 Project Type 显式声明 `host_profile_requirement`：`mod` 为 `OPTIONAL`，`desktop-product` 为 `REQUIRED`。Router 和 Kernel 不得自动选择 Host。新激活使用 State 1.1 的不可变 `workflow.entry`；既有 State 1.0 项目继续运行且不自动迁移。
+Registry 1.1 要求每个 Project Type 显式声明 `host_profile_requirement`：`mod` 为 `OPTIONAL`，`desktop-product` 为 `REQUIRED`，`web-product` 为 `FORBIDDEN`。Router 和 Kernel 不得自动选择 Host。新激活使用 State 1.1 的不可变 `workflow.entry`；既有 State 1.0 项目继续运行且不自动迁移。
 
 Desktop Product 原样复用 P0–P6 ID 与名称。Desktop System Model、`FEASIBILITY_PROBE`、Usable Slice、Delivery Hardening 和 Creation Correction 只存在于 Child Skill 的阶段内指导，不形成新的 Runtime Phase。Browser Extension 不属于本版本支持的 Project Type，也不由 Desktop Child Skill 接管。
+
+Web Product 以浏览器主要界面、前端与后端逻辑职责和跨边界核心旅程定义，不按技术栈或工程拓扑拆分。静态前端、纯后端、独立 MCP Service、浏览器扩展及其他主要产品形态不由 Web Child 接管。浏览器、localhost 与操作系统属于项目配置和 Evidence 条件，不获得 Host Authority。
+
+Web 原样复用 P0–P6 和 P6→P2/P3/P4/P5。`NEW_PROJECT` 从 P0 开始，`ADOPT_EXISTING` 由 Agent 基于 Evidence 判断 P0–P6。Usable Web Slice 与 Build Readiness 是 P4 内部 Checkpoint，分别提供 Evidence Refs、Claim Scope、Known Limitations、Failure Routing 和独立 Gate Evaluation；只有两项均为 `REQUIREMENT_SATISFIED` 时才不阻止 P4→P5。Creation Correction 复用普通 Context Mutation，Stage 保持 P4，不提交 `workflow_transition`。
+
+P5 的 Build、Local Integration、Local Browser 和适用 Secondary Interface Requirement 必须分别得到 `REQUIREMENT_SATISFIED`。Build-only 不能通过 P5，真实浏览器核心旅程是必要 Evidence。Design Channel、Observation、Script Validation Result 与 Gate Evaluation 不混同；Kernel 不解释 Web Evidence，Gate Result 不直接修改状态。
+
+REST、GraphQL、WebSocket、Webhook、MCP 等次级界面在同一 Product Boundary、用户结果、业务模型、数据所有权、授权/审计/副作用政策和主要版本生命周期下可属于同一 Web Project，但必须具有独立 Claim 与真实适用 Client Evidence，不能替代浏览器 Evidence。Transport、进程或包的变化不自动迁移类型；独立产品条件只触发 Maker Review。
+
+Deployment 保持 `DEFERRED_CAPABILITY`；本地构建、localhost、浏览器和次级 Client 成功不得声称 Production Ready。不新增 Deployment Stage、Host、Gate Type 或 Runtime Schema 字段；未来启用部署须独立变更控制。Web 扩展不改写第 13 节 Legacy 集成矩阵，当前依据为活动 `SPECS/PROJECT_TYPES/WEB_PRODUCT_PROFILE.md`、`SPECS/CONTRACTS/WEB_PRODUCT_INCUBATOR_CONTRACT.md`、`SPECS/RUNTIME/WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md` 和获批实施/验收计划。
 
 每个 Child Skill 必须声明：
 

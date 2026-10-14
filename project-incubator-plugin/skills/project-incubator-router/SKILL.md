@@ -17,7 +17,7 @@ description: 当 Maker 要创建、孵化、恢复或判断一个长期项目应
 
 路由提议必须同时说明 `project_type_id`、`host_profile_requirement`、候选 `host_profile_id` 与 Workflow Entry Mode，不得用 Registry 中第一个 Host 或 `windows-desktop` 作为默认值。
 
-- `NEW_PROJECT`：使用 Child Workflow 的标准初始阶段；`desktop-product` 为 P0，`mod` 为 M0。
+- `NEW_PROJECT`：使用 Child Workflow 的标准初始阶段；`desktop-product` 和 `web-product` 为 P0，`mod` 为 M0。
 - `ADOPT_EXISTING`：Maker 提供项目来源和背景；Agent 检查现有设计、计划、Artifact、实现与 Evidence，判断正常阶段，写入 `assessment_summary` 和至少一个 `evidence_refs`。Kernel 不替 Agent 判断阶段。
 - `REQUIRED`：Maker 未明确确认匹配 Host 时停止，Runtime 返回 `HOST_PROFILE_REQUIRED`。
 - `OPTIONAL`：允许 Host 为空；非空时仍必须匹配 Project Type。
@@ -26,6 +26,20 @@ description: 当 Maker 要创建、孵化、恢复或判断一个长期项目应
 当前 `desktop-product` 需要显式选择 `windows-desktop` 才能激活；这表示当前只有一个受支持候选，不表示它是默认值。目标 Host 不受支持时报告并停止，不得回退到 Windows。
 
 浏览器扩展在本版本中不支持，不能路由为 `desktop-product`，也不能作为 Desktop Child Skill 自动接管的 Delivery Surface。若 Maker 同时描述桌面端和浏览器扩展，只路由本轮明确要孵化且已支持的产品形态，并把另一部分标为未路由范围；不得代替未来 Project Type 或跨项目关系设计。
+
+## Web Product 路由边界
+
+只有通用浏览器为主要用户界面、同时具有前端与后端逻辑职责，且至少一条核心旅程穿过浏览器与后端或数据边界时，才可提议 `web-product`。目标完成条件包含可重复 Build、localhost 运行和真实浏览器核心结果；前后端职责不要求分离进程或仓库。
+
+`NEW_PROJECT` 标准阶段为 P0；`ADOPT_EXISTING` 由 Agent 根据既有 Artifact 和 Evidence 评估 P0–P6 正常阶段，提供 `assessment_summary` 和至少一个 `evidence_refs`。
+
+`web-product` 的 Host Requirement 为 `FORBIDDEN`，`host_profile_id = null`；不得为浏览器、localhost 或操作系统创建或选择 Host Profile。浏览器版本、URL、端口和命令属于项目配置与 Evidence 条件。
+
+浏览器扩展、无后端职责的静态前端、纯后端、独立 MCP Service、CLI、SDK、库、移动、桌面和 Mod 均不属于 Web Child；按其他已注册类型提议或明确报告不支持，不因存在 HTTP 或辅助网页而误分类。
+
+绑定 Web 后端既有 Capability 的 MCP 等次级界面，在同一 Product Boundary、主要结果、业务/数据/授权政策和版本生命周期下不改变 Project Type。出现独立产品目标或主要独立交付物时只触发 Maker Review，不自动迁移；Transport、进程或包的变化不能代替产品归属判断。
+
+不得把 `web-product` 作为默认类型。路由提议不是激活；继续遵守完整请求、下一轮 Maker 明确批准和 Kernel 初始化协议。
 
 ## 项目状态查询
 
