@@ -1,5 +1,8 @@
 {
   "files_compared": 41,
   "mismatches": [],
-  "candidate_root": "C:\\Users\\Xenia_Woo\\plugins\\project-incubator-plugin-0.3.0+codex.20261019210340"
+  "candidate_root": "C:\\Users\\Xenia_Woo\\plugins\\project-incubator-plugin-0.3.0+codex.20261019210340",
+  "implementation_commit": "63f1565",
+  "source_branch": "codex/runtime-skill-alignment",
+  "base_commit": "ad54c36"
 }

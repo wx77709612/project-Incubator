@@ -45,3 +45,7 @@ Mod 风险已由 server.mjs 证实：get_project_state 返回已解析 Snapshot�
 ## 正式批准记录
 
 Maker 于 2026-10-19 对本 chat 上轮列出的正式规格、逐项 Invariant 调整及实施/验收计划回复“确认”，批准本轮范围实施。该批准不授权更改任何真实 Managed Project 状态。
+
+## 安装来源闭合（2026-10-19）
+
+实际 personal marketplace 位于 C:/Users/Xenia_Woo/.agents/plugins/marketplace.json；其本插件source已从旧持久目录切换到经验证的版本化候选 project-incubator-plugin-0.3.0+codex.20261019210340。通过 codex plugin add 正式安装，未直接改缓存。旧source和旧全局Skill完整备份保留；当前加载的新宿主已验证状态查询和三类路由。前文旧版本路径为调查时基线事实，详细哈希与命令见验收证据。

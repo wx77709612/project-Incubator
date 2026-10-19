@@ -1,0 +1,6 @@
+仅执行安装验收的三个只读 MCP propose_route 调用，不使用其他工具、不写文件、不创建计划。传入字段必须精确使用 project_type_id 和 host_profile_id；project_type 和 host_profile 是错误字段，禁止使用。
+依次按以下完整 JSON 调用 propose_route：
+{"project_root":"C:\\Users\\XENIA_~1\\AppData\\Local\\Temp\\project-incubator-alignment-0.3.0+codex.20261019210340\\installed-web","project_type_id":"mod","host_profile_id":"sims-4"}
+{"project_root":"C:\\Users\\XENIA_~1\\AppData\\Local\\Temp\\project-incubator-alignment-0.3.0+codex.20261019210340\\installed-web","project_type_id":"desktop-product","host_profile_id":"windows-desktop"}
+{"project_root":"C:\\Users\\XENIA_~1\\AppData\\Local\\Temp\\project-incubator-alignment-0.3.0+codex.20261019210340\\installed-web","project_type_id":"web-product","host_profile_id":null}
+若参数校验失败，按上面实际字段修正后重试，不要继续重复错误。都成功只回复 PASS 和三个返回路由；否则报告原始错误。不调用 prepare/initialize/commit/decline/export。

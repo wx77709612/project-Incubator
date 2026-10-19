@@ -24,7 +24,7 @@ Issues：无未修复的审查问题；历史 _V* 与实际 Kernel、领域代�
 
 ## Task 3：打包与正式安装
 
-Status: IN_PROGRESS — 新宿主只读重放待结果
+Status: COMPLETED
 
 Changed Files：Plugin manifest、scripts/verify-candidate.mjs 与共享指导校验；personal marketplace 仅更换本插件 source 指针；旧全局 Skill 备份后部署源码最小 shim。
 
@@ -38,11 +38,11 @@ Validation：
 - codex plugin add project-incubator-plugin@personal --json：exit0；codex mcp list --json 解析的 cwd 指向新构建安装路径。
 - Plugin Hook 文件哈希逐份与候选一致；旧全局 Skill 全目录备份在活动 skills 外，新活动目录只有一个 SKILL.md，哈希与源码一致。
 
-Issues：首轮新宿主 CLI 使用默认 never 策略，MCP 调用在执行前被平台拒绝；随后模型容量错误。已改用正常 --approve-for-me 重放，不使用绕过审批/信任选项。当前不把独立进程验收冒充新宿主四调用成功。
+Issues：无剩余阻塞。过程记录：首轮新宿主 CLI 使用默认 never 策略，MCP 调用在执行前被平台拒绝；随后模型容量错误。已改用正常 --approve-for-me 重放，不使用绕过审批/信任选项。新宿主重放已成功：inspect_project 返回 P0/revision0/Receipt verified；精确字段的三次 propose_route 均返回合法路由。早期测试 Agent 使用错误字段也被真实 Schema 拒绝，未修改 Kernel 或制造成功叙述。最终四个调用及状态未变证据见 host-acceptance-summary.json。
 
 ## Task 4：回归与保护范围
 
-Status: IN_PROGRESS — A09 新宿主结果待闭合
+Status: COMPLETED
 
 Validation：
 
@@ -77,3 +77,19 @@ Validation：
 - [独立审查问题绿灯](review-green.log)
 
 市场旧 source 目录完整保留，新 source 是版本化持久候选，不直接改插件缓存。旧全局目录和 marketplace.before.json 的备份在 C:/Users/Xenia_Woo/.codex/backups/kernel-alignment/0.3.0+codex.20261019210340/。
+
+## A01–A11 闭合
+
+A01 红→绿漂移检查；A02 六Skill/参考/AGENTS/模板与安装源；A03 三项目×三种Receipt篡改且零写入；A04 三路由/Host与重激活失败关闭；A05 临时激活；A06 授权/拒绝/重放与失败边界；A07 Receipt/Stop Hook；A08 候选自包含；A09 正式安装+新宿主；A10 全量回归；A11 规格引用与保护范围均通过。核心 Runtime、Schema、Profile、领域代码与 _V* 的 Git diff 为空。
+
+A04–A07 的行为证据由 Plugin 全量真实 MCP/Hook 与集成/E2E 测试、候选/安装 --full 共同提供；新宿主只读重放补充 A09，不声称在宿主新会话执行了变更。所有激活和变更实验只针对临时夹具。
+
+[新宿主真实结果](host-acceptance-summary.json)、[状态查询事件](host-replay-final.jsonl)、[三路由事件](host-route-final.jsonl)。首次失败宿主的完整大输出压缩保留为 host-readonly-raw.jsonl.gz，可读 JSONL 仅省略 command 输出正文并记录原始 SHA256；没有删除错误或失败记录。
+
+## 实施来源、决策与剩余问题
+
+源码实现提交 63f1565，分支 codex/runtime-skill-alignment；最终证据补充保存在后续本地提交。未合并、推送或发布。完整文件清单见 [CHANGED_FILES.txt](CHANGED_FILES.txt)。
+
+执行裁定：持久记录沿用本仓库 Acceptance 目录而不引入第二个项目状态；旧执行指导隔离为 Legacy 参考并由显式 RC 构建读取；规格路径静态检查采用保守拒绝；不把 lint 当完整自然语言证明。未改变领域或产品边界；若把这些兼容资产再次当现行入口将违反本次批准，自动化已检查当前分发路径。
+
+独立审查 Critical0、Important3 均有失败测试和修复证据、Minor0；无延期小问题，无未解决安装或 Runtime 问题。V1.1 Round2R 与 V1.2 真实产品现场验收保留为原独立待办，不属于本轮剩余缺陷。

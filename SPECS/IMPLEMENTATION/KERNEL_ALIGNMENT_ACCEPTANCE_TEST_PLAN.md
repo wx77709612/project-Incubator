@@ -1,6 +1,6 @@
 # Kernel 与 Skill 对齐验收计划
 
-状态：APPROVED / ACCEPTANCE AUTHORIZED；上游：[实施计划](KERNEL_ALIGNMENT_IMPLEMENTATION_PLAN.md)。
+状态：PASSED；上游：[实施计划](KERNEL_ALIGNMENT_IMPLEMENTATION_PLAN.md)。
 
 | ID | 验证方式 | 通过条件 |
 | --- | --- | --- |
@@ -31,3 +31,7 @@ A01–A11 全通过且证据可重放；所有实施 Task 完成；无未解决�
 ## 正式批准记录
 
 Maker 于 2026-10-19 对本 chat 上轮列出的正式规格、逐项 Invariant 调整及实施/验收计划回复“确认”，批准本轮范围实施。该批准不授权更改任何真实 Managed Project 状态。
+
+## 实际验收记录
+
+2026-10-19：A01–A11 均通过，完整命令、实际结果、安装版本、早期失败与修复/重放证据见 [RESULTS.md](../../ACCEPTANCE_TESTS/kernel_alignment/RESULTS.md)。新宿主inspect_project与三类型propose_route均成功，未修改测试权威状态；不扩展真实项目或发布范围。

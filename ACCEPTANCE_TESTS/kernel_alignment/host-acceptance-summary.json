@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "installed_version": "0.3.0+codex.20261019210340",
+  "installed_root": "C:\\Users\\Xenia_Woo\\.codex\\plugins\\cache\\personal\\project-incubator-plugin\\0.3.0+codex.20261019210340",
+  "inspect_project": {
+    "revision": 0,
+    "stage": "P0",
+    "receipt_verified": true,
+    "receipt_id": "receipt-dd03f8b8-a97d-4560-a9ce-a347910f1c3c"
+  },
+  "routes": [
+    {
+      "project_type_id": "mod",
+      "child_skill_id": "mod-incubator",
+      "host_profile_id": "sims-4"
+    },
+    {
+      "project_type_id": "desktop-product",
+      "child_skill_id": "desktop-product-incubator",
+      "host_profile_id": "windows-desktop"
+    },
+    {
+      "project_type_id": "web-product",
+      "child_skill_id": "web-product-incubator",
+      "host_profile_id": null
+    }
+  ],
+  "successful_readonly_calls": 4,
+  "authority_sha256_after": {
+    "activation.json": "7b5b85216ff6cd4d28dd16ebf29d588baefd42614aa7f76ae0713bd4a05fb008",
+    "state.json": "740eaffbf4cc2d807edfc228ed00e393949484b169e9a14b88170cc32537dc17",
+    "latest-receipt.json": "31ab7600060afb3ac613bcfa2160c30ef4426117d3665fde76602c76afd50271"
+  },
+  "authority_revision_unchanged": true,
+  "evidence": [
+    "host-replay-final.jsonl",
+    "host-route-final.jsonl"
+  ]
+}

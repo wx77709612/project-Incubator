@@ -89,9 +89,9 @@ test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:297:13
 ✖ 开始前调用 get_project_state；不得直接编辑权威文件。 (231.8028ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:302:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:297:5)
@@ -108,9 +108,9 @@ test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:29
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:297:13
 ✖ PROJECT_STATE.md 是唯一状态权威；禁止从聊天恢复。 (215.7276ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:302:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:297:5)
@@ -127,9 +127,9 @@ test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:29
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:297:13
 ✖ 请先读取 `../../../SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (218.9849ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:302:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:297:5)
@@ -146,9 +146,9 @@ test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:29
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:297:13
 ✖ 请先读取 `C:/repo/SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (220.1076ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:302:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:297:5)
@@ -165,9 +165,9 @@ test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:29
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:297:13
 ✖ 请先读取 `..\..\..\SPECS\DESIGN\CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (220.8242ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:302:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:297:5)

@@ -1,6 +1,6 @@
 # Kernel 与 Skill 系统性对齐实施计划
 
-状态：APPROVED / IMPLEMENTATION AUTHORIZED；2026-10-19。
+状态：IMPLEMENTED / ACCEPTANCE PASSED；2026-10-19。
 
 供执行 Agent：获批后采用 superpowers:executing-plans 按任务实施；本计划不要求分派子 Agent。
 
@@ -47,16 +47,16 @@ Files：新增 project-incubator-plugin/tests/contract/runtime-guidance-drift.te
 - [x] 生成新候选版本，从源码白名单打包至全新仓库外目录；在执行现有含递归清理的 packager 前确认目标绝对路径仅为本轮候选目录且不含已有用户内容。
 - [x] npm ci --omit=dev；node scripts/verify-candidate.mjs --structure-only <candidate>；--full <candidate> <temporary-managed-root>。
 - [x] 经正式安装机制更新；旧全局 Skill 如有用户改动则备份并比较，不静默覆盖；禁止直接改缓存。
-- [ ] 记录源码/候选/安装文件哈希、版本和 MCP 来源；真实宿主刷新与 Hook 未确认时保持待验收。
+- [x] 记录源码/候选/安装文件哈希、版本和 MCP 来源；真实宿主刷新与 Hook 未确认时保持待验收。
 
 ## Task 4：全量验收与证据
 
 依赖 Task 3。Files：新增 ACCEPTANCE_TESTS/kernel_alignment/RESULTS.md；更新本计划、Acceptance Plan 与 SPECS/README 的实际状态。
 
-- [ ] 执行 [Acceptance Plan](KERNEL_ALIGNMENT_ACCEPTANCE_TEST_PLAN.md) 全部矩阵，使用临时项目覆盖三路由、激活、授权、拒绝、重放拒绝、Receipt 篡改及 Stop 闭合。
-- [ ] 执行 Plugin npm test；按现有测试入口运行 Legacy 全量与 Acceptance 回归，分别记录数量和环境失败，不虚构通过。
-- [ ] 核验 _V* 与原 checkout 未变化；记录旧真实产品验收仍待处理，不关闭 V1.1 Round 2R/V1.2 现场验收。
-- [ ] 按仓库 Task 格式报告 Changed Files、命令、实际结果、安装版本、剩余问题；无 Maker 发布批准则不归档或声称发布。
+- [x] 执行 [Acceptance Plan](KERNEL_ALIGNMENT_ACCEPTANCE_TEST_PLAN.md) 全部矩阵，使用临时项目覆盖三路由、激活、授权、拒绝、重放拒绝、Receipt 篡改及 Stop 闭合。
+- [x] 执行 Plugin npm test；按现有测试入口运行 Legacy 全量与 Acceptance 回归，分别记录数量和环境失败，不虚构通过。
+- [x] 核验 _V* 与原 checkout 未变化；记录旧真实产品验收仍待处理，不关闭 V1.1 Round 2R/V1.2 现场验收。
+- [x] 按仓库 Task 格式报告 Changed Files、命令、实际结果、安装版本、剩余问题；无 Maker 发布批准则不归档或声称发布。
 
 ## Maker Approval
 
@@ -65,3 +65,7 @@ Maker 于 2026-10-19 确认正式文档及本计划，授权按依赖顺序执�
 ## 正式批准记录
 
 Maker 于 2026-10-19 对本 chat 上轮列出的正式规格、逐项 Invariant 调整及实施/验收计划回复“确认”，批准本轮范围实施。该批准不授权更改任何真实 Managed Project 状态。
+
+## 实际完成记录
+
+Task 1–4 已完成。Plugin342/342、Legacy133/32/3、Acceptance79/79；候选与安装版本0.3.0+codex.20261019210340，来源与新宿主四个只读调用均已验证。详见 [验收结果](../../ACCEPTANCE_TESTS/kernel_alignment/RESULTS.md)。本轮完成不关闭旧发布轨道。

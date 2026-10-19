@@ -21,7 +21,7 @@
 test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:24:1
 ✖ 旧全局入口只路由到 Plugin Router，不包含第二套执行流程 (3.2877ms)
   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /project-incubator-router/u. Input:
-  
+
   '---\r\n' +
     'name: project-incubator\r\n' +
     'description: >\r\n' +
@@ -174,7 +174,7 @@ test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:
     '- 将 Advisory Output 视为 Runtime Command；\r\n' +
     '- 将 Script Validation 视为 Gate Result；\r\n' +
     '- 创建新的 Workflow Phase、Transition、Gate Type、Context Authority 或 Runtime Rule。\r\n'
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:26:10)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
@@ -203,7 +203,7 @@ test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:
 test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:43:3
 ✖ mod-incubator 恢复使用 Receipt 验证入口，明确三个权威文件 (0.634ms)
   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /inspect_project/u. Input:
-  
+
   '---\r\n' +
     'name: mod-incubator\r\n' +
     'description: 用于已由 Project Incubator Router 确认为 mod 类型的 Managed Project。围绕玩家可观察的 Product Point，按宿主风险、代表性垂直切片、最终包和真实环境证据推进 Mod 开发；实现中模型失效时进入轻量 MODEL_REVIEW。\r\n' +
@@ -250,7 +250,7 @@ test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:
     '- 一次目标宿主完整成功最高支持 `E3`；API Availability 不提升 Semantic Capability。\r\n' +
     '- 人工验证次数只能由 Maker 设置；未设置时保持 `UNSET`，Agent 只提出可区分假设的测试批次。\r\n' +
     '- 真实异常应归一化为可重复验证，再返回目标宿主确认产品结果。\r\n'
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:45:12)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
@@ -293,7 +293,7 @@ test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:
 test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:51:3
 ✖ sims-4-host-profile 依赖已验证的 Router 激活和 inspect_project (0.5052ms)
   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /inspect_project/u. Input:
-  
+
   '---\r\n' +
     'name: sims-4-host-profile\r\n' +
     'description: 在已选择 mod-incubator 且目标宿主为 The Sims 4 时使用。把通用 Mod 验证具体化为游戏版本、补丁版本、Script/Package 包、Mods 安装结构、加载诊断和与 Capability 相关的游戏内观察。\r\n' +
@@ -327,7 +327,7 @@ test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:
     '## Maker 观察\r\n' +
     '\r\n' +
     'Agent 提供狭窄场景和可区分假设的观察格式，Maker 只需回报：场景、游戏/补丁版本、观察结果、失败或副作用、证据引用。Agent 负责结构化记录、判断 Evidence 上限和决定是否需要 `MODEL_REVIEW`，不得把根因推导转嫁给 Maker。\r\n'
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:53:12)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
@@ -342,7 +342,7 @@ test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:
 test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:51:3
 ✖ windows-desktop-host-profile 依赖已验证的 Router 激活和 inspect_project (0.4612ms)
   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /inspect_project/u. Input:
-  
+
   '---\r\n' +
     'name: windows-desktop-host-profile\r\n' +
     'description: Use when：Router 已为 desktop-product 明确选择 windows-desktop，需要把通用桌面孵化规则收紧为 Windows 环境、交付与真实环境 Evidence；不得单独触发或改写 P0–P6。\r\n' +
@@ -385,7 +385,7 @@ test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:
     '自动化测试可以证明纯逻辑与可重复操作；Desktop Automation 只能证明被测会话；`TARGET_HOST_VALIDATION` 只能支持已绑定环境。未测试的 Windows 版本、架构、权限模式、安全软件或企业策略不得纳入兼容声明。\r\n' +
     '\r\n' +
     '涉及提权、系统范围写入、后台服务、开机启动、安全策略、自动更新或真实用户数据时，执行前需要 Maker Authorization 或既有明确授权范围。Host Profile 只能收紧 Shared Kernel 权限，不能放宽它。\r\n'
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:53:12)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
@@ -400,7 +400,7 @@ test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:
 test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:57:1
 ✖ 分发 AGENTS 统一 Router/Kernel，模板逐份分类为非现行 (0.6654ms)
   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /project-incubator-router/u. Input:
-  
+
   '# Project Incubator Agent 行为边界\r\n' +
     '\r\n' +
     '本文件是 Project Incubator Managed Project Runtime 行为相关的 Product Artifact。它不修改、绕过或重新定义 Implementation Repository 根目录 `AGENTS.md`。\r\n' +
@@ -501,7 +501,7 @@ test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:
     '除非 Maker 明确要求使用其他语言，Agent 与 Maker 的交互，以及 Agent 生成的人类可读项目文档，默认使用简体中文。\r\n' +
     '\r\n' +
     '必要的英文技术术语、Identifier、文件名、目录名、协议字段、Enum Value 和代码标识符可以保留英文。\r\n'
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:60:12)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {

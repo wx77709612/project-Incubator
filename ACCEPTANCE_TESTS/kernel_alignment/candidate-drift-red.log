@@ -21,9 +21,9 @@
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:273:13
 ✖ skills/mod-incubator/SKILL.md (230.1099ms)
   AssertionError [ERR_ASSERTION]: 候选指导漂移必须失败关闭
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:281:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:273:5)
@@ -40,9 +40,9 @@ test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:27
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:273:13
 ✖ skills/desktop-product-incubator/SKILL.md (218.5359ms)
   AssertionError [ERR_ASSERTION]: 候选指导漂移必须失败关闭
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:281:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:273:5)
@@ -59,9 +59,9 @@ test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:27
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:273:13
 ✖ skills/web-product-incubator/SKILL.md (212.9561ms)
   AssertionError [ERR_ASSERTION]: 候选指导漂移必须失败关闭
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:281:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:273:5)
@@ -78,9 +78,9 @@ test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:27
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:273:13
 ✖ skills/sims-4-host-profile/SKILL.md (218.6121ms)
   AssertionError [ERR_ASSERTION]: 候选指导漂移必须失败关闭
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:281:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:273:5)
@@ -97,9 +97,9 @@ test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:27
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:273:13
 ✖ skills/windows-desktop-host-profile/SKILL.md (215.3361ms)
   AssertionError [ERR_ASSERTION]: 候选指导漂移必须失败关闭
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:281:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:273:5)
@@ -116,9 +116,9 @@ test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:27
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:273:13
 ✖ skills/project-incubator-router/references/nested/drift.md (216.8327ms)
   AssertionError [ERR_ASSERTION]: 候选指导漂移必须失败关闭
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:281:14)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:273:5)
@@ -135,9 +135,9 @@ test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:27
 test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:286:1
 ✖ 候选拒绝 Mod 恢复回退到无 Receipt 验证的工具 (216.0835ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   0 !== 1
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:291:10)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {

@@ -22,3 +22,11 @@ Final review declined事项处置：安装/宿主加载仍必须执行；真实�
 Final: fixed all 3 Important findings — review-green.log 11/11, RC builder 7/7, complete Plugin suite 342/342; Legacy final133/32/3; all11Acceptance stages79/79. No deferred minors.
 Task 3: official codex plugin add installed 0.3.0+codex.20261019210340; source/candidate 41 files identical; candidate and installed aggregate SHA256 identical; global old Skill fully backed up outside active skills, minimal shim installed.
 Host first run: read-only CLI default never policy rejected MCP calls before execution; subsequent model capacity failure. A replay with standard --approve-for-me is in progress; no bypass.
+
+本地实现提交63f1565，分支codex/runtime-skill-alignment；无合并/推送/发布。新日志加入index后发现Node失败输出自带行尾空格，已只规范化.log行尾空白，不改测试内容或结果。
+Host新会话inspect_project已成功：revision0，Receipt verified；三路由误用project_type/host_profile被真实Schema拒绝，已提供精确JSON重放；Kernel未更改。
+
+Task 1: complete — initial RED8/9; final source/candidate checks green.
+Task 2: complete — guidance/governance and RC compatibility, protected code/Profile unchanged.
+Task 3: complete — official install0.3.0+codex.20261019210340, hash/source paths match, newhost inspect and three routes PASS.
+Task 4: complete — Plugin342; Legacy133/32/3; Acceptance79; allA01–A11closed; no deferred minors or release claims.

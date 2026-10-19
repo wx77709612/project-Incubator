@@ -6,7 +6,7 @@
 | --- | --- |
 | 当前研发版本 | V1.2 Plugin Web Product Incubator（独立分支） |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | Kernel / Skill Alignment Implementation Authorized（2026-10-19） |
+| 当前阶段 | Kernel / Skill Alignment Implemented / Acceptance Passed（2026-10-19） |
 | 产品实现状态 | V1.2 Tasks 1–7 已授权、尚未完成；V1.1 RC 状态保持不变，继续等待 Maker 执行 Round 2R |
 | 当前入口 | 本文件 |
 
@@ -62,8 +62,8 @@
 | Implementation | `IMPLEMENTATION/CONTEXT_MUTATION_ORCHESTRATION_ACCEPTANCE_TEST_PLAN.md` | AUTOMATED PASSED / MANUAL ROUND 2R PENDING | Authorization、Rollback、Runtime Routing、Stage F 已通过；Manual Round 2R 尚未执行 |
 | Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | Tasks 1–7 已实施；M1–M6、Bootstrap Activation、Receipt 与真实 Stop Hook 闭合验收通过 |
 | Implementation | `IMPLEMENTATION/DESKTOP_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | PASSED / CANDIDATE ACCEPTED | Plugin `137/137`、Legacy `132/32/3`、受保护文件、M1–M6 与候选 `0.2.0+codex.20261009161423` 均通过；该结论不等于 V1.1 RC Round 2R 或发布归档完成 |
-| Implementation | `IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | APPROVED / IMPLEMENTATION AUTHORIZED | Web Product Tasks 1–7、文件范围、依赖顺序、回归和候选包计划；Maker 于 2026-10-14 批准 |
-| Implementation | `IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | APPROVED / ACCEPTANCE AUTHORIZED | 自动化、候选包、仓库外安装与真实已有 Web 项目验收计划；Maker 于 2026-10-14 批准 |
+| Implementation | `IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_IMPLEMENTATION_PLAN.md` | IMPLEMENTED / ACCEPTANCE PASSED | Web Product Tasks 1–7、文件范围、依赖顺序、回归和候选包计划；Maker 于 2026-10-14 批准 |
+| Implementation | `IMPLEMENTATION/WEB_PRODUCT_INCUBATOR_ACCEPTANCE_TEST_PLAN.md` | PASSED | 自动化、候选包、仓库外安装与真实已有 Web 项目验收计划；Maker 于 2026-10-14 批准 |
 
 ## 人工验收入口
 
@@ -116,11 +116,11 @@ Maker 已批准以 Plugin 0.3.x MCP Kernel 与三个 JSON 权威文件为唯一�
 | Design | [唯一入口与恢复设计](DESIGN/KERNEL_ALIGNMENT_DESIGN.md) | APPROVED |
 | Contract | [对齐契约](CONTRACTS/KERNEL_ALIGNMENT_CONTRACT.md) | APPROVED |
 | Runtime | [唯一现行运行规范](RUNTIME/KERNEL_ALIGNMENT_RUNTIME_SPEC.md) | APPROVED |
-| Implementation | [实施计划](IMPLEMENTATION/KERNEL_ALIGNMENT_IMPLEMENTATION_PLAN.md) | APPROVED / IMPLEMENTATION AUTHORIZED |
-| Implementation | [验收计划](IMPLEMENTATION/KERNEL_ALIGNMENT_ACCEPTANCE_TEST_PLAN.md) | APPROVED / ACCEPTANCE AUTHORIZED |
+| Implementation | [实施计划](IMPLEMENTATION/KERNEL_ALIGNMENT_IMPLEMENTATION_PLAN.md) | IMPLEMENTED / ACCEPTANCE PASSED |
+| Implementation | [验收计划](IMPLEMENTATION/KERNEL_ALIGNMENT_ACCEPTANCE_TEST_PLAN.md) | PASSED |
 
 本轮 APPROVED 规格按 ACP 明示范围替代旧权威规则；旧规格仅在未冲突的领域设计与 Legacy 轨道适用。实施时更新活动文档作用域、Decision 与根 AGENTS；历史 `_V*` 保持冻结。
 
 Plugin 0.3.x 的入口/状态/恢复契约优先使用已批准 Kernel Alignment 文档和 Decision 015。表中旧 V1.x APPROVED 状态仅在 Legacy 轨道及非冲突方法范围适用，不表示旧 Markdown/Python 是现行实现。V1.1 RC Round 2R 与 V1.2 真实产品验收状态保持独立。
 
-Kernel Alignment 实施验证：Plugin `342/342`、Legacy `133/32/3`、Acceptance 分阶段 `79/79` 已通过；正式候选已安装为 `0.3.0+codex.20261019210340`，安装与候选聚合哈希一致。宿主新会话只读验证单独登记于 [验收证据](../ACCEPTANCE_TESTS/kernel_alignment/RESULTS.md)，未闭合前不声明全部 Acceptance 完成。
+Kernel Alignment 实施验证：Plugin `342/342`、Legacy `133/32/3`、Acceptance 分阶段 `79/79` 已通过；正式候选已安装为 `0.3.0+codex.20261019210340`，安装与候选聚合哈希一致。宿主新会话状态查询及三类型路由均实际通过，A01–A11 已闭合，详见 [验收证据](../ACCEPTANCE_TESTS/kernel_alignment/RESULTS.md)。本轮完成不等于 V1.1 RC/V1.2 产品现场验收完成或发布。
