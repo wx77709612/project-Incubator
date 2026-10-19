@@ -1,0 +1,17 @@
+▶ 候选拒绝所有 Child、Host 与嵌套参考中重新引入的旧运行指令
+  ✔ skills/mod-incubator/SKILL.md (216.6455ms)
+  ✔ skills/desktop-product-incubator/SKILL.md (206.8093ms)
+  ✔ skills/web-product-incubator/SKILL.md (205.4583ms)
+  ✔ skills/sims-4-host-profile/SKILL.md (210.8234ms)
+  ✔ skills/windows-desktop-host-profile/SKILL.md (201.9886ms)
+  ✔ skills/project-incubator-router/references/nested/drift.md (206.976ms)
+✔ 候选拒绝所有 Child、Host 与嵌套参考中重新引入的旧运行指令 (1249.7218ms)
+✔ 候选拒绝 Mod 恢复回退到无 Receipt 验证的工具 (205.1468ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1528.7941

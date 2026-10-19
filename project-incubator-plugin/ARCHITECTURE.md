@@ -365,3 +365,7 @@ MVP 只有在以下事实均被自动测试和一次宿主走查证明后才完�
 10. 按需导出的 `PROJECT_OVERVIEW.md` 不影响 Gate、Transition 或权威状态；
 11. 集成矩阵中的 `PRESERVE`、`ADAPT` 与 `SPECIALIZE` 项均有对应测试；
 12. 现有 RC.2 测试保持通过。
+
+## 现行入口与恢复补充（Decision 015）
+
+Maker 于 2026-10-19 批准 Kernel Alignment 正式规格。Plugin Router 是唯一现行入口，所有 Child/Host 恢复先使用 inspect_project 验证 Receipt；get_project_state 仅是低层 Snapshot API。旧全局 Skill 仅最小转交，不分发旧 Runtime。研发活动规格的旧权威冲突条款已由 Decision 015 明示替代；候选包指导自包含。

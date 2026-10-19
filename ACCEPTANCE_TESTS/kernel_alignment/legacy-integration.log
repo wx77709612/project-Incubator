@@ -1,0 +1,43 @@
+.....EE........F.....F..........
+======================================================================
+ERROR: test_missing_stable_v1_reports_no_digest (test_rc_skill_installer.RcSkillInstallerTests.test_missing_stable_v1_reports_no_digest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\tests\integration\test_rc_skill_installer.py", line 127, in test_missing_stable_v1_reports_no_digest
+    result = install_rc_skill(self.artifact, self.codex_home)
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\TOOLS\install_rc_skill.py", line 49, in install_rc_skill
+    raise RcInstallError("RC artifact verification failed")
+TOOLS.install_rc_skill.RcInstallError: RC artifact verification failed
+
+======================================================================
+ERROR: test_parallel_install_preserves_stable_v1 (test_rc_skill_installer.RcSkillInstallerTests.test_parallel_install_preserves_stable_v1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\tests\integration\test_rc_skill_installer.py", line 57, in test_parallel_install_preserves_stable_v1
+    result = install_rc_skill(self.artifact, self.codex_home)
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\TOOLS\install_rc_skill.py", line 49, in install_rc_skill
+    raise RcInstallError("RC artifact verification failed")
+TOOLS.install_rc_skill.RcInstallError: RC artifact verification failed
+
+======================================================================
+FAIL: test_verifier_ignores_polluted_pythonpath (test_rc_skill_isolation.RcSkillIsolationTests.test_verifier_ignores_polluted_pythonpath)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\tests\integration\test_rc_skill_isolation.py", line 209, in test_verifier_ignores_polluted_pythonpath
+    self.assertTrue(report.passed, report)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : RcVerificationReport(skill_root=WindowsPath('C:/Users/Xenia_Woo/AppData/Local/Temp/tmpa0pz5jcj/dist/project-incubator-v1-1-rc'), checks=(RcVerificationCheck(name='package_structure', passed=True, detail='complete'), RcVerificationCheck(name='identity_consistency', passed=False, detail='invalid: SKILL name'), RcVerificationCheck(name='manifest_integrity', passed=True, detail='f64c37b11b6839692678e6d3b9e64e68d64a320ee214f44253a79891ea633491'), RcVerificationCheck(name='runtime_clean_room', passed=True, detail='C:\\Users\\Xenia_Woo\\AppData\\Local\\Temp\\tmpa0pz5jcj\\dist\\project-incubator-v1-1-rc\\PROJECT_INCUBATOR\\runtime\\core\\coordinator.py'), RcVerificationCheck(name='script:validate_contract_payload.py', passed=True, detail='COMPLETED'), RcVerificationCheck(name='script:validate_artifact_evidence.py', passed=True, detail='COMPLETED'), RcVerificationCheck(name='script:inspect_git_evidence.py', passed=True, detail='COMPLETED'), RcVerificationCheck(name='script:validate_context_integrity_evidence.py', passed=True, detail='COMPLETED'), RcVerificationCheck(name='script:bootstrap_host_integration.py', passed=True, detail='COMPLETED')), passed=False)
+
+======================================================================
+FAIL: test_verifier_runs_runtime_and_all_scripts_from_unrelated_directory (test_rc_skill_isolation.RcSkillIsolationTests.test_verifier_runs_runtime_and_all_scripts_from_unrelated_directory)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\tests\integration\test_rc_skill_isolation.py", line 152, in test_verifier_runs_runtime_and_all_scripts_from_unrelated_directory
+    self.assertTrue(report.passed, report)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : RcVerificationReport(skill_root=WindowsPath('C:/Users/Xenia_Woo/AppData/Local/Temp/tmp8ysyhl6e/���ո�Ĺ���Ŀ¼/project-incubator-v1-1-rc'), checks=(RcVerificationCheck(name='package_structure', passed=True, detail='complete'), RcVerificationCheck(name='identity_consistency', passed=False, detail='invalid: SKILL name'), RcVerificationCheck(name='manifest_integrity', passed=True, detail='f64c37b11b6839692678e6d3b9e64e68d64a320ee214f44253a79891ea633491'), RcVerificationCheck(name='runtime_clean_room', passed=True, detail='C:\\Users\\Xenia_Woo\\AppData\\Local\\Temp\\tmp8ysyhl6e\\���ո�Ĺ���Ŀ¼\\project-incubator-v1-1-rc\\PROJECT_INCUBATOR\\runtime\\core\\coordinator.py'), RcVerificationCheck(name='script:validate_contract_payload.py', passed=True, detail='COMPLETED'), RcVerificationCheck(name='script:validate_artifact_evidence.py', passed=True, detail='COMPLETED'), RcVerificationCheck(name='script:inspect_git_evidence.py', passed=True, detail='COMPLETED'), RcVerificationCheck(name='script:validate_context_integrity_evidence.py', passed=True, detail='COMPLETED'), RcVerificationCheck(name='script:bootstrap_host_integration.py', passed=True, detail='COMPLETED')), passed=False)
+
+----------------------------------------------------------------------
+Ran 32 tests in 31.450s
+
+FAILED (failures=2, errors=2)

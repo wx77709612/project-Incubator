@@ -1,3 +1,5 @@
+> Legacy / 非现行：仅供旧 RC 兼容回归或 Artifact 参考，Plugin 不加载、不默认分发；正文的旧 Context 语义不适用于 MCP Kernel。
+
 # PROJECT_PLAN
 
 ## Context Boundary / 上下文边界

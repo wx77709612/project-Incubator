@@ -1,3 +1,4 @@
+"""Legacy / 非现行：显式 V1.1 RC 兼容工具；现行安装使用 Plugin marketplace。"""
 from __future__ import annotations
 
 import argparse
@@ -67,11 +68,17 @@ def _copy_source_payload(source_root: Path, target_root: Path) -> None:
             target_path.mkdir(parents=True, exist_ok=True)
         elif source_path.is_file():
             target_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source_path, target_path)
+            legacy_names = {Path("AGENTS.md"): "PRODUCT_AGENTS_REFERENCE.md", Path("README.md"): "PACKAGE_REFERENCE.md"}
+            legacy = source_root / "references" / "legacy" / legacy_names.get(relative, "__unused__")
+            effective_source = legacy if relative in legacy_names and legacy.exists() else source_path
+            shutil.copy2(effective_source, target_path)
 
 
 def _render_rc_skill(source_skill: Path) -> str:
-    text = source_skill.read_text(encoding="utf-8")
+    legacy = source_skill.parent / "references" / "legacy" / "EXECUTION_REFERENCE.md"
+    text = (legacy if legacy.exists() else source_skill).read_text(encoding="utf-8")
+    if text.startswith("<!-- Legacy"):
+        text = text.split("\n", 1)[1]
     identity_line = "name: project-incubator\n"
     if identity_line not in text:
         raise ValueError("Source SKILL.md does not declare name: project-incubator")
@@ -111,7 +118,8 @@ def _rewrite_runtime_version(config_path: Path) -> None:
 
 
 def _rewrite_codex_integration_template(template_path: Path) -> None:
-    text = template_path.read_text(encoding="utf-8")
+    legacy = template_path.parents[3] / "references" / "legacy" / "AGENTS_REFERENCE.md"
+    text = (legacy if legacy.exists() else template_path).read_text(encoding="utf-8")
     stable_trigger = "`project-incubator` Skill"
     if stable_trigger not in text:
         raise ValueError("Codex AGENTS template is missing the stable Skill trigger")

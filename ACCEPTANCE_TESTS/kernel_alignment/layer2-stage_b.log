@@ -1,0 +1,17 @@
+.F...
+======================================================================
+FAIL: test_l2_b02_git_evidence_script (test_deterministic_capability_acceptance.DeterministicCapabilityAcceptanceTest.test_l2_b02_git_evidence_script)
+Test Case:
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\layer2\stage_b\test_deterministic_capability_acceptance.py", line 481, in test_l2_b02_git_evidence_script
+    repository = self._create_git_repository(workspace)
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\layer2\stage_b\test_deterministic_capability_acceptance.py", line 113, in _create_git_repository
+    self.assertEqual(0, self._run_git(repository, "add", "tracked.txt").returncode)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 128
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.551s
+
+FAILED (failures=1)

@@ -2654,3 +2654,13 @@ Decision Record 还必须在适用时记录：
 - `SPECS/README.md` 已记录对应状态。
 
 一个版本的冻结不禁止后续版本演进。后续变化必须创建新的 Architecture Change Proposal，并通过新增、部分替代、替代或撤销 Decision 表达，不得由下游文档隐式覆盖。
+
+## Decision 015：唯一 Plugin Router 与 MCP Kernel 权威
+
+Status：ACTIVE；Authority：Maker 于 2026-10-19 确认 [Kernel Alignment ACP](KERNEL_ALIGNMENT_CHANGE_PROPOSAL.md) 与下游正式计划。
+
+Scope：Plugin 0.3.x 现行执行轨道。部分替代 Decision 001–014 及旧活动文档中涉及 Markdown 状态权威、Python Runtime、Host Bootstrap 和逐文件 Mutation 的冲突条款；其他领域、Maker Authority 与 Evidence 规则保留，不改历史 Decision 正文或 `_V*`。
+
+现行入口仅为 Plugin Router；旧同名 Skill 最小转交。权威集合为 activation.json、state.json、latest-receipt.json；恢复统一 inspect_project。所有受控变更经 Kernel MCP，只有持久化、revision、回读和 Receipt 一致才闭合。Runtime 不替 Maker 决策，也不替 Agent 创作。
+
+Migration Impact：不自动迁移已有项目，不修改真实 Managed Project；兼容资产退出活动发现与默认分发，包与安装必须有来源核验。具体条款见 ACP 的逐项 Invariant 处置及影响清单。

@@ -116,3 +116,36 @@ test("Router Skill binds status questions to inspect_project", async () => {
   assert.match(skill, /inspect_project/);
   assert.match(skill, /不得.*聊天.*补全/);
 });
+
+test("三种 Child 恢复对 Receipt hash、revision 和引用篡改均失败关闭", async (t) => {
+  for (const [type, child, host] of [["mod", "mod-incubator", "sims-4"], ["desktop-product", "desktop-product-incubator", "windows-desktop"], ["web-product", "web-product-incubator", null]]) {
+    for (const field of ["hash", "revision", "reference"]) {
+      await t.test(`${type}/${field}`, async (t) => {
+        const projectRoot = await mkdtemp(path.join(os.tmpdir(), "alignment-resume-"));
+        const runtimeDataRoot = await mkdtemp(path.join(os.tmpdir(), "alignment-resume-events-"));
+        t.after(() => rm(projectRoot, { recursive: true, force: true }));
+        t.after(() => rm(runtimeDataRoot, { recursive: true, force: true }));
+        const stage = type === "mod" ? "M0_BOUNDARY" : "P0";
+        const initial = state();
+        initial.schema_version = "1.1";
+        initial.workflow = { stage, status: "ACTIVE", completed: [], allowed_next: [type === "mod" ? "M1_RISK_MODEL" : "P1"], return_stage: null,
+          entry: { mode: "NEW_PROJECT", initial_stage: stage, assessment_summary: "临时恢复验证夹具", evidence_refs: [], assessed_at: now } };
+        await initializeProjectState(projectRoot, { ...activation(), plugin_version: "0.3.0", project_type_id: type, child_skill_id: child, host_profile_id: host }, initial, authorizationRef);
+        const service = await createKernelService({ pluginRoot: path.resolve(import.meta.dirname, "../.."), runtimeDataRoot });
+        assert.equal((await service.callTool("inspect_project", { project_root: projectRoot })).isError, undefined);
+        const target = path.join(projectRoot, ".project-incubator/latest-receipt.json");
+        const receipt = JSON.parse(await readFile(target, "utf8"));
+        if (field === "hash") receipt.new_state_hash = "0".repeat(64);
+        if (field === "revision") receipt.new_revision += 1;
+        if (field === "reference") receipt.receipt_id = "receipt-unrelated";
+        await writeFile(target, JSON.stringify(receipt));
+        const before = await authorityBytes(projectRoot);
+        assert.equal((await service.callTool("get_project_state", { project_root: projectRoot })).isError, undefined, "低层 Snapshot 不验证闭合，不能作为恢复替代");
+        const result = await service.callTool("inspect_project", { project_root: projectRoot });
+        assert.equal(result.isError, true);
+        assert.equal(result.structuredContent.error.code, "RECEIPT_UNVERIFIABLE");
+        assert.deepEqual(await authorityBytes(projectRoot), before, "查询失败也不得修改状态");
+      });
+    }
+  }
+});

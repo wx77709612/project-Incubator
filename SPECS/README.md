@@ -6,7 +6,7 @@
 | --- | --- |
 | 当前研发版本 | V1.2 Plugin Web Product Incubator（独立分支） |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | Implementation and Acceptance Plans Approved / Implementation Authorized |
+| 当前阶段 | Kernel / Skill Alignment Implementation Authorized（2026-10-19） |
 | 产品实现状态 | V1.2 Tasks 1–7 已授权、尚未完成；V1.1 RC 状态保持不变，继续等待 Maker 执行 Round 2R |
 | 当前入口 | 本文件 |
 
@@ -21,9 +21,9 @@
 | Layer | Document | Status | 说明 |
 | --- | --- | --- | --- |
 | Architecture | `ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED / IMPLEMENTED | 新增 `desktop-product` 与 `desktop-product-incubator`；Workflow Entry 与显式 Host Requirement 已进入 0.2.0 候选 |
-| Architecture | `ARCHITECTURE/WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED | V1.2 新增 `web-product` 与 `web-product-incubator`；Maker 于 2026-10-13 批准，Implementation Authorization 尚未授予 |
+| Architecture | `ARCHITECTURE/WEB_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED | V1.2 新增 `web-product` 与 `web-product-incubator`；Maker 于 2026-10-13 批准，Implementation Authorization 已于 2026-10-14 授予 |
 
-这些提案用于 Project Incubator Plugin 的版本化迭代，不改变 V1.1 RC 的人工验收状态。Desktop 提案已获批准并实施；Web Product Architecture、Project Type Design、Contract 与 Runtime Specification 已获 Maker 书面批准，当前只授权编写 Implementation Plan 与 Acceptance Test Plan 审阅稿。实现仍未授权。
+这些提案用于 Project Incubator Plugin 的版本化迭代，不改变 V1.1 RC 的人工验收状态。Desktop 提案已获批准并实施；Web Product Architecture、Project Type Design、Contract 与 Runtime Specification 已获 Maker 书面批准，两份 Web Plan 已于 2026-10-14 获批，Web 实现已授权；Kernel 对齐范围已于 2026-10-19 获批。
 
 ## 当前文档状态
 
@@ -31,7 +31,7 @@
 | --- | --- | --- | --- |
 | Architecture | `ARCHITECTURE/ARCHITECTURE_CHANGE_PROPOSAL.md` | APPROVED | V1.1 变更总规格；Maker 于 2026-09-23 批准 |
 | Architecture | `ARCHITECTURE/DOCUMENT_ARCHITECTURE.md` | ACTIVE | 定义活动规格职责、层级、版本和加载规则，并登记 V1.2 Plugin Extension Track |
-| Architecture | `ARCHITECTURE/ARCHITECTURE_DECISIONS.md` | ACTIVE | 保留 V1.0 Decision 001–006、V1.1 Decision 007–012，并登记 Plugin Decision 013–014 |
+| Architecture | `ARCHITECTURE/ARCHITECTURE_DECISIONS.md` | ACTIVE | 保留 V1.0 Decision 001–006、V1.1 Decision 007–012，并登记 Plugin Decision 013–015 |
 | Architecture | `ARCHITECTURE/CONTEXT_MUTATION_ORCHESTRATION_CHANGE_PROPOSAL.md` | APPROVED | Round 2 授权误判与多 Context 不闭合的 RC 修复提案；Maker 于 2026-09-24 批准 |
 | Project Type Design | `PROJECT_TYPES/DESKTOP_PRODUCT_PROFILE.md` | APPROVED | 定义 P0–P6 Phase Profile、Workflow Entry、显式 Host Requirement、Creation Checkpoint、Evidence 与安全边界；Maker 于 2026-10-05 批准 |
 | Project Type Design | `PROJECT_TYPES/WEB_PRODUCT_PROFILE.md` | APPROVED | 定义 Web Product Model、P0–P6 Profile、Build/localhost/Browser/MCP Evidence 与部署挂起边界；Maker 于 2026-10-13 批准 |
@@ -104,3 +104,23 @@ Maker 专用答案不得加入模拟项目或发送给被测 Agent。
 - V1.0：`SPECS/_V1.0/`
 - V1.0 发布记录：`SPECS/_V1.0/RELEASE_RECORD.md`
 - V1.0 文件清单：`SPECS/_V1.0/MANIFEST.md`
+
+## Kernel / Skill 系统性对齐实施（2026-10-19）
+
+Maker 已批准以 Plugin 0.3.x MCP Kernel 与三个 JSON 权威文件为唯一现行运行方向；以下正式规格与实施验收计划已于同日经 Maker 回复“确认”获批，Implementation Gate 已通过。现有 Web 实施批准不自动覆盖本轮全局入口、旧模板及跨层权威调整。
+
+| Layer | Document | Status |
+| --- | --- | --- |
+| Architecture | [变更提案](ARCHITECTURE/KERNEL_ALIGNMENT_CHANGE_PROPOSAL.md) | APPROVED |
+| Architecture | [事实与影响清单](ARCHITECTURE/KERNEL_ALIGNMENT_IMPACT_ANALYSIS.md) | APPROVED / AUDIT EVIDENCE |
+| Design | [唯一入口与恢复设计](DESIGN/KERNEL_ALIGNMENT_DESIGN.md) | APPROVED |
+| Contract | [对齐契约](CONTRACTS/KERNEL_ALIGNMENT_CONTRACT.md) | APPROVED |
+| Runtime | [唯一现行运行规范](RUNTIME/KERNEL_ALIGNMENT_RUNTIME_SPEC.md) | APPROVED |
+| Implementation | [实施计划](IMPLEMENTATION/KERNEL_ALIGNMENT_IMPLEMENTATION_PLAN.md) | APPROVED / IMPLEMENTATION AUTHORIZED |
+| Implementation | [验收计划](IMPLEMENTATION/KERNEL_ALIGNMENT_ACCEPTANCE_TEST_PLAN.md) | APPROVED / ACCEPTANCE AUTHORIZED |
+
+本轮 APPROVED 规格按 ACP 明示范围替代旧权威规则；旧规格仅在未冲突的领域设计与 Legacy 轨道适用。实施时更新活动文档作用域、Decision 与根 AGENTS；历史 `_V*` 保持冻结。
+
+Plugin 0.3.x 的入口/状态/恢复契约优先使用已批准 Kernel Alignment 文档和 Decision 015。表中旧 V1.x APPROVED 状态仅在 Legacy 轨道及非冲突方法范围适用，不表示旧 Markdown/Python 是现行实现。V1.1 RC Round 2R 与 V1.2 真实产品验收状态保持独立。
+
+Kernel Alignment 实施验证：Plugin `342/342`、Legacy `133/32/3`、Acceptance 分阶段 `79/79` 已通过；正式候选已安装为 `0.3.0+codex.20261019210340`，安装与候选聚合哈希一致。宿主新会话只读验证单独登记于 [验收证据](../ACCEPTANCE_TESTS/kernel_alignment/RESULTS.md)，未闭合前不声明全部 Acceptance 完成。

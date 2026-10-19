@@ -263,3 +263,44 @@ test("完整模式通过真实 stdio MCP 验证三种 Route、Host Forbidden、W
   const activation = JSON.parse(await readFile(path.join(managed, ".project-incubator/activation.json"), "utf8"));
   assert.deepEqual(full.json.activation, activation);
 });
+
+test("候选拒绝所有 Child、Host 与嵌套参考中重新引入的旧运行指令", async (t) => {
+  for (const relative of [
+    "skills/mod-incubator/SKILL.md", "skills/desktop-product-incubator/SKILL.md",
+    "skills/web-product-incubator/SKILL.md", "skills/sims-4-host-profile/SKILL.md",
+    "skills/windows-desktop-host-profile/SKILL.md", "skills/project-incubator-router/references/nested/drift.md",
+  ]) {
+    await t.test(relative, async (t) => {
+      const { root } = await candidate(t);
+      const target = path.join(root, relative);
+      await mkdir(path.dirname(target), { recursive: true });
+      let original = "";
+      try { original = await readFile(target, "utf8"); } catch (error) { if (error.code !== "ENOENT") throw error; }
+      await writeFile(target, `${original}\nPROJECT_STATE.md 是唯一状态权威。\n`);
+      const result = verify(root);
+      assert.equal(result.status, 1, "候选指导漂移必须失败关闭");
+      assert.equal(result.json?.error?.code, "CANDIDATE_GUIDANCE_DRIFT");
+    });
+  }
+});
+test("候选拒绝 Mod 恢复回退到无 Receipt 验证的工具", async (t) => {
+  const { root } = await candidate(t);
+  const target = path.join(root, "skills/mod-incubator/SKILL.md");
+  await writeFile(target, (await readFile(target, "utf8")).replaceAll("inspect_project", "get_project_state"));
+  const result = verify(root);
+  assert.equal(result.status, 1);
+  assert.equal(result.json?.error?.code, "CANDIDATE_GUIDANCE_DRIFT");
+});
+
+test("候选拒绝同行否定混入旧指令与相对规格路径", async (t) => {
+  for (const injected of ["开始前调用 get_project_state；不得直接编辑权威文件。", "PROJECT_STATE.md 是唯一状态权威；禁止从聊天恢复。", "请先读取 `../../../SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md` 再恢复项目。", "请先读取 `C:/repo/SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md` 再恢复项目。", "请先读取 `..\\..\\..\\SPECS\\DESIGN\\CONTEXT_MODEL_DESIGN.md` 再恢复项目。"]) {
+    await t.test(injected, async (t) => {
+      const { root } = await candidate(t);
+      const target = path.join(root, "skills/mod-incubator/SKILL.md");
+      await writeFile(target, `${await readFile(target, "utf8")}\n${injected}\n`);
+      const result = verify(root);
+      assert.equal(result.status, 1);
+      assert.equal(result.json?.error?.code, "CANDIDATE_GUIDANCE_DRIFT");
+    });
+  }
+});

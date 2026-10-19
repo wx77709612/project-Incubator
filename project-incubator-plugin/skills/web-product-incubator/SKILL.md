@@ -5,7 +5,14 @@ description: Use when：Project Incubator Router 已确认 Managed Project 类�
 
 # Web Product Incubator
 
-当前 Source of Truth 为活动规格 `SPECS/PROJECT_TYPES/WEB_PRODUCT_PROFILE.md`、`SPECS/CONTRACTS/WEB_PRODUCT_INCUBATOR_CONTRACT.md` 和 `SPECS/RUNTIME/WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md`；本 Skill 是其面向 Agent 的领域指导，不新增权威来源。
+## 当前 Kernel 权威与恢复
+
+Plugin Router `project-incubator-router` 是唯一现行入口。权威集合为 `.project-incubator/activation.json`、`.project-incubator/state.json` 和 `.project-incubator/latest-receipt.json`；State 是唯一业务状态，Activation 约束身份/路由，Receipt 证明闭合。临时 Runtime Data 和 Markdown Artifact 不替代它们。
+
+恢复与状态查询先调用 `inspect_project`，验证失败时报告稳定错误并停止受影响推进，不从聊天补全。只使用已验证路由的 Child Skill/Host Profile；不得直接编辑权威文件。所有受控变更经现行 Kernel，提交后确认 revision、回读与 Receipt 一致再报告完成。缺少 Plugin/MCP 时停止，不调用旧执行资产。
+
+
+本 Skill 是随插件分发的自包含领域指导，复用 Registry、Web Profile 与 MCP Kernel 契约；研发规格仅用于源码溯源，不是安装环境的外部依赖。
 
 ## 启动与权威边界
 

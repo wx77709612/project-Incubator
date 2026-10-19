@@ -1,3 +1,5 @@
+> 作用域（2026-10-19）：本文保留 V1.x Legacy 兼容设计/回归语义，不定义 Plugin 0.3.x 的状态权威、入口或执行机制。现行 Kernel 规则由 [Kernel Alignment ACP](../ARCHITECTURE/KERNEL_ALIGNMENT_CHANGE_PROPOSAL.md) 及其 Design、Contract、Runtime 和两份 Plan 约束；冲突条款已被 Decision 015 明确替代。非冲突的 Maker Authority、Evidence 和领域方法可作为参考。
+
 # Project Incubator V1.1 Architecture Change Proposal
 
 ## 1. 文档状态

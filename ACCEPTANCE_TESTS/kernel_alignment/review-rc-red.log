@@ -1,0 +1,14 @@
+.....F.
+======================================================================
+FAIL: test_explicit_rc_distribution_has_consistent_legacy_guidance (test_rc_skill_builder.RcSkillBuilderTests.test_explicit_rc_distribution_has_consistent_legacy_guidance)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\tests\unit\test_rc_skill_builder.py", line 163, in test_explicit_rc_distribution_has_consistent_legacy_guidance
+    self.assertNotIn("project-incubator-router", content, relative)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'project-incubator-router' unexpectedly found in '# Project Incubator ��ĿЭ�����\n\n��Ŀ�������ָ���״̬��ѯ���ƽ�ͳһʹ���Ѱ�װ Plugin �� `project-incubator-router` Skill��ȱ�� Plugin/MCP ʱ���沢ֹͣ����������� Runtime��\n\n�ָ���״̬��ѯ�ȵ��� `inspect_project`��ֻ��������֤��·�ɽ�����Ӧ Child Skill �� Host Profile����������������ĵ���ȫ״̬��\n\nȨ���ļ��� `.project-incubator/activation.json`��`.project-incubator/state.json` �� `.project-incubator/latest-receipt.json`��State ��Ψһҵ��״̬��Activation Լ��������·�ɣ�Receipt ֤���������պϡ�����ֱ�ӱ༭��Щ�ļ���\n\n�����ܿر��ͨ�� Kernel MCP��Maker ������Ʒ��ܹ�����Ȩ��û����Ч��Ȩ���־û���revision���ض��͵�ǰ Receipt ��֤���������Ʊ����ɡ�`READY_FOR_TRANSITION` �������Ѿ�ת����Gate Result �� Advisory ��ֱ���޸�״̬��\n\nMarkdown ������Ϊ��ͨ Artifact ���赼����������Ϊ����״̬Ȩ��������Ҫ���ķ� Core Context���� Python Runtime���� Host Bootstrap �����ļ� Mutation ���̡�\n\n�����ģ�������ȷҪ�����ɵ���Э���ļ�ʹ�ã����ø��ǻ��Զ�׷��������Ŀ AGENTS.md������ɶ��ı�Ĭ�ϼ������ġ�\n' : AGENTS.md
+
+----------------------------------------------------------------------
+Ran 7 tests in 2.581s
+
+FAILED (failures=1)

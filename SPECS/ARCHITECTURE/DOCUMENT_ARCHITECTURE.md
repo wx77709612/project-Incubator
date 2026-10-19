@@ -1,3 +1,5 @@
+> 现行 Plugin Track：Kernel 对齐规格已获批准；旧 Core Context/Python 机制只用于 Legacy 回归。以 [Kernel Alignment ACP](KERNEL_ALIGNMENT_CHANGE_PROPOSAL.md) 及下游规格为现行权威边界。
+
 # Project Incubator Document Architecture
 
 ## 1. 文档状态

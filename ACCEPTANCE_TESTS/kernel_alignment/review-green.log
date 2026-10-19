@@ -1,0 +1,21 @@
+✔ 否定条款不得掩盖同一行的独立旧执行指令 (1.0039ms)
+▶ 源码检查拒绝代码引用中的相对、绝对与 Windows 包外规格路径
+  ✔ ../../../SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md (26.5332ms)
+  ✔ C:/repo/SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md (22.2159ms)
+  ✔ ..\..\..\SPECS\DESIGN\CONTEXT_MODEL_DESIGN.md (19.8374ms)
+✔ 源码检查拒绝代码引用中的相对、绝对与 Windows 包外规格路径 (69.0644ms)
+▶ 候选拒绝同行否定混入旧指令与相对规格路径
+  ✔ 开始前调用 get_project_state；不得直接编辑权威文件。 (215.3114ms)
+  ✔ PROJECT_STATE.md 是唯一状态权威；禁止从聊天恢复。 (208.518ms)
+  ✔ 请先读取 `../../../SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (204.6305ms)
+  ✔ 请先读取 `C:/repo/SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (216.9555ms)
+  ✔ 请先读取 `..\..\..\SPECS\DESIGN\CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (209.6862ms)
+✔ 候选拒绝同行否定混入旧指令与相对规格路径 (1056.4611ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1157.7308

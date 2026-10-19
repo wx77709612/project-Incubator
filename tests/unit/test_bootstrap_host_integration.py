@@ -42,7 +42,7 @@ class BootstrapHostIntegrationTest(unittest.TestCase):
         self.assertTrue(agents_path.exists())
         content = agents_path.read_text(encoding="utf-8")
         self.assertIn(INTEGRATION_MARKER, content)
-        self.assertIn("PROJECT_STATE.md", content)
+        self.assertIn("inspect_project", content)
         self.assertIn("project-incubator", content)
 
     def test_codex_host_keeps_integrated_agents_unchanged(self):
@@ -160,7 +160,7 @@ class BootstrapHostIntegrationTest(unittest.TestCase):
         self.assertEqual("CREATED", result.evidence[0]["observed_fact"])
 
     def test_skill_entry_documents_host_bootstrap_boundary(self):
-        skill_content = (Path(__file__).parents[2] / "PROJECT_INCUBATOR" / "SKILL.md").read_text(
+        skill_content = (Path(__file__).parents[2] / "PROJECT_INCUBATOR" / "references" / "legacy" / "EXECUTION_REFERENCE.md").read_text(
             encoding="utf-8",
         )
 

@@ -2,50 +2,15 @@
 
 # AGENTS.md
 
-## Project Incubator Entry
 
-当前项目由 Project Incubator 管理。本文件是 Codex 项目级协作入口，只用于帮助后续 Codex Task 找到项目 Context、Skill 路由和职责边界。
+项目孵化、恢复、状态查询和推进统一使用已安装 Plugin 的 `project-incubator-router` Skill。缺少 Plugin/MCP 时报告并停止，不创建替代 Runtime。
 
-## Core Context
+恢复和状态查询先调用 `inspect_project`；只根据已验证的路由交给对应 Child Skill 与 Host Profile，不从聊天或派生文档补全状态。
 
-涉及项目目标、当前状态、未来计划、重要决策或项目推进时，先读取项目根目录下的 Core Context：
+权威文件是 `.project-incubator/activation.json`、`.project-incubator/state.json` 与 `.project-incubator/latest-receipt.json`。State 是唯一业务状态，Activation 约束身份与路由，Receipt 证明最近变更闭合。不得直接编辑这些文件。
 
-- `PROJECT_PROFILE.md`
-- `PROJECT_STATE.md`
-- `PROJECT_PLAN.md`
-- `PROJECT_DECISIONS.md`
+所有受控变更通过 Kernel MCP；Maker 保留产品与架构决定权。没有有效授权、持久化、revision、回读和当前 Receipt 验证，不得宣称变更完成。`READY_FOR_TRANSITION` 不等于已经转换；Gate Result 和 Advisory 不直接修改状态。
 
-## State Source of Truth
+Markdown 可以作为普通 Artifact 或按需导出，不能作为现行状态权威。不得要求四份 Core Context、旧 Python Runtime、旧 Host Bootstrap 或逐文件 Mutation 流程。
 
-`PROJECT_STATE.md` 是当前项目状态的唯一 Source of Truth。
-
-不得使用历史聊天、Agent Memory、未执行 Plan 或临时推测覆盖当前 State。
-
-## Skill Trigger
-
-涉及以下行为时，应使用 `project-incubator` Skill：
-
-- 判断当前 Phase；
-- 判断下一步项目行动；
-- Workflow Transition；
-- Gate；
-- Validation；
-- Iteration；
-- 受控 Context Mutation；
-- 项目状态推进。
-
-## Runtime Boundary
-
-不得绕过 Project Incubator Runtime 直接执行受控状态变化、自行推进 Workflow 或自行修改受保护 Context。
-
-## Multi-Context Trigger
-
-一个事件同时影响多个 Context 时，先形成 `Mutation Set Summary`，列出 Event、完整目标清单、提交顺序、Closure Assertions 与回滚边界，再交给 Runtime 一次执行。不得要求 Maker 逐份点名或由 Agent 逐文件补写。
-
-Extension 建议和风险讨论不是 Maker Authorization。授权缺失时只报告 `Pending Status`；只有 Maker 的明确授权与原文证据绑定 Pending Request 后，Runtime 才能执行激活。
-
-执行后的完成报告必须列出：Event、`Authorization Basis` 或 `Pending Status`、`Changed Targets`、`Closure Result`、回滚结果（如有）及 `Unchanged Phase`。
-
-## Maker Boundary
-
-Maker 保留 Project Goal、Project Scope、Project Direction、重要 Decision，以及需要 Maker Authorization 的变更的最终决策权。
+本入口模板仅供明确要求生成的新协作文件使用；不得覆盖或自动追加已有项目 AGENTS.md。人类可读文本默认简体中文。

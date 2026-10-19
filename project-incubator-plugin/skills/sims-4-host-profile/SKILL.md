@@ -5,6 +5,13 @@ description: 在已选择 mod-incubator 且目标宿主为 The Sims 4 时使用�
 
 # Sims 4 Host Profile
 
+## 当前 Kernel 权威与恢复
+
+Plugin Router `project-incubator-router` 是唯一现行入口。权威集合为 `.project-incubator/activation.json`、`.project-incubator/state.json` 和 `.project-incubator/latest-receipt.json`；State 是唯一业务状态，Activation 约束身份/路由，Receipt 证明闭合。临时 Runtime Data 和 Markdown Artifact 不替代它们。
+
+恢复与状态查询先调用 `inspect_project`，验证失败时报告稳定错误并停止受影响推进，不从聊天补全。只使用已验证路由的 Child Skill/Host Profile；不得直接编辑权威文件。所有受控变更经现行 Kernel，提交后确认 revision、回读与 Receipt 一致再报告完成。缺少 Plugin/MCP 时停止，不调用旧执行资产。
+
+
 ## 适用边界
 
 本 Profile 只细化 `mod-incubator`，不得改变 Kernel Authorization、Receipt、Evidence 或 Gate 权限。调用前确认激活状态中的 `project_type_id=mod` 且 `host_profile_id=sims-4`。

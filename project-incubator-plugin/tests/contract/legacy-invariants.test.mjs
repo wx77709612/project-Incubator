@@ -21,21 +21,17 @@ const mappings = [
 ];
 
 const protectedDigests = new Map([
-  ["skills/mod-incubator/SKILL.md", "304a789b6b28058d5dfa5382ffd718cb8cf4e10cd1f6d592746d75ff8f535017"],
-  ["skills/sims-4-host-profile/SKILL.md", "b159ded0bbb8cc265fec25c1ec9d752668d4416b781c725bbf5f54b84617bc4a"],
   ["profiles/project-types/mod.json", "a959016c7488031f9f29c3b6f80e2345807ce36a1c54a4d48c0dec4ac231f83a"],
   ["profiles/hosts/sims-4.json", "f47f129237c272a22cc049a2073ed898ca6d750344105ed8bb236de4e02000bf"],
   ["src/domains/mod/workflow.mjs", "d5484e450bdd8585ba5c2a8876676f52119ab54c589a1c0f15b9953d8cf95672"],
   ["src/domains/mod/opacity.mjs", "8216c9d905283d6b0a2f1ed0fa1286b3d85c959ab6d9fc5d36be0b7c0004b291"],
   ["src/domains/mod/sims4-profile.mjs", "251d8d0ea2e9c594302edae5bd327f9bf403d6a86c2078b1cfe3ded004308283"],
-  ["skills/desktop-product-incubator/SKILL.md", "896b94d6d93d343aef6887d21dfaa0d3761495cf7e37b499c0129d58f3b4149e"],
-  ["skills/windows-desktop-host-profile/SKILL.md", "f48b0da3d5c810f59edbbf34d7e82b544b53ce5ddf1c451cf78c09dc1e86bb31"],
   ["profiles/project-types/desktop-product.json", "a6cbfdb1cde85cb7dadf88a67fab209afdaddca7d1858af1bb69f8e02773c134"],
   ["profiles/hosts/windows-desktop.json", "2c2f294c41086dd642e7f59bf93e88ede917ddb283fa63b9c9dc2cce5344fb6c"],
   ["src/domains/desktop/workflow.mjs", "045ef3da14204c4a96b6130c10f55997917275a554822b4486a6c557feb01cde"],
 ]);
 
-test("Mod/Sims 4 与 Desktop/Windows 领域资产保持 byte-for-byte 不变", async () => {
+test("Mod/Sims 4 与 Desktop/Windows 领域代码及 Profile 保持 byte-for-byte 不变", async () => {
   for (const [relative, expected] of protectedDigests) {
     const bytes = await readFile(path.join(root, relative));
     assert.equal(createHash("sha256").update(bytes).digest("hex"), expected, relative);
@@ -98,4 +94,11 @@ test("candidate packager uses a runtime whitelist without legacy or design archi
   for (const excluded of ["PROJECT_INCUBATOR", "SPECS", "zzztemp", "ARCHITECTURE.md", "tests"]) {
     assert.ok(!source.includes(`\"${excluded}\"`), `${excluded} 不应进入候选白名单`);
   }
+});
+
+ test("Mod 指导保留 M0–M5、MODEL_REVIEW、Evidence 与 Maker 预算边界", async () => {
+  const mod = await readFile(path.join(root, "skills/mod-incubator/SKILL.md"), "utf8");
+  for (const term of ["M0_BOUNDARY", "M1_RISK_MODEL", "M2_VERTICAL_SLICE", "M3_BUILD_PACKAGE", "M4_TARGET_VALIDATION", "M5_EXPAND_RELEASE", "MODEL_REVIEW", "E0", "E5", "UNSET", "Maker Authorization", "inspect_project"]) assert.ok(mod.includes(term), term);
+  const host = await readFile(path.join(root, "skills/sims-4-host-profile/SKILL.md"), "utf8");
+  for (const term of ["游戏版本", "补丁版本", "SCRIPT", "PACKAGE", "Mods", "inspect_project", "不得改变 Kernel Authorization"]) assert.ok(host.includes(term), term);
 });

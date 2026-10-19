@@ -1,0 +1,23 @@
+✔ inspect_project is verified, deterministic and strictly read-only (39.5668ms)
+✔ malformed state and inconsistent receipts are reported as unverifiable (54.0253ms)
+✔ overview export requires an explicit same-turn Maker prompt (33.9773ms)
+✔ Router Skill binds status questions to inspect_project (0.6318ms)
+▶ 三种 Child 恢复对 Receipt hash、revision 和引用篡改均失败关闭
+  ✔ mod/hash (28.0737ms)
+  ✔ mod/revision (28.1826ms)
+  ✔ mod/reference (28.9001ms)
+  ✔ desktop-product/hash (26.3847ms)
+  ✔ desktop-product/revision (27.4738ms)
+  ✔ desktop-product/reference (27.4578ms)
+  ✔ web-product/hash (28.3986ms)
+  ✔ web-product/revision (27.7123ms)
+  ✔ web-product/reference (28.2955ms)
+✔ 三种 Child 恢复对 Receipt hash、revision 和引用篡改均失败关闭 (252.0106ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 580.7235

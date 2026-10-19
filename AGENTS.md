@@ -4,7 +4,7 @@
 
 你是 Project Incubator 的 Evolution Agent。
 
-Project Incubator V1.0 已发布并冻结。当前仓库进入版本化迭代阶段，现行研发目标由 `SPECS/README.md` 标识；当前目标为 V1.1。
+Project Incubator V1.0 已发布并冻结。当前仓库进入版本化迭代阶段，现行研发目标由 `SPECS/README.md` 标识；当前目标为 Plugin 0.3.x Kernel / Skill 对齐（活动规格见索引）。
 
 你的职责是：
 
@@ -22,7 +22,7 @@ Project Incubator V1.0 已发布并冻结。当前仓库进入版本化迭代阶
 - **Managed Project**：由 Project Incubator Runtime 孵化、管理和推进的目标项目。
 - **Active Specifications**：`SPECS/` 各直接层级目录中的当前研发规格。
 - **Released Baseline**：`SPECS/_V*` 中已经发布并冻结的历史规格快照。
-- **Core Context**：Managed Project 中的 `PROJECT_PROFILE.md`、`PROJECT_STATE.md`、`PROJECT_PLAN.md`、`PROJECT_DECISIONS.md` 等上下文，不是本仓库的研发管理文件。
+- **Managed Project Authority**：`.project-incubator/activation.json`、`state.json`、`latest-receipt.json`；旧 Markdown Core Context 仅属 Legacy 兼容轨道，不是现行项目状态。
 
 ## 3. Specification Versioning
 
@@ -80,7 +80,7 @@ Implementation Code
 
 ## 5. Current Iteration Governance
 
-当前 V1.1 迭代分为以下阶段：
+当前迭代继续遵循以下阶段；Kernel 对齐正式规格与实施/验收计划已于 2026-10-19 获 Maker 确认：
 
 1. 迁移 V1.0 历史基线并建立活动规格入口；
 2. 编写并审批 Architecture Change Proposal；
@@ -141,23 +141,21 @@ Implementation
 
 ## 9. Runtime Invariants
 
-以下规则继续约束 Project Incubator Runtime：
+以下规则约束现行 Plugin 0.3.x MCP Kernel（Maker 于 2026-10-19 批准 Kernel Alignment ACP）：
 
-- Managed Project 的 `PROJECT_STATE.md` 是当前实际状态的唯一 Source of Truth；
-- Runtime State 不得替代 `PROJECT_STATE.md`；
-- Runtime 不替 Maker 做 Decision；
-- Runtime 不替 Agent 完成创造性工作；
-- Context Mutation 必须经过 Context Access Contract；
-- State Change Requirement 不等于 Context 已修改；
-- `READY_FOR_TRANSITION` 不等于 Transition 已执行；
-- Phase Transition 只有在 `PROJECT_STATE.md` Mutation 成功持久化并验证后才完成；
-- Script 不直接读取或修改 Core Context；
-- Script Validation Result 不等于 Gate Evaluation Result；
-- Gate Result 不直接修改 Workflow、Context 或 Artifact；
-- Advisory 不直接产生 Runtime Command；
-- Maker Authorization 只能来自 Maker。
+- Plugin Router `project-incubator-router` 是唯一现行入口；旧全局 Skill 只保留最小路由兼容。
+- `.project-incubator/state.json` 是唯一业务状态；`activation.json` 约束身份与路由，`latest-receipt.json` 证明最近变更闭合。
+- Runtime 临时数据、聊天、Markdown 和派生视图不得替代权威集合；恢复与状态查询必须使用 `inspect_project`。
+- Runtime 不替 Maker 做 Decision，不替 Agent 完成创造性工作。
+- 所有受控 Mutation 经过 Kernel MCP Contract；Agent 与领域 Script 不直接编辑权威文件。
+- State Change Requirement 不等于状态已修改；`READY_FOR_TRANSITION` 不等于 Transition 已执行。
+- Phase Transition 只有在 Kernel 持久化、revision、回读和 Receipt 验证全部成功后才完成。
+- Script Validation Result 不等于 Gate Evaluation Result；Gate Result 不直接修改 Workflow、Context 或 Artifact。
+- Advisory 不直接产生 Runtime Command；Maker Authorization 只能来自 Maker。
+- 旧 Python Runtime、旧 Host Bootstrap 与逐文件 Multi-Context Mutation 仅属 Legacy 回归，不参与现行运行。
+- Implementation Repository 规格审批与 Managed Project Runtime 授权分离；前者不要求 request_id/scope_digest。
 
-任何 V1.1 设计若要改变上述 Invariant，必须在 Architecture Change Proposal 中逐项提出并获得 Maker 明确批准。
+后续修改 Invariant 必须在 Architecture Change Proposal 逐项提出并获得 Maker 明确批准。旧 V1.x 规则只在显式 Legacy 兼容轨道适用，不能覆盖现行 Kernel。
 
 ## 10. Design Gap
 

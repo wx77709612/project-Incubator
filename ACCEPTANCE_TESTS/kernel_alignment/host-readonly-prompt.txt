@@ -1,0 +1,5 @@
+这是已获批插件安装验收中的临时夹具，只做只读验证，不是新的产品孵化任务。当前目录是隔离测试项目，禁止访问或修改 scriverse。
+请使用本次安装的 Project Incubator Plugin Router。先调用 inspect_project 查询当前项目，严格按验证结果恢复，不从聊天或 Markdown 推测，不调用任何 prepare、initialize、commit、decline 或 export 工具，不改任何文件，不创建计划或新项目。
+再调用 propose_route 分别查询：mod + sims-4；desktop-product + windows-desktop；web-product + null。三次都只提议，不激活。
+读取本次安装目录 C:\Users\Xenia_Woo\.codex\plugins\cache\personal\project-incubator-plugin\0.3.0+codex.20261019210340 下的 manifest、Router、Mod、Desktop、Web、Sims 4、Windows 六份 SKILL.md，确认恢复均要求 inspect_project；确认全局旧 project-incubator 仅是最小 Router 路由。安装目录是只读核验目标，不得修改。
+最终简洁报告 PASS 或 FAIL、manifest 构建版本、三种路由、已验证项目阶段/revision/Receipt、实际读取的六份 Skill 来源。遇到失败如实报告，禁止回退旧 Runtime。不要要求新的授权，因为本轮不执行任何受控变更。

@@ -5,6 +5,13 @@ description: Use when：Router 已为 desktop-product 明确选择 windows-deskt
 
 # Windows Desktop Host Profile
 
+## 当前 Kernel 权威与恢复
+
+Plugin Router `project-incubator-router` 是唯一现行入口。权威集合为 `.project-incubator/activation.json`、`.project-incubator/state.json` 和 `.project-incubator/latest-receipt.json`；State 是唯一业务状态，Activation 约束身份/路由，Receipt 证明闭合。临时 Runtime Data 和 Markdown Artifact 不替代它们。
+
+恢复与状态查询先调用 `inspect_project`，验证失败时报告稳定错误并停止受影响推进，不从聊天补全。只使用已验证路由的 Child Skill/Host Profile；不得直接编辑权威文件。所有受控变更经现行 Kernel，提交后确认 revision、回读与 Receipt 一致再报告完成。缺少 Plugin/MCP 时停止，不调用旧执行资产。
+
+
 ## 作用边界
 
 本 Profile 只在 `desktop-product + windows-desktop` 路由已确认后与 Desktop Child Skill 配合使用。它增加 Windows 约束和 Evidence 要求，不定义业务能力、不拥有浏览器扩展，也不得重命名、跳过或增加 P0–P6 阶段。

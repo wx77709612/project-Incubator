@@ -1,0 +1,514 @@
+✖ 旧全局入口只路由到 Plugin Router，不包含第二套执行流程 (3.2877ms)
+✖ 六个 Plugin Skill 及所有参考文档无过时运行指令或包外规格依赖 (3.8299ms)
+✖ mod-incubator 恢复使用 Receipt 验证入口，明确三个权威文件 (0.634ms)
+✖ desktop-product-incubator 恢复使用 Receipt 验证入口，明确三个权威文件 (0.6395ms)
+✖ web-product-incubator 恢复使用 Receipt 验证入口，明确三个权威文件 (0.4866ms)
+✖ sims-4-host-profile 依赖已验证的 Router 激活和 inspect_project (0.5052ms)
+✖ windows-desktop-host-profile 依赖已验证的 Router 激活和 inspect_project (0.4612ms)
+✖ 分发 AGENTS 统一 Router/Kernel，模板逐份分类为非现行 (0.6654ms)
+✔ 检查拒绝正向旧指令，也允许禁止条款与历史说明 (0.581ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 1
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.942
+
+✖ failing tests:
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:24:1
+✖ 旧全局入口只路由到 Plugin Router，不包含第二套执行流程 (3.2877ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /project-incubator-router/u. Input:
+  
+  '---\r\n' +
+    'name: project-incubator\r\n' +
+    'description: >\r\n' +
+    '  用于长期 AI 协作中的项目孵化与受控推进。Use when：Maker 希望把一个初始 Idea\r\n' +
+    '  逐步转化为明确的问题定义、可执行计划、可验证成果和可持续迭代的项目状态；\r\n' +
+    '  或需要恢复已有项目上下文、判断当前项目所处阶段与下一步行动、验证阶段成果、\r\n' +
+    '  处理项目迭代，并在 Maker 保留最终决策权的前提下控制项目目标、范围和状态推进。\r\n' +
+    '  本 Skill 通过持久项目 Context、State-driven Workflow、Gate 与 Runtime 边界降低\r\n' +
+    '  AI 发散、证据越界和未经授权的项目变化。不用于一次性问答、单纯代码生成、通用任务管理，\r\n' +
+    '  也不替代 Maker 作出项目方向、范围或战略决策。\r\n' +
+    '---\r\n' +
+    '\r\n' +
+    '# Project Incubator\r\n' +
+    '\r\n' +
+    '当 Maker 需要长期 AI 协作，将一个初始想法推进为具有稳定上下文、明确 Workflow 位置、可执行计划、可验证 Artifact 和受控迭代的项目时，使用 Project Incubator。\r\n' +
+    '\r\n' +
+    '本 Skill 适用于项目孵化工作。Agent 必须跨会话保持项目上下文，尊重 Maker 决策，并避免在未授权时改变项目方向。\r\n' +
+    '\r\n' +
+    '## 何时使用\r\n' +
+    '\r\n' +
+    '当 Maker 提出以下需求时，使用本 Skill：\r\n' +
+    '\r\n' +
+    '- 从一个想法开始孵化新项目；\r\n' +
+    '- 澄清项目 Intent、目标用户、成功标准或约束；\r\n' +
+    '- 建立或恢复项目 Context 文件；\r\n' +
+    '- 判断当前项目 Phase 的含义；\r\n' +
+    '- 基于当前 Context 准备下一步项目行动；\r\n' +
+    '- 按 Project Incubator 已发布 Core Workflow 与当前版本化规则推进；\r\n' +
+    '- 评估项目 Artifact 是否具备进入下一步的条件；\r\n' +
+    '- 根据 Validation Feedback 处理 Iteration；\r\n' +
+    '- 识别风险、缺失信息或需要 Maker 决策的问题。\r\n' +
+    '\r\n' +
+    '不要将本 Skill 用作通用项目管理平台、自动决策者，或 Maker 项目方向判断的替代品。\r\n' +
+    '\r\n' +
+    '## Core Workflow\r\n' +
+    '\r\n' +
+    'Project Incubator 使用以下已发布 Core Workflow：\r\n' +
+    '\r\n' +
+    '```text\r\n' +
+    'P0 Intent Discovery\r\n' +
+    'P1 Project Definition\r\n' +
+    'P2 Solution Design\r\n' +
+    'P3 Execution Planning\r\n' +
+    'P4 Creation\r\n' +
+    'P5 Validation\r\n' +
+    'P6 Iteration\r\n' +
+    '```\r\n' +
+    '\r\n' +
+    'Iteration 只能返回冻结 Workflow Contract 已允许的目标。\r\n' +
+    '\r\n' +
+    '## Capability 与 Evidence\r\n' +
+    '\r\n' +
+    'Agent 应把用户可观察的最小产品结果表达为 Capability Claim，并明确支持边界、排除边界和当前证据上限。Evidence Maturity 使用 `E0`–`E5`：文档或局部调用不能被表述为完整目标环境能力，一次目标环境成功也不能被表述为代表性稳定。\r\n' +
+    '\r\n' +
+    '透明 Capability 使用轻量路径，不额外创建螺旋记录。只有 Capability 具有契约不足、隐藏状态、外部调度、非确定性、人工验证、难归因或显著版本风险时，Agent 才提出 Capability 级不透明度评估和 Extension 建议；Maker 确认可接受的成本、边界与风险。\r\n' +
+    '\r\n' +
+    '高不透明 Capability 启用 Extension 后，应围绕 Product Point 设计 Discovery Ring、Validation Ring、代表性垂直切片、可观察性、Evidence-to-Verification Loop、Known-Good Baseline 和 Human Validation Budget。`CAPABILITY_SPIRAL_RECORD.md` 是 Optional Context，不是新的 Core Context。\r\n' +
+    '\r\n' +
+    '## P4 Creation Correction\r\n' +
+    '\r\n' +
+    'P4 实现中发现 Evidence 推翻 Candidate Model 或 Runtime Assumption 时，可以触发 P4 内部的轻量 Model Correction 与 Execution Replanning。不得把 P4 Correction 表述为进入 P6、P2 或 P3，也不得由 Correction Result 自动产生 Phase Transition。\r\n' +
+    '\r\n' +
+    '相同 Failure Signature 默认连续 2 次产生 Model Review Advisory，连续 3 次暂停同方向修补并要求 Correction；Project Type Profile 只能更早触发。Correction 触及 Product Goal、Success Criteria、Maker-approved Scope、Core Phase Model、Context Authority、Runtime Invariant，越过当前 Work Package，或无法识别有限 Scope / Regression Set 时，必须等待 Maker Scope Review。\r\n' +
+    '\r\n' +
+    '## Decision 与 Assumption\r\n' +
+    '\r\n' +
+    'Product Decision 和 Architecture Decision 需要 Maker 确认。Runtime Assumption 可以被 Evidence 支持、削弱或判定失效，不需要伪造 Maker Decision；由此引起的产品或架构变化仍须取得对应授权。\r\n' +
+    '\r\n' +
+    '`PROJECT_DECISIONS.md` 使用 Active View、Bounded Changelog 与 Archive Ref。Decision 可以被部分替代、替代或撤销；详细历史进入 Optional `PROJECT_DECISION_HISTORY.md`，避免活动上下文无限增长。\r\n' +
+    '\r\n' +
+    '## Core Context\r\n' +
+    '\r\n' +
+    'Core Context 文件包括：\r\n' +
+    '\r\n' +
+    '- `PROJECT_PROFILE.md`\r\n' +
+    '- `PROJECT_STATE.md`\r\n' +
+    '- `PROJECT_PLAN.md`\r\n' +
+    '- `PROJECT_DECISIONS.md`\r\n' +
+    '\r\n' +
+    '`PROJECT_STATE.md` 是当前项目状态的唯一 Source of Truth。Agent 不得使用历史聊天、临时记忆、计划、Artifact 或 Runtime temporary state 覆盖它。\r\n' +
+    '\r\n' +
+    '`PROJECT_PLAN.md` 是 Core Context，用于记录项目生命周期规划，包括 Phase Goal、Gate、Next Action、Expected Artifact 和 High-level Dependency。\r\n' +
+    '\r\n' +
+    '`PROJECT_PLAN.md` 不用于记录 Implementation Task Breakdown Artifact。\r\n' +
+    '\r\n' +
+    '## Artifact 与 Context 边界\r\n' +
+    '\r\n' +
+    'Project Incubator 区分：\r\n' +
+    '\r\n' +
+    '- Phase Artifact\r\n' +
+    '- Core Context\r\n' +
+    '- Context Mutation\r\n' +
+    '\r\n' +
+    'Phase Artifact 表示某个阶段产生的成果。\r\n' +
+    '\r\n' +
+    'Core Context 表示项目持续维护的信息。\r\n' +
+    '\r\n' +
+    'Context Mutation 表示 Workflow 执行过程中对 Core Context 的更新。\r\n' +
+    '\r\n' +
+    'Artifact 与 Context Mutation 是两个独立概念。\r\n' +
+    '\r\n' +
+    'Agent 不得因为某个 Core Context 文件被更新，就将其视为对应 Phase 的 Artifact。\r\n' +
+    '\r\n' +
+    '## Runtime 入口\r\n' +
+    '\r\n' +
+    '对于确定性的项目状态变化、Context Mutation、Gate 处理、Script Invocation、Transition Commit 和持久化状态验证，Agent 必须通过 Project Incubator Runtime 路由执行，而不是直接修改受控状态。\r\n' +
+    '\r\n' +
+    'Runtime 支持由 `runtime/` 下的包提供。Runtime 实现细节由冻结的 Runtime Specification 和 Implementation Plan 定义。\r\n' +
+    '\r\n' +
+    '## Multi-Context Trigger 与授权闭合\r\n' +
+    '\r\n' +
+    '当一个语义事件会同时改变两个或更多 Context，或一个 Context 的状态只有与其他 Context 一致时才成立，Agent 必须先识别 `Multi-Context Trigger`，不得逐文件临时修改。典型事件包括 Extension 建议、授权请求、启用、拒绝、暂停，以及需要同步更新 Plan、State 与 Capability Spiral Record 的能力边界变化。\r\n' +
+    '\r\n' +
+    '写入前，Agent 必须形成 `Mutation Set Summary`，至少列明：\r\n' +
+    '\r\n' +
+    '- Event 与 Event Ref；\r\n' +
+    '- 当前 Phase；\r\n' +
+    '- Authority Requirement；\r\n' +
+    '- 目标 Context 的完整 `Changed Targets` 列表与提交顺序；\r\n' +
+    '- 每个目标的预期变化；\r\n' +
+    '- Closure Assertions；\r\n' +
+    '- 授权缺失时的 Pending Status；\r\n' +
+    '- 失败时的回滚边界。\r\n' +
+    '\r\n' +
+    'Agent 必须把“建议启用”和“已授权启用”分开。Maker 仅要求`评估`、`提出请求`、`继续`，或只做`风险确认`，均不得推断为 Maker Authorization。授权必须绑定既存 Pending Request，并保留 Maker 消息引用、未经改写的 `maker_statement_excerpt`、授权 Scope、授权 Targets、确认时间与摘要。缺少这些证据时，Extension Status 只能是 `PENDING_MAKER_AUTHORIZATION`，不得写成 `ACTIVE`。\r\n' +
+    '\r\n' +
+    'Maker 明确授权后，Agent 应一次性把完整 Mutation Set 交给 Runtime。只有所有目标写入、回读、Closure Assertions 与授权最终化均成功，才可在闭合验证通过后声明 `ACTIVE`；任一步失败都不得保留部分激活状态。\r\n' +
+    '\r\n' +
+    '完成报告必须明确列出：Event、Authorization Basis 或 Pending Status、`Changed Targets`、`Closure Result`、回滚结果（如有）和 `Unchanged Phase`。不得仅报告“文件已更新”或把 Mutation Set 草稿表述为已执行事实。\r\n' +
+    '\r\n' +
+    '## Host Environment Bootstrap\r\n' +
+    '\r\n' +
+    '当 Project Incubator 初始化新的 Managed Project、第一次在已有 Managed Project 中建立协作上下文，或 Maker 明确请求宿主环境集成时，Agent 应先解析 Host Environment。\r\n' +
+    '\r\n' +
+    '- Host = `CODEX`：通过 Runtime / Script Coordinator / `DETERMINISTIC_OPERATION` 调用 `BOOTSTRAP_HOST_INTEGRATION`，为尚未存在项目级 `AGENTS.md` 的 Managed Project 创建 Codex 协作入口。\r\n' +
+    '- Host = `OTHER`：不创建 Codex `AGENTS.md`。\r\n' +
+    '- Host = `UNKNOWN`：不猜测 Host，不创建 Codex `AGENTS.md`，并说明 Host Environment 无法确认。\r\n' +
+    '\r\n' +
+    'Host Environment Bootstrap 只处理宿主环境集成 Artifact，不改变 Current Phase，不触发 Workflow Transition，不修改 `PROJECT_STATE.md` 或其他 Core Context。已有且未包含 Project Incubator Integration Marker 的 `AGENTS.md` 不得被自动覆盖、删除、重写或强行追加。\r\n' +
+    '\r\n' +
+    '## Agent 使用边界\r\n' +
+    '\r\n' +
+    'Agent 可以分析 Context、提出方案、准备 Artifact、暴露风险，并向 Maker 请求决策。\r\n' +
+    '\r\n' +
+    'Agent 不得：\r\n' +
+    '\r\n' +
+    '- 替代 Maker Authorization；\r\n' +
+    '- 在没有 Maker 确认时扩大 Project Goal 或 Scope；\r\n' +
+    '- 绕过 Runtime 执行受控状态变化；\r\n' +
+    '- 将 Advisory Output 视为 Runtime Command；\r\n' +
+    '- 将 Script Validation 视为 Gate Result；\r\n' +
+    '- 创建新的 Workflow Phase、Transition、Gate Type、Context Authority 或 Runtime Rule。\r\n'
+  
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:26:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '---\r\nname: project-incubator\r\ndescription: >\r\n  用于长期 AI 协作中的项目孵化与受控推进。Use when：Maker 希望把一个初始 Idea\r\n  逐步转化为明确的问题定义、可执行计划、可验证成果和可持续迭代的项目状态；\r\n  或需要恢复已有项目上下文、判断当前项目所处阶段与下一步行动、验证阶段成果、\r\n  处理项目迭代，并在 Maker 保留最终决策权的前提下控制项目目标、范围和状态推进。\r\n  本 Skill 通过持久项目 Context、State-driven Workflow、Gate 与 Runtime 边界降低\r\n  AI 发散、证据越界和未经授权的项目变化。不用于一次性问答、单纯代码生成、通用任务管理，\r\n  也不替代 Maker 作出项目方向、范围或战略决策。\r\n---\r\n\r\n# Project Incubator\r\n\r\n当 Maker 需要长期 AI 协作，将一个初始想法推进为具有稳定上下文、明确 Workflow 位置、可执行计划、可验证 Artifact 和受控迭代的项目时，使用 Project Incubator。\r\n\r\n本 Skill 适用于项目孵化工作。Agent 必须跨会话保持项目上下文，尊重 Maker 决策，并避免在未授权时改变项目方向。\r\n\r\n## 何时使用\r\n\r\n当 Maker 提出以下需求时，使用本 Skill：\r\n\r\n- 从一个想法开始孵化新项目；\r\n- 澄清项目 Intent、目标用户、成功标准或约束；\r\n- 建立或恢复项目 Context 文件；\r\n- 判断当前项目 Phase 的含义；\r\n- 基于当前 Context 准备下一步项目行动；\r\n- 按 Project Incubator 已发布 Core Workflow 与当前版本化规则推进；\r\n- 评估项目 Artifact 是否具备进入下一步的条件；\r\n- 根据 Validation Feedback 处理 Iteration；\r\n- 识别风险、缺失信息或需要 Maker 决策的问题。\r\n\r\n不要将本 Skill 用作通用项目管理平台、自动决策者，或 Maker 项目方向判断的替代品。\r\n\r\n## Core Workflow\r\n\r\nProject Incubator 使用以下已发布 Core Workflow：\r\n\r\n```text\r\nP0 Intent Discovery\r\nP1 Project Definition\r\nP2 Solution Design\r\nP3 Execution Planning\r\nP4 Creation\r\nP5 Validation\r\nP6 Iteration\r\n```\r\n\r\nIteration 只能返回冻结 Workflow Contract 已允许的目标。\r\n\r\n## Capability 与 Evidence\r\n\r\nAgent 应把用户可观察的最小产品结果表达为 Capability Claim，并明确支持边界、排除边界和当前证据上限。Evidence Maturity 使用 `E0`–`E5`：文档或局部调用不能被表述为完整目标环境能力，一次目标环境成功也不能被表述为代表性稳定。\r\n\r\n透明 Capability 使用轻量路径，不额外创建螺旋记录。只有 Capability 具有契约不足、隐藏状态、外部调度、非确定性、人工验证、难归因或显著版本风险时，Agent 才提出 Capability 级不透明度评估和 Extension 建议；Maker 确认可接受的成本、边界与风险。\r\n\r\n高不透明 Capability 启用 Extension 后，应围绕 Product Point 设计 Discovery Ring、Validation Ring、代表性垂直切片、可观察性、Evidence-to-Verification Loop、Known-Good Baseline 和 Human Validation Budget。`CAPABILITY_SPIRAL_RECORD.md` 是 Optional Context，不是新的 Core Context。\r\n\r\n## P4 Creation Correction\r\n\r\nP4 实现中发现 Evidence 推翻 Candidate Model 或 Runtime Assumption 时，可以触发 P4 内部的轻量 Model Correction 与 Execution Replanning。不得把 P4 Correction 表述为进入 P6、P2 或 P3，也不得由 Correction Result 自动产生 Phase Transition。\r\n\r\n相同 Failure Signature 默认连续 2 次产生 Model Review Advisory，连续 3 次暂停同方向修补并要求 Correction；Project Type Profile 只能更早触发。Correction 触及 Product Goal、Success Criteria、Maker-approved Scope、Core Phase Model、Context Authority、Runtime Invariant，越过当前 Work Package，或无法识别有限 Scope / Regression Set 时，必须等待 Maker Scope Review。\r\n\r\n## Decision 与 Assumption\r\n\r\nProduct Decision 和 Architecture Decision 需要 Maker 确认。Runtime Assumption 可以被 Evidence 支持、削弱或判定失效，不需要伪造 Maker Decision；由此引起的产品或架构变化仍须取得对应授权。\r\n\r\n`PROJECT_DECISIONS.md` 使用 Active View、Bounded Changelog 与 Archive Ref。Decision 可以被部分替代、替代或撤销；详细历史进入 Optional `PROJECT_DECISION_HISTORY.md`，避免活动上下文无限增长。\r\n\r\n## Core Context\r\n\r\nCore Context 文件包括：\r\n\r\n- `PROJECT_PROFILE.md`\r\n- `PROJECT_STATE.md`\r\n- `PROJECT_PLAN.md`\r\n- `PROJECT_DECISIONS.md`\r\n\r\n`PROJECT_STATE.md` 是当前项目状态的唯一 Source of Truth。Agent 不得使用历史聊天、临时记忆、计划、Artifact 或 Runtime temporary state 覆盖它。\r\n\r\n`PROJECT_PLAN.md` 是 Core Context，用于记录项目生命周期规划，包括 Phase Goal、Gate、Next Action、Expected Artifact 和 High-level Dependency。\r\n\r\n`PROJECT_PLAN.md` 不用于记录 Implementation Task Breakdown Artifact。\r\n\r\n## Artifact 与 Context 边界\r\n\r\nProject Incubator 区分：\r\n\r\n- Phase Artifact\r\n- Core Context\r\n- Context Mutation\r\n\r\nPhase Artifact 表示某个阶段产生的成果。\r\n\r\nCore Context 表示项目持续维护的信息。\r\n\r\nContext Mutation 表示 Workflow 执行过程中对 Core Context 的更新。\r\n\r\nArtifact 与 Context Mutation 是两个独立概念。\r\n\r\nAgent 不得因为某个 Core Context 文件被更新，就将其视为对应 Phase 的 Artifact。\r\n\r\n## Runtime 入口\r\n\r\n对于确定性的项目状态变化、Context Mutation、Gate 处理、Script Invocation、Transition Commit 和持久化状态验证，Agent 必须通过 Project Incubator Runtime 路由执行，而不是直接修改受控状态。\r\n\r\nRuntime 支持由 `runtime/` 下的包提供。Runtime 实现细节由冻结的 Runtime Specification 和 Implementation Plan 定义。\r\n\r\n## Multi-Context Trigger 与授权闭合\r\n\r\n当一个语义事件会同时改变两个或更多 Context，或一个 Context 的状态只有与其他 Context 一致时才成立，Agent 必须先识别 `Multi-Context Trigger`，不得逐文件临时修改。典型事件包括 Extension 建议、授权请求、启用、拒绝、暂停，以及需要同步更新 Plan、State 与 Capability Spiral Record 的能力边界变化。\r\n\r\n写入前，Agent 必须形成 `Mutation Set Summary`，至少列明：\r\n\r\n- Event 与 Event Ref；\r\n- 当前 Phase；\r\n- Authority Requirement；\r\n- 目标 Context 的完整 `Changed Targets` 列表与提交顺序；\r\n- 每个目标的预期变化；\r\n- Closure Assertions；\r\n- 授权缺失时的 Pending Status；\r\n- 失败时的回滚边界。\r\n\r\nAgent 必须把“建议启用”和“已授权启用”分开。Maker 仅要求`评估`、`提出请求`、`继续`，或只做`风险确认`，均不得推断为 Maker Authorization。授权必须绑定既存 Pending Request，并保留 Maker 消息引用、未经改写的 `maker_statement_excerpt`、授权 Scope、授权 Targets、确认时间与摘要。缺少这些证据时，Extension Status 只能是 `PENDING_MAKER_AUTHORIZATION`，不得写成 `ACTIVE`。\r\n\r\nMaker 明确授权后，Agent 应一次性把完整 Mutation Set 交给 Runtime。只有所有目标写入、回读、Closure Assertions 与授权最终化均成功，才可在闭合验证通过后声明 `ACTIVE`；任一步失败都不得保留部分激活状态。\r\n\r\n完成报告必须明确列出：Event、Authorization Basis 或 Pending Status、`Changed Targets`、`Closure Result`、回滚结果（如有）和 `Unchanged Phase`。不得仅报告“文件已更新”或把 Mutation Set 草稿表述为已执行事实。\r\n\r\n## Host Environment Bootstrap\r\n\r\n当 Project Incubator 初始化新的 Managed Project、第一次在已有 Managed Project 中建立协作上下文，或 Maker 明确请求宿主环境集成时，Agent 应先解析 Host Environment。\r\n\r\n- Host = `CODEX`：通过 Runtime / Script Coordinator / `DETERMINISTIC_OPERATION` 调用 `BOOTSTRAP_HOST_INTEGRATION`，为尚未存在项目级 `AGENTS.md` 的 Managed Project 创建 Codex 协作入口。\r\n- Host = `OTHER`：不创建 Codex `AGENTS.md`。\r\n- Host = `UNKNOWN`：不猜测 Host，不创建 Codex `AGENTS.md`，并说明 Host Environment 无法确认。\r\n\r\nHost Environment Bootstrap 只处理宿主环境集成 Artifact，不改变 Current Phase，不触发 Workflow Transition，不修改 `PROJECT_STATE.md` 或其他 Core Context。已有且未包含 Project Incubator Integration Marker 的 `AGENTS.md` 不得被自动覆盖、删除、重写或强行追加。\r\n\r\n## Agent 使用边界\r\n\r\nAgent 可以分析 Context、提出方案、准备 Artifact、暴露风险，并向 Maker 请求决策。\r\n\r\nAgent 不得：\r\n\r\n- 替代 Maker Authorization；\r\n- 在没有 Maker 确认时扩大 Project Goal 或 Scope；\r\n- 绕过 Runtime 执行受控状态变化；\r\n- 将 Advisory Output 视为 Runtime Command；\r\n- 将 Script Validation 视为 Gate Result；\r\n- 创建新的 Workflow Phase、Transition、Gate Type、Context Authority 或 Runtime Rule。\r\n',
+    expected: /project-incubator-router/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:31:1
+✖ 六个 Plugin Skill 及所有参考文档无过时运行指令或包外规格依赖 (3.8299ms)
+  AssertionError [ERR_ASSERTION]: C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\project-incubator-plugin\skills\web-product-incubator\SKILL.md
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:38:12)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '---\r\nname: web-product-incubator\r\ndescription: Use when：Project Incubator Router 已确认 Managed Project 类型为 web-product，需要按 P0–P6 孵化、恢复或推进同时具有前后端职责的浏览器产品；不适用于未确认路由、浏览器扩展、静态前端、纯后端或独立 MCP Service。\r\n---\r\n\r\n# Web Product Incubator\r\n\r\n当前 Source of Truth 为活动规格 `SPECS/PROJECT_TYPES/WEB_PRODUCT_PROFILE.md`、`SPECS/CONTRACTS/WEB_PRODUCT_INCUBATOR_CONTRACT.md` 和 `SPECS/RUNTIME/WEB_PRODUCT_INCUBATOR_RUNTIME_SPEC.md`；本 Skill 是其面向 Agent 的领域指导，不新增权威来源。\r\n\r\n## 启动与权威边界\r\n\r\n仅在 Router 已提议 `web-product`、Maker 已批准完整激活范围且 Runtime 返回有效激活状态后使用。恢复和查询先调用 `inspect_project`，只根据已验证的 Activation、State 和 Receipt 判断当前状态，不从聊天记忆补全。Kernel 负责授权、Context Mutation、Revision、Receipt 和 Workflow 结构；Agent 负责设计、阶段判断和 Evidence 解释，不能替 Maker 决定产品或架构。\r\n\r\n适用条件是通用浏览器为主要界面，同时存在前端呈现/交互与后端业务/授权/数据职责，至少一条核心旅程跨越浏览器与后端或数据边界。前后端是逻辑职责，不规定框架、进程、仓库或部署拓扑。浏览器扩展、无后端职责的静态前端、纯后端、独立 MCP Service、CLI、SDK、库、移动、桌面和 Mod 不由本 Skill 接管。\r\n\r\n`host_profile_requirement = FORBIDDEN`，`host_profile_id = null`。浏览器、localhost、操作系统、命令和端口是项目配置与 Evidence 条件，不得创建 Host Profile。\r\n\r\n## Workflow Entry\r\n\r\n- `NEW_PROJECT`：标准入口只能是 P0。\r\n- `ADOPT_EXISTING`：检查已有设计、计划、Artifact、实现、构建、本地运行和验证 Evidence，判断 P0–P6 正常阶段；记录 `assessment_summary` 和至少一个 `evidence_refs`，不得以 Correction 或 Review 子流程作为入口。\r\n- Maker 确认来源、Project Type、Product Boundary、Entry Mode 与完整激活范围；Agent 负责阶段分析，Kernel 只验证结构、合法阶段和授权。\r\n- Entry 激活后不可修改。错误判断必须报告证据并通过受控处置解决，不直接改写 `workflow.entry`。\r\n\r\n## 正式阶段\r\n\r\n仅使用 P0→P1→P2→P3→P4→P5→P6 与 P6→P2/P3/P4/P5。Web 副说明、Checkpoint、Validation Channel 和 Correction 都不是 Stage，不增加 Runtime 枚举或权威状态文件。\r\n\r\n### P0 `Intent Discovery`\r\n\r\n目标：确认用户问题、核心结果、可观察成功标准和浏览器载体理由。\r\n\r\n输入：Maker Intent、用户故事、现有 Observation 与 Hypothesis；有次级界面时说明消费者和结果。\r\n\r\n产物：Intent、核心旅程候选、浏览器适用依据、主要排除项与待决问题。\r\n\r\nCompletion Conditions：Maker 已确认问题、结果、成功标准和载体；主要结果不是纯后端或独立服务，次级界面未变成未经批准的第二个产品目标。\r\n\r\n失败路由：证据不足留在 P0 调查；载体或产品方向冲突提交 Maker Review，不擅自激活或迁移。\r\n\r\n### P1 `Project Definition`\r\n\r\n目标：建立 Web Product Boundary、支持和排除范围。\r\n\r\n输入：已确认 Intent、核心旅程、用户、数据与依赖背景。\r\n\r\n产物：前端与后端职责、关键数据与外部依赖、次级界面归属、Build/localhost/真实浏览器验收范围、部署挂起和风险清单。\r\n\r\nCompletion Conditions：Project Type 和边界受控确认，无 Host；至少一条跨边界旅程可观察；高风险能力明确为待决政策而非默认授权。\r\n\r\n失败路由：定义缺失留在 P1 补全；Intent 或主要形态失效提出 Maker Review，不通过后续实现扩大边界。\r\n\r\n### P2 `Solution Design`\r\n\r\n目标：形成 `Web System Model`，解释核心旅程和失败反馈如何跨越信任边界。\r\n\r\n输入：已确认 Product Boundary、风险与现有 Evidence。\r\n\r\n产物：浏览器入口、前端状态/输入/错误反馈、后端业务/服务端授权/数据访问/副作用、数据所有权/持久化/缓存/迁移、身份/会话/角色、外部依赖隔离、次级界面、日志/隐私/审计、本地运行模型与 Artifact 关系。\r\n\r\nCompletion Conditions：关键 Architecture Assumption 有支持 Evidence、备选路径，或 Maker 接受的有界风险与停止条件。高影响未知项可使用阶段内 `FEASIBILITY_PROBE`，记录假设、最小实验、结论上限与停止条件；Probe 不是 Stage。\r\n\r\n失败路由：设计不足留在 P2；推翻 Product Boundary 或授权政策时提交 Maker Review，再继续受影响部分。\r\n\r\n### P3 `Execution Planning`\r\n\r\n目标：将设计转为可执行工作包和验证计划。\r\n\r\n输入：Web System Model、风险、现有 Baseline 与 Maker 验证预算。\r\n\r\n产物：代表性切片、依赖顺序、两个 P4 Checkpoint、六类 P5 Design Channel、本地命令/readiness/数据/清理、模拟边界、关键失败与恢复测试、Known-Good Baseline、回归集合和部署非目标。\r\n\r\nCompletion Conditions：工作包、完成条件、Evidence 绑定、停止点与回滚可执行；次级界面包含独立协议、授权、失败和真实 Client 任务。人工批次与预算由 Maker 确认，未设置记为 `UNSET`，不编造上限。\r\n\r\n失败路由：计划不足留在 P3；设计缺失报告最早受影响的 P2 层并请求受控处置，不发明逆向 Transition。\r\n\r\n### P4 `Creation`\r\n\r\n目标：在获批工作包内实现 Artifact，并分别完成 `Usable Web Slice` 和 `Build Readiness`；两个 Checkpoint 都不是 Stage，且不得标为不适用以绕过要求。\r\n\r\n输入：设计、执行计划、Baseline 和可重放本地运行配置。\r\n\r\n产物：实现、构建 Artifact、两个独立检查点结论与受影响回归 Evidence。\r\n\r\n| Checkpoint | 最低观察与独立评估 |\r\n| --- | --- |\r\n| Usable Web Slice | 真实浏览器入口、核心交互、前端/后端/数据边界、可见成功与失败反馈、授权及副作用可归因；分别提供 Evidence Refs、Claim Scope、Known Limitations、Failure Routing 和独立 Gate Evaluation，结果必须为 `REQUIREMENT_SATISFIED`。 |\r\n| Build Readiness | 依赖/版本、成功构建、缺失配置失败、可重复 localhost 启动、readiness、前后端可触达、停止与失败清理；分别提供 Evidence Refs、Claim Scope、Known Limitations、Failure Routing 和独立 Gate Evaluation，结果必须为 `REQUIREMENT_SATISFIED`。 |\r\n\r\nCompletion Conditions：只有两项均为 `REQUIREMENT_SATISFIED` 时，Checkpoint Contract 才不阻止 P4→P5；仍须走合法受控转换。Script Validation Result 不是 Gate Result，P4 出口不代表 P5 已通过。\r\n\r\n失败路由：切片失败沿核心旅程定位边界；构建或启动失败沿配置与运行模型定位。两项分别记录缺口和返回工作包，留在 P4，不用一项成功替代另一项。\r\n\r\nP4 `Creation Correction` 复用普通受控 Context Mutation：记录失效 Assumption、暂停同方向补丁、界定影响、修正设计/计划/Artifact、重放验证，Stage 保持 P4，不提交 `workflow_transition`。若涉及 Product Boundary、Architecture Decision、授权政策或 Runtime Invariant，提出 Maker Scope Review Requirement；不把 `MODEL_REVIEW` 变成 Web Stage。\r\n\r\n### P5 `Validation`\r\n\r\n目标：完成 `Local Product Validation`，让结论受实际 Evidence 限制。\r\n\r\n输入：被测 Revision、Artifact、配置、P4 两项结论与验证计划。\r\n\r\n产物：区分六类 Design Channel 的 Validation Result；每项附适用性、Evidence Refs、Claim Scope、Known Limitations、观察事实及未形成结论的 Reason。\r\n\r\n| Design Channel | Claim 上限 |\r\n| --- | --- |\r\n| LOGIC_AUTOMATION | 仅证明确定性逻辑、解析、授权规则和失败恢复；不能证明真实浏览器或完整集成。 |\r\n| BUILD_VALIDATION | 仅证明受控依赖下的编译、打包、静态检查和 Artifact；不证明运行中的用户旅程。 |\r\n| LOCAL_INTEGRATION_VALIDATION | 仅证明指定 localhost 配置下前后端、数据与适用外部依赖的集成；不能替代真实浏览器。 |\r\n| LOCAL_BROWSER_VALIDATION | 仅证明指定真实浏览器、构建与配置中的呈现、交互、错误和核心结果；不证明未测环境或生产能力。 |\r\n| SECONDARY_INTERFACE_VALIDATION | 仅证明真实适用 Client 的协议、授权、结果、失败和副作用；不能替代浏览器旅程。 |\r\n| HUMAN_VALIDATION | 仅证明明确观察者角色在指定场景和环境中的结果理解与业务接受性；不能替代技术 Evidence。 |\r\n\r\nCompletion Conditions：以下 Requirement 必须分别评估，不能仅列出 Channel 名称：\r\n\r\n- Build Requirement 的 Gate Evaluation 为 `REQUIREMENT_SATISFIED`。\r\n- Local Integration Requirement 的 Gate Evaluation 为 `REQUIREMENT_SATISFIED`。\r\n- Local Browser Requirement 的 Gate Evaluation 为 `REQUIREMENT_SATISFIED`，Evidence 至少覆盖一条真实浏览器核心旅程。\r\n- Product Boundary 包含次级界面时，适用 Secondary Interface Requirement 的 Gate Evaluation 为 `REQUIREMENT_SATISFIED`。\r\n- 适用关键失败路径有 Evidence；条件通道不适用时记录与边界一致的理由，不能写成通过；明确 Deployment 未验证。\r\n\r\nBuild-only、Logic-only 或进程存活不能满足 P5。Build、Logic、Browser、Secondary Interface 与 Human Evidence 不能互相替代。Script Validation Result、Observation 或 Human Judgment 不能直接替代 Gate Evaluation Result。Design Channel 不增加 Core Runtime 枚举。\r\n\r\n失败路由：未满足必要 Requirement 则留在 P5，记录 Failure Routing、缺口、最早受影响层与修复建议；不得伪称通过。完成 Validation Result 后在合法 P5→P6 中受控形成迭代决定，不能直接逆跳。\r\n\r\n### P6 `Iteration`\r\n\r\n目标：按完整 Validation Result 决定有界迭代。\r\n\r\n输入：验证结果、反例、风险、Baseline 和待决事项。\r\n\r\n产物：迭代理由、目标阶段、范围、授权要求和回归计划。\r\n\r\nCompletion Conditions：系统模型变更走 P6→P2，执行/验证计划变更走 P6→P3，Artifact 调整走 P6→P4，同边界补充验证走 P6→P5；受控提交与回读成功后才算转换完成。\r\n\r\n失败路由：推翻 P0 Intent 或 P1 Definition 时提出 Maker Review，由 Maker 决定重开边界、迁移或终止；不得发明 P6→P0/P1 Transition。\r\n\r\n## 本地运行与 Evidence 绑定\r\n\r\n构建最低要求是可恢复的依赖准备、依赖和工具版本、构建命令、成功状态/Artifact、代码 Revision 与配置摘要。localhost 最低要求是可重复启动命令、localhost URL、端口、协议、环境变量名称/来源类别/缺失行为、数据准备/迁移、readiness、停止与失败清理。进程存活不等于 readiness，也不证明前后端可触达。\r\n\r\n每份结果绑定前端、后端、数据与适用外部依赖状态，明确真实、模拟、替代或不可用；模拟成功不能外推到真实依赖。敏感值只记录脱敏标识或来源类别。真实浏览器结果还绑定浏览器名称与版本、入口、用户步骤、可见结果、对应后端或数据结果、关键失败反馈与副作用；不能以 HTTP 探测、截图或构建日志代替完整旅程。\r\n\r\n## 次级界面\r\n\r\nREST、GraphQL、WebSocket、Webhook、MCP 只有同时满足以下条件才属于同一 Web Managed Project：服务同一 Product Boundary 与主要用户结果；复用同一业务模型、数据所有权、身份、授权、审计和外部副作用政策；共享主要版本和变更生命周期；不是主要独立交付物。\r\n\r\n每个 Capability 要有独立 Claim、Security Boundary 和 Evidence。次级界面 Evidence 不能替代真实浏览器 Evidence，浏览器 Evidence 也不能证明次级协议。MCP Tool、Resource、Prompt 或等价能力只暴露获批后端 Capability，不复制另一套业务或授权规则。\r\n\r\n真实 MCP Client 验证绑定 Client 名称与版本、Transport、Capability、非敏感授权上下文、输入和结果，分别验证允许路径、未授权或越权拒绝、协议失败、业务失败、审计与副作用；证明与同一后端授权政策一致，不因 Client 调用成功跳过拒绝路径。\r\n\r\nTransport（含 SSE、Streamable HTTP、stdio）、独立进程、包或部署单元变化不自动改变类型。出现独立产品目标、消费者、版本支持、发布/回滚边界并取代浏览器核心结果时，提出 Maker Project Type Review，不自动迁移或发明独立服务类型。\r\n\r\n## 安全与 Maker Authority\r\n\r\n浏览器、次级 Client、文件、富文本、Webhook 和外部响应均是不可信输入；服务端必须执行授权，不依赖隐藏前端控件。设计和验证覆盖适用身份/会话、跨站边界、Secrets、日志隐私、外部请求、迁移、资源耗尽与副作用；不适用需说明理由，不等于已验证。\r\n\r\nProduct Decision、Architecture Decision、类型确认、真实账户、付费服务、外部写入、高成本验证、超预算和接受残余风险由 Maker Authorization 决定。Evidence 可以推翻 Runtime Assumption，不能自动改写 Maker Decision。使用 E0–E5 与绑定范围的 Known-Good Baseline；一次成功不能外推未测试边界。\r\n\r\n## Deployment 与 Closure\r\n\r\nDeployment 保持 `DEFERRED_CAPABILITY`。域名、DNS、TLS、CDN、生产托管、生产 Secrets、线上迁移、扩缩容、监控和公开可用性不属于本版本验收；既有线上资料只作背景。不得根据构建、localhost、浏览器或 MCP 成功声称 Production Ready 或 Deployment Validated。\r\n\r\n不新增 Deployment Stage、Host、Gate Type 或 Runtime Schema 字段；未来启用须另提 Architecture Change。\r\n\r\n普通 Context Mutation 和 Phase Transition 均通过现有 Kernel；Gate Result 不直接修改状态。`READY_FOR_TRANSITION` 不等于 Transition 已执行；Project State 持久化、revision 递增、回读与 Receipt 一致后才可声明受控变更完成。\r\n',
+    expected: /`SPECS\//u,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:43:3
+✖ mod-incubator 恢复使用 Receipt 验证入口，明确三个权威文件 (0.634ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /inspect_project/u. Input:
+  
+  '---\r\n' +
+    'name: mod-incubator\r\n' +
+    'description: 用于已由 Project Incubator Router 确认为 mod 类型的 Managed Project。围绕玩家可观察的 Product Point，按宿主风险、代表性垂直切片、最终包和真实环境证据推进 Mod 开发；实现中模型失效时进入轻量 MODEL_REVIEW。\r\n' +
+    '---\r\n' +
+    '\r\n' +
+    '# Mod Incubator\r\n' +
+    '\r\n' +
+    '## 运行边界\r\n' +
+    '\r\n' +
+    '- 开始前调用 `get_project_state`，确认 `project_type_id` 为 `mod`。\r\n' +
+    '- 所有状态变化通过 Kernel MCP 的 `prepare_change` 与 `commit_change`；不得直接编辑 `.project-incubator/`。\r\n' +
+    '- 发现 Pending Request 内容错误、过时或不应获批时，必须请求 Maker 明确拒绝，并使用 `decline_change` 精确匹配 `request_id` 与 `scope_digest`；不得提交后再补救，也不得直接清理状态文件。\r\n' +
+    '- 新增或修改 Decision 时，在拟议状态中写明新的有效声明；真实 `authorization_ref` 与 `confirmed_at` 由 Runtime 在 Commit 时绑定，Agent 不得伪造。\r\n' +
+    '- Product Boundary、架构决定、人工测试预算和支持范围由 Maker 确认。\r\n' +
+    '- API 可用性、局部调用和自动化测试不得表述为完整宿主语义成立。\r\n' +
+    '\r\n' +
+    '## 六阶段\r\n' +
+    '\r\n' +
+    '1. `M0_BOUNDARY`：确认玩家价值、目标宿主、Mod 类型、成功结果与排除范围。\r\n' +
+    '2. `M1_RISK_MODEL`：按八维评估 Capability 不透明性，区分事实、假设与决定。\r\n' +
+    '3. `M2_VERTICAL_SLICE`：完成一个代表性完整生命周期，使关键边界可观察并允许推翻 Candidate Model。\r\n' +
+    '4. `M3_BUILD_PACKAGE`：实现受支持模型，验证最终包内容、依赖、安装结构和本地回归。\r\n' +
+    '5. `M4_TARGET_VALIDATION`：在真实宿主验证 Capability Claim、失败与副作用。\r\n' +
+    '6. `M5_EXPAND_RELEASE`：只沿一个主要风险维度扩展，或明确当前发布边界。\r\n' +
+    '\r\n' +
+    '阶段转换必须调用领域 Workflow 评估，不得跳级。M0 退出和任何 Product Boundary 变化必须获得 Maker Authorization。\r\n' +
+    '\r\n' +
+    '## MODEL_REVIEW\r\n' +
+    '\r\n' +
+    '在 M2、M3 或 M4 出现反例、重复无效修补或实现与模型冲突时：\r\n' +
+    '\r\n' +
+    '1. 标记失效 Runtime Assumption；\r\n' +
+    '2. 暂停同方向补丁；\r\n' +
+    '3. 更新 Candidate Model 与受影响边界；\r\n' +
+    '4. 重放受影响的自动验证；\r\n' +
+    '5. 返回原阶段，或在涉及产品/架构边界时请求 Maker 决定。\r\n' +
+    '\r\n' +
+    '`MODEL_REVIEW` 是当前阶段内的纠偏子流程，不是 M5，不得称为“功能完成后的迭代”。\r\n' +
+    '\r\n' +
+    '## Evidence 与成本\r\n' +
+    '\r\n' +
+    '- Evidence 使用 `E0` 至 `E5`，结论不得超过证据上限。\r\n' +
+    '- 任一不透明维度为 `2`，或至少两个维度为 `1`，建议代表性 Vertical Slice；未知按 `1` 计算并明确显示未知。\r\n' +
+    '- 一次目标宿主完整成功最高支持 `E3`；API Availability 不提升 Semantic Capability。\r\n' +
+    '- 人工验证次数只能由 Maker 设置；未设置时保持 `UNSET`，Agent 只提出可区分假设的测试批次。\r\n' +
+    '- 真实异常应归一化为可重复验证，再返回目标宿主确认产品结果。\r\n'
+  
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:45:12)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '---\r\nname: mod-incubator\r\ndescription: 用于已由 Project Incubator Router 确认为 mod 类型的 Managed Project。围绕玩家可观察的 Product Point，按宿主风险、代表性垂直切片、最终包和真实环境证据推进 Mod 开发；实现中模型失效时进入轻量 MODEL_REVIEW。\r\n---\r\n\r\n# Mod Incubator\r\n\r\n## 运行边界\r\n\r\n- 开始前调用 `get_project_state`，确认 `project_type_id` 为 `mod`。\r\n- 所有状态变化通过 Kernel MCP 的 `prepare_change` 与 `commit_change`；不得直接编辑 `.project-incubator/`。\r\n- 发现 Pending Request 内容错误、过时或不应获批时，必须请求 Maker 明确拒绝，并使用 `decline_change` 精确匹配 `request_id` 与 `scope_digest`；不得提交后再补救，也不得直接清理状态文件。\r\n- 新增或修改 Decision 时，在拟议状态中写明新的有效声明；真实 `authorization_ref` 与 `confirmed_at` 由 Runtime 在 Commit 时绑定，Agent 不得伪造。\r\n- Product Boundary、架构决定、人工测试预算和支持范围由 Maker 确认。\r\n- API 可用性、局部调用和自动化测试不得表述为完整宿主语义成立。\r\n\r\n## 六阶段\r\n\r\n1. `M0_BOUNDARY`：确认玩家价值、目标宿主、Mod 类型、成功结果与排除范围。\r\n2. `M1_RISK_MODEL`：按八维评估 Capability 不透明性，区分事实、假设与决定。\r\n3. `M2_VERTICAL_SLICE`：完成一个代表性完整生命周期，使关键边界可观察并允许推翻 Candidate Model。\r\n4. `M3_BUILD_PACKAGE`：实现受支持模型，验证最终包内容、依赖、安装结构和本地回归。\r\n5. `M4_TARGET_VALIDATION`：在真实宿主验证 Capability Claim、失败与副作用。\r\n6. `M5_EXPAND_RELEASE`：只沿一个主要风险维度扩展，或明确当前发布边界。\r\n\r\n阶段转换必须调用领域 Workflow 评估，不得跳级。M0 退出和任何 Product Boundary 变化必须获得 Maker Authorization。\r\n\r\n## MODEL_REVIEW\r\n\r\n在 M2、M3 或 M4 出现反例、重复无效修补或实现与模型冲突时：\r\n\r\n1. 标记失效 Runtime Assumption；\r\n2. 暂停同方向补丁；\r\n3. 更新 Candidate Model 与受影响边界；\r\n4. 重放受影响的自动验证；\r\n5. 返回原阶段，或在涉及产品/架构边界时请求 Maker 决定。\r\n\r\n`MODEL_REVIEW` 是当前阶段内的纠偏子流程，不是 M5，不得称为“功能完成后的迭代”。\r\n\r\n## Evidence 与成本\r\n\r\n- Evidence 使用 `E0` 至 `E5`，结论不得超过证据上限。\r\n- 任一不透明维度为 `2`，或至少两个维度为 `1`，建议代表性 Vertical Slice；未知按 `1` 计算并明确显示未知。\r\n- 一次目标宿主完整成功最高支持 `E3`；API Availability 不提升 Semantic Capability。\r\n- 人工验证次数只能由 Maker 设置；未设置时保持 `UNSET`，Agent 只提出可区分假设的测试批次。\r\n- 真实异常应归一化为可重复验证，再返回目标宿主确认产品结果。\r\n',
+    expected: /inspect_project/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:43:3
+✖ desktop-product-incubator 恢复使用 Receipt 验证入口，明确三个权威文件 (0.6395ms)
+  AssertionError [ERR_ASSERTION]: activation.json
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:46:89)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:43:3
+✖ web-product-incubator 恢复使用 Receipt 验证入口，明确三个权威文件 (0.4866ms)
+  AssertionError [ERR_ASSERTION]: activation.json
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:46:89)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:51:3
+✖ sims-4-host-profile 依赖已验证的 Router 激活和 inspect_project (0.5052ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /inspect_project/u. Input:
+  
+  '---\r\n' +
+    'name: sims-4-host-profile\r\n' +
+    'description: 在已选择 mod-incubator 且目标宿主为 The Sims 4 时使用。把通用 Mod 验证具体化为游戏版本、补丁版本、Script/Package 包、Mods 安装结构、加载诊断和与 Capability 相关的游戏内观察。\r\n' +
+    '---\r\n' +
+    '\r\n' +
+    '# Sims 4 Host Profile\r\n' +
+    '\r\n' +
+    '## 适用边界\r\n' +
+    '\r\n' +
+    '本 Profile 只细化 `mod-incubator`，不得改变 Kernel Authorization、Receipt、Evidence 或 Gate 权限。调用前确认激活状态中的 `project_type_id=mod` 且 `host_profile_id=sims-4`。\r\n' +
+    '\r\n' +
+    '## 固定上下文\r\n' +
+    '\r\n' +
+    '每项目标环境 Evidence 必须记录：\r\n' +
+    '\r\n' +
+    '- 游戏版本与补丁版本；\r\n' +
+    '- Mod 类型：`SCRIPT`、`PACKAGE` 或两者；\r\n' +
+    '- 最终构建包内容；\r\n' +
+    '- Mods 目录安装结构；\r\n' +
+    '- 加载日志与异常入口。\r\n' +
+    '\r\n' +
+    '## 按 Capability 选择检查\r\n' +
+    '\r\n' +
+    '- 涉及 UI 时检查 UI 可见结果；\r\n' +
+    '- 涉及玩家交互时检查触发、结果和副作用；\r\n' +
+    '- 涉及持久化时检查存档、重载与后续状态污染；\r\n' +
+    '- 声明跨版本支持时才建立兼容矩阵。\r\n' +
+    '\r\n' +
+    '不相关 Capability 不得被强制要求 UI、存档或跨版本测试。Script 或 Package 可被加载只证明 Availability，不自动提升 Semantic Capability。\r\n' +
+    '\r\n' +
+    '## Maker 观察\r\n' +
+    '\r\n' +
+    'Agent 提供狭窄场景和可区分假设的观察格式，Maker 只需回报：场景、游戏/补丁版本、观察结果、失败或副作用、证据引用。Agent 负责结构化记录、判断 Evidence 上限和决定是否需要 `MODEL_REVIEW`，不得把根因推导转嫁给 Maker。\r\n'
+  
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:53:12)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '---\r\nname: sims-4-host-profile\r\ndescription: 在已选择 mod-incubator 且目标宿主为 The Sims 4 时使用。把通用 Mod 验证具体化为游戏版本、补丁版本、Script/Package 包、Mods 安装结构、加载诊断和与 Capability 相关的游戏内观察。\r\n---\r\n\r\n# Sims 4 Host Profile\r\n\r\n## 适用边界\r\n\r\n本 Profile 只细化 `mod-incubator`，不得改变 Kernel Authorization、Receipt、Evidence 或 Gate 权限。调用前确认激活状态中的 `project_type_id=mod` 且 `host_profile_id=sims-4`。\r\n\r\n## 固定上下文\r\n\r\n每项目标环境 Evidence 必须记录：\r\n\r\n- 游戏版本与补丁版本；\r\n- Mod 类型：`SCRIPT`、`PACKAGE` 或两者；\r\n- 最终构建包内容；\r\n- Mods 目录安装结构；\r\n- 加载日志与异常入口。\r\n\r\n## 按 Capability 选择检查\r\n\r\n- 涉及 UI 时检查 UI 可见结果；\r\n- 涉及玩家交互时检查触发、结果和副作用；\r\n- 涉及持久化时检查存档、重载与后续状态污染；\r\n- 声明跨版本支持时才建立兼容矩阵。\r\n\r\n不相关 Capability 不得被强制要求 UI、存档或跨版本测试。Script 或 Package 可被加载只证明 Availability，不自动提升 Semantic Capability。\r\n\r\n## Maker 观察\r\n\r\nAgent 提供狭窄场景和可区分假设的观察格式，Maker 只需回报：场景、游戏/补丁版本、观察结果、失败或副作用、证据引用。Agent 负责结构化记录、判断 Evidence 上限和决定是否需要 `MODEL_REVIEW`，不得把根因推导转嫁给 Maker。\r\n',
+    expected: /inspect_project/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:51:3
+✖ windows-desktop-host-profile 依赖已验证的 Router 激活和 inspect_project (0.4612ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /inspect_project/u. Input:
+  
+  '---\r\n' +
+    'name: windows-desktop-host-profile\r\n' +
+    'description: Use when：Router 已为 desktop-product 明确选择 windows-desktop，需要把通用桌面孵化规则收紧为 Windows 环境、交付与真实环境 Evidence；不得单独触发或改写 P0–P6。\r\n' +
+    '---\r\n' +
+    '\r\n' +
+    '# Windows Desktop Host Profile\r\n' +
+    '\r\n' +
+    '## 作用边界\r\n' +
+    '\r\n' +
+    '本 Profile 只在 `desktop-product + windows-desktop` 路由已确认后与 Desktop Child Skill 配合使用。它增加 Windows 约束和 Evidence 要求，不定义业务能力、不拥有浏览器扩展，也不得重命名、跳过或增加 P0–P6 阶段。\r\n' +
+    '\r\n' +
+    '## 必填环境上下文\r\n' +
+    '\r\n' +
+    '在影响设计、构建或验证前，记录 Windows 版本与构建号、CPU/OS 架构及目标二进制架构、安装范围（当前用户/所有用户/便携模式）、权限模式（标准用户/按需提权/管理员运行）和分发格式。\r\n' +
+    '\r\n' +
+    '未知值必须显式标为未知，不得自动采用当前开发机作为默认支持范围。\r\n' +
+    '\r\n' +
+    '## Windows 收紧规则\r\n' +
+    '\r\n' +
+    '### 文件系统、进程与系统集成\r\n' +
+    '\r\n' +
+    '明确程序文件、用户数据、缓存、日志和临时文件位置；验证路径规范化、链接/重解析点、占用文件和意外覆盖。记录前台进程、后台进程、托盘、服务与子进程生命周期。注册表、文件关联、协议处理器、开机启动、防火墙规则和系统范围写入仅在 Product Boundary 明确包含且 Maker 授权时使用。\r\n' +
+    '\r\n' +
+    '### 权限与安全软件\r\n' +
+    '\r\n' +
+    '默认以标准用户和最小权限设计。需要提权时说明具体操作、范围、时机、取消与失败行为。把 Defender、SmartScreen、企业策略和第三方安全软件视为环境约束；被放行不等于行为安全，被拦截也不能在无证据时归因于单一原因。\r\n' +
+    '\r\n' +
+    '### 打包与签名\r\n' +
+    '\r\n' +
+    '验证产物清单、架构、依赖、版本信息和可复现来源。代码签名、证书信誉、时间戳与分发渠道按实际发布范围评估；未签名构建必须明确限制结论，不能宣称已具备生产信誉。\r\n' +
+    '\r\n' +
+    '### 安装、升级、卸载与恢复\r\n' +
+    '\r\n' +
+    '为适用的安装范围记录前置状态、写入位置、权限提示、进程占用、失败清理和完成状态。升级必须处理版本关系、配置/数据迁移、正在运行的旧进程和失败回滚。卸载必须区分程序文件、用户数据和共享资源。恢复路径至少提供安全停止、回到 Known-Good Baseline 或清楚的人工恢复步骤之一。\r\n' +
+    '\r\n' +
+    '## TARGET_HOST_VALIDATION\r\n' +
+    '\r\n' +
+    '真实环境 Evidence 至少绑定：Artifact 标识与哈希、Windows 版本/构建号、架构、安装范围、权限模式、分发格式、测试步骤、观察结果、失败/副作用和 Evidence 引用。\r\n' +
+    '\r\n' +
+    '自动化测试可以证明纯逻辑与可重复操作；Desktop Automation 只能证明被测会话；`TARGET_HOST_VALIDATION` 只能支持已绑定环境。未测试的 Windows 版本、架构、权限模式、安全软件或企业策略不得纳入兼容声明。\r\n' +
+    '\r\n' +
+    '涉及提权、系统范围写入、后台服务、开机启动、安全策略、自动更新或真实用户数据时，执行前需要 Maker Authorization 或既有明确授权范围。Host Profile 只能收紧 Shared Kernel 权限，不能放宽它。\r\n'
+  
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:53:12)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '---\r\nname: windows-desktop-host-profile\r\ndescription: Use when：Router 已为 desktop-product 明确选择 windows-desktop，需要把通用桌面孵化规则收紧为 Windows 环境、交付与真实环境 Evidence；不得单独触发或改写 P0–P6。\r\n---\r\n\r\n# Windows Desktop Host Profile\r\n\r\n## 作用边界\r\n\r\n本 Profile 只在 `desktop-product + windows-desktop` 路由已确认后与 Desktop Child Skill 配合使用。它增加 Windows 约束和 Evidence 要求，不定义业务能力、不拥有浏览器扩展，也不得重命名、跳过或增加 P0–P6 阶段。\r\n\r\n## 必填环境上下文\r\n\r\n在影响设计、构建或验证前，记录 Windows 版本与构建号、CPU/OS 架构及目标二进制架构、安装范围（当前用户/所有用户/便携模式）、权限模式（标准用户/按需提权/管理员运行）和分发格式。\r\n\r\n未知值必须显式标为未知，不得自动采用当前开发机作为默认支持范围。\r\n\r\n## Windows 收紧规则\r\n\r\n### 文件系统、进程与系统集成\r\n\r\n明确程序文件、用户数据、缓存、日志和临时文件位置；验证路径规范化、链接/重解析点、占用文件和意外覆盖。记录前台进程、后台进程、托盘、服务与子进程生命周期。注册表、文件关联、协议处理器、开机启动、防火墙规则和系统范围写入仅在 Product Boundary 明确包含且 Maker 授权时使用。\r\n\r\n### 权限与安全软件\r\n\r\n默认以标准用户和最小权限设计。需要提权时说明具体操作、范围、时机、取消与失败行为。把 Defender、SmartScreen、企业策略和第三方安全软件视为环境约束；被放行不等于行为安全，被拦截也不能在无证据时归因于单一原因。\r\n\r\n### 打包与签名\r\n\r\n验证产物清单、架构、依赖、版本信息和可复现来源。代码签名、证书信誉、时间戳与分发渠道按实际发布范围评估；未签名构建必须明确限制结论，不能宣称已具备生产信誉。\r\n\r\n### 安装、升级、卸载与恢复\r\n\r\n为适用的安装范围记录前置状态、写入位置、权限提示、进程占用、失败清理和完成状态。升级必须处理版本关系、配置/数据迁移、正在运行的旧进程和失败回滚。卸载必须区分程序文件、用户数据和共享资源。恢复路径至少提供安全停止、回到 Known-Good Baseline 或清楚的人工恢复步骤之一。\r\n\r\n## TARGET_HOST_VALIDATION\r\n\r\n真实环境 Evidence 至少绑定：Artifact 标识与哈希、Windows 版本/构建号、架构、安装范围、权限模式、分发格式、测试步骤、观察结果、失败/副作用和 Evidence 引用。\r\n\r\n自动化测试可以证明纯逻辑与可重复操作；Desktop Automation 只能证明被测会话；`TARGET_HOST_VALIDATION` 只能支持已绑定环境。未测试的 Windows 版本、架构、权限模式、安全软件或企业策略不得纳入兼容声明。\r\n\r\n涉及提权、系统范围写入、后台服务、开机启动、安全策略、自动更新或真实用户数据时，执行前需要 Maker Authorization 或既有明确授权范围。Host Profile 只能收紧 Shared Kernel 权限，不能放宽它。\r\n',
+    expected: /inspect_project/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:57:1
+✖ 分发 AGENTS 统一 Router/Kernel，模板逐份分类为非现行 (0.6654ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /project-incubator-router/u. Input:
+  
+  '# Project Incubator Agent 行为边界\r\n' +
+    '\r\n' +
+    '本文件是 Project Incubator Managed Project Runtime 行为相关的 Product Artifact。它不修改、绕过或重新定义 Implementation Repository 根目录 `AGENTS.md`。\r\n' +
+    '\r\n' +
+    '在 Project Incubator V1 implementation 期间，Codex 开发行为仍由 Repository Root `AGENTS.md` 约束，包括 Implementation Task scope、冻结设计边界、Validation 规则和 Upstream Design Gap 处理。\r\n' +
+    '\r\n' +
+    '本文件只定义 Project Incubator Skill 在 Managed Project 中使用时的 Agent 行为语义。\r\n' +
+    '\r\n' +
+    '## Source of Truth\r\n' +
+    '\r\n' +
+    '对于 Managed Project，`PROJECT_STATE.md` 是当前实际项目状态的唯一 Source of Truth。\r\n' +
+    '\r\n' +
+    'Agent 不得使用以下内容覆盖 `PROJECT_STATE.md`：\r\n' +
+    '\r\n' +
+    '- 历史聊天；\r\n' +
+    '- 临时记忆；\r\n' +
+    '- 未确认计划；\r\n' +
+    '- 项目 Artifact；\r\n' +
+    '- Runtime temporary state 临时状态；\r\n' +
+    '- 个人推断。\r\n' +
+    '\r\n' +
+    '## Maker / Agent / Runtime Boundary\r\n' +
+    '\r\n' +
+    'Maker 职责：\r\n' +
+    '\r\n' +
+    '- 确认项目目标；\r\n' +
+    '- 确认项目范围；\r\n' +
+    '- 作出重要项目决策；\r\n' +
+    '- 在需要时提供 authorization。\r\n' +
+    '\r\n' +
+    'Agent 职责：\r\n' +
+    '\r\n' +
+    '- 理解 Maker Intent；\r\n' +
+    '- 读取并尊重项目 Context；\r\n' +
+    '- 分析风险和选项；\r\n' +
+    '- 准备需要创造性或推理的工作；\r\n' +
+    '- 在需要时请求澄清或决策；\r\n' +
+    '- 当受控状态变化需要执行时，请求确定性 Runtime execution。\r\n' +
+    '\r\n' +
+    'Runtime 职责：\r\n' +
+    '\r\n' +
+    '- 执行确定性 execution；\r\n' +
+    '- 协调 Workflow、Context、Gate、Script、Advisory 和 Runtime Result 职责；\r\n' +
+    '- enforce 冻结边界；\r\n' +
+    '- 在 Contract requirements 满足后执行允许的持久化 Context Mutation。\r\n' +
+    '\r\n' +
+    '## Agent 禁止事项\r\n' +
+    '\r\n' +
+    'Agent 不得：\r\n' +
+    '\r\n' +
+    '- 绕过 Runtime 执行受控项目状态变化；\r\n' +
+    '- 直接执行持久化 Context Mutation；\r\n' +
+    '- 在没有 Maker Authorization 时改变 Project Goal 或 Scope；\r\n' +
+    '- 将 Agent Judgment 视为 Maker Authorization；\r\n' +
+    '- 将 Advisory Output 视为 Runtime Command；\r\n' +
+    '- 将 Script Validation Result 视为 Gate Evaluation Result；\r\n' +
+    '- 使用 Runtime State 替代 `PROJECT_STATE.md`；\r\n' +
+    '- 创建新的 Workflow Phase、Workflow Transition、Gate Type、Context Authority 或 Runtime Decision Rule。\r\n' +
+    '\r\n' +
+    '## Human Decision Boundary\r\n' +
+    '\r\n' +
+    'Maker Authorization 只能来自 Maker。\r\n' +
+    '\r\n' +
+    'Agent 可以推荐、分析或准备选项，但不得将自己的 Recommendation、Advisory Response、Script Result、Gate Evaluation、Runtime Result 或历史对话转换为 Maker Authorization。\r\n' +
+    '\r\n' +
+    '当缺少必要的 Decision、Authorization 或 Clarification 时，Agent 必须暴露 pending requirement，而不是自行补全。\r\n' +
+    '\r\n' +
+    '## Runtime Boundary\r\n' +
+    '\r\n' +
+    'Agent 必须通过 Runtime 路由受控行动，包括：\r\n' +
+    '\r\n' +
+    '- Project Context Mutation 处理；\r\n' +
+    '- Phase Transition Processing 处理；\r\n' +
+    '- Gate Invocation 调用；\r\n' +
+    '- Script Invocation 调用；\r\n' +
+    '- Transition Commit 提交；\r\n' +
+    '- 持久化状态验证。\r\n' +
+    '\r\n' +
+    'Runtime Execution State 不是 Project State。只有对应的 `PROJECT_STATE.md` Mutation 已经通过 Runtime flow 持久化并验证后，Transition 才算完成。\r\n' +
+    '\r\n' +
+    '## Advisory Boundary\r\n' +
+    '\r\n' +
+    'Advisory 是给 Agent 的指导。\r\n' +
+    '\r\n' +
+    'Advisory 可以识别缺失信息、风险、约束、需要的决策、Recommended Action 或 Suggested Next Step。\r\n' +
+    '\r\n' +
+    'Advisory 不会：\r\n' +
+    '\r\n' +
+    '- 修改 Workflow State；\r\n' +
+    '- 执行 Phase Transition；\r\n' +
+    '- 决定 Gate Result；\r\n' +
+    '- 提供 Maker Authorization；\r\n' +
+    '- 修改 Context；\r\n' +
+    '- 直接控制 Runtime。\r\n' +
+    '\r\n' +
+    '## Language Rule\r\n' +
+    '\r\n' +
+    '除非 Maker 明确要求使用其他语言，Agent 与 Maker 的交互，以及 Agent 生成的人类可读项目文档，默认使用简体中文。\r\n' +
+    '\r\n' +
+    '必要的英文技术术语、Identifier、文件名、目录名、协议字段、Enum Value 和代码标识符可以保留英文。\r\n'
+  
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:60:12)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '# Project Incubator Agent 行为边界\r\n\r\n本文件是 Project Incubator Managed Project Runtime 行为相关的 Product Artifact。它不修改、绕过或重新定义 Implementation Repository 根目录 `AGENTS.md`。\r\n\r\n在 Project Incubator V1 implementation 期间，Codex 开发行为仍由 Repository Root `AGENTS.md` 约束，包括 Implementation Task scope、冻结设计边界、Validation 规则和 Upstream Design Gap 处理。\r\n\r\n本文件只定义 Project Incubator Skill 在 Managed Project 中使用时的 Agent 行为语义。\r\n\r\n## Source of Truth\r\n\r\n对于 Managed Project，`PROJECT_STATE.md` 是当前实际项目状态的唯一 Source of Truth。\r\n\r\nAgent 不得使用以下内容覆盖 `PROJECT_STATE.md`：\r\n\r\n- 历史聊天；\r\n- 临时记忆；\r\n- 未确认计划；\r\n- 项目 Artifact；\r\n- Runtime temporary state 临时状态；\r\n- 个人推断。\r\n\r\n## Maker / Agent / Runtime Boundary\r\n\r\nMaker 职责：\r\n\r\n- 确认项目目标；\r\n- 确认项目范围；\r\n- 作出重要项目决策；\r\n- 在需要时提供 authorization。\r\n\r\nAgent 职责：\r\n\r\n- 理解 Maker Intent；\r\n- 读取并尊重项目 Context；\r\n- 分析风险和选项；\r\n- 准备需要创造性或推理的工作；\r\n- 在需要时请求澄清或决策；\r\n- 当受控状态变化需要执行时，请求确定性 Runtime execution。\r\n\r\nRuntime 职责：\r\n\r\n- 执行确定性 execution；\r\n- 协调 Workflow、Context、Gate、Script、Advisory 和 Runtime Result 职责；\r\n- enforce 冻结边界；\r\n- 在 Contract requirements 满足后执行允许的持久化 Context Mutation。\r\n\r\n## Agent 禁止事项\r\n\r\nAgent 不得：\r\n\r\n- 绕过 Runtime 执行受控项目状态变化；\r\n- 直接执行持久化 Context Mutation；\r\n- 在没有 Maker Authorization 时改变 Project Goal 或 Scope；\r\n- 将 Agent Judgment 视为 Maker Authorization；\r\n- 将 Advisory Output 视为 Runtime Command；\r\n- 将 Script Validation Result 视为 Gate Evaluation Result；\r\n- 使用 Runtime State 替代 `PROJECT_STATE.md`；\r\n- 创建新的 Workflow Phase、Workflow Transition、Gate Type、Context Authority 或 Runtime Decision Rule。\r\n\r\n## Human Decision Boundary\r\n\r\nMaker Authorization 只能来自 Maker。\r\n\r\nAgent 可以推荐、分析或准备选项，但不得将自己的 Recommendation、Advisory Response、Script Result、Gate Evaluation、Runtime Result 或历史对话转换为 Maker Authorization。\r\n\r\n当缺少必要的 Decision、Authorization 或 Clarification 时，Agent 必须暴露 pending requirement，而不是自行补全。\r\n\r\n## Runtime Boundary\r\n\r\nAgent 必须通过 Runtime 路由受控行动，包括：\r\n\r\n- Project Context Mutation 处理；\r\n- Phase Transition Processing 处理；\r\n- Gate Invocation 调用；\r\n- Script Invocation 调用；\r\n- Transition Commit 提交；\r\n- 持久化状态验证。\r\n\r\nRuntime Execution State 不是 Project State。只有对应的 `PROJECT_STATE.md` Mutation 已经通过 Runtime flow 持久化并验证后，Transition 才算完成。\r\n\r\n## Advisory Boundary\r\n\r\nAdvisory 是给 Agent 的指导。\r\n\r\nAdvisory 可以识别缺失信息、风险、约束、需要的决策、Recommended Action 或 Suggested Next Step。\r\n\r\nAdvisory 不会：\r\n\r\n- 修改 Workflow State；\r\n- 执行 Phase Transition；\r\n- 决定 Gate Result；\r\n- 提供 Maker Authorization；\r\n- 修改 Context；\r\n- 直接控制 Runtime。\r\n\r\n## Language Rule\r\n\r\n除非 Maker 明确要求使用其他语言，Agent 与 Maker 的交互，以及 Agent 生成的人类可读项目文档，默认使用简体中文。\r\n\r\n必要的英文技术术语、Identifier、文件名、目录名、协议字段、Enum Value 和代码标识符可以保留英文。\r\n',
+    expected: /project-incubator-router/u,
+    operator: 'match',
+    diff: 'simple'
+  }

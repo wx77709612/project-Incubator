@@ -1,0 +1,17 @@
+✔ 旧全局入口只路由到 Plugin Router，不包含第二套执行流程 (3.0777ms)
+✔ 六个 Plugin Skill 及所有参考文档无过时运行指令或包外规格依赖 (3.4622ms)
+✔ mod-incubator 恢复使用 Receipt 验证入口，明确三个权威文件 (0.3976ms)
+✔ desktop-product-incubator 恢复使用 Receipt 验证入口，明确三个权威文件 (0.3723ms)
+✔ web-product-incubator 恢复使用 Receipt 验证入口，明确三个权威文件 (0.3107ms)
+✔ sims-4-host-profile 依赖已验证的 Router 激活和 inspect_project (0.35ms)
+✔ windows-desktop-host-profile 依赖已验证的 Router 激活和 inspect_project (0.523ms)
+✔ 分发 AGENTS 统一 Router/Kernel，模板逐份分类为非现行 (1.4552ms)
+✔ 检查拒绝正向旧指令，也允许禁止条款与历史说明 (0.1377ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 81.5234

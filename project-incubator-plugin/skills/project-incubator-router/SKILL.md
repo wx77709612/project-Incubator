@@ -5,6 +5,13 @@ description: 当 Maker 要创建、孵化、恢复或判断一个长期项目应
 
 # Project Incubator Router
 
+## 当前 Kernel 权威与恢复
+
+Plugin Router `project-incubator-router` 是唯一现行入口。权威集合为 `.project-incubator/activation.json`、`.project-incubator/state.json` 和 `.project-incubator/latest-receipt.json`；State 是唯一业务状态，Activation 约束身份/路由，Receipt 证明闭合。临时 Runtime Data 和 Markdown Artifact 不替代它们。
+
+恢复与状态查询先调用 `inspect_project`，验证失败时报告稳定错误并停止受影响推进，不从聊天补全。只使用已验证路由的 Child Skill/Host Profile；不得直接编辑权威文件。所有受控变更经现行 Kernel，提交后确认 revision、回读与 Receipt 一致再报告完成。缺少 Plugin/MCP 时停止，不调用旧执行资产。
+
+
 ## 职责
 
 1. 调用 `propose_route` 查询注册表中的候选项目类型与 Host Profile。

@@ -1,0 +1,1 @@
+仅在当前临时测试目录执行四个只读 Project Incubator MCP 调用：inspect_project；propose_route(mod,sims-4)；propose_route(desktop-product,windows-desktop)；propose_route(web-product,null)。每次 project_root=当前工作目录。禁止所有文件写入和其他工具，不创建计划，不调用 prepare/initialize/commit/decline/export，不访问其他项目。全部成功简洁报告 PASS、路由和 revision/Receipt；失败报告真实错误。

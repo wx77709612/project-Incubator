@@ -111,6 +111,8 @@ async function structure(root) {
   check(definition?.command === "node" && definition.cwd === ".", "CANDIDATE_ENTRY_INVALID");
   assert.deepEqual(definition.args, ["./src/server.mjs"]);
   for (const name of ["src/server.mjs", "src/kernel/registry.mjs", "hooks/hooks.json", "hooks/user-prompt-submit.mjs", "scripts/verify-candidate.mjs"]) await reference(root, name);
+  const guidance = await import(pathToFileURL(await reference(root, "scripts/runtime-guidance.mjs")).href);
+  await guidance.validateRuntimeGuidance(root);
   const registry = await json(root, "profiles/registry.json");
   check(registry.schema_version === "1.1", "CANDIDATE_REGISTRY_INVALID");
   for (const skill of registry.child_skills) await reference(root, skill.skill_path);

@@ -1,0 +1,15 @@
+{
+  "version": "0.3.0+codex.20261019210340",
+  "marketplace": "C:\\Users\\Xenia_Woo\\.agents\\plugins\\marketplace.json",
+  "previous_source": {
+    "source": "local",
+    "path": "./plugins/project-incubator-plugin"
+  },
+  "new_source": {
+    "source": "local",
+    "path": "./plugins/project-incubator-plugin-0.3.0+codex.20261019210340"
+  },
+  "backup_root": "C:\\Users\\Xenia_Woo\\.codex\\backups\\kernel-alignment\\0.3.0+codex.20261019210340",
+  "marketplace_before_sha256": "331afbf2ea97a543c99f34cb4ae2a37f3bd9116e2c8b965bcf0073b69c8332c3",
+  "marketplace_after_sha256": "8bbccc55f4817ee6430afd561a93c8d8be12b66dbeb6c1cc93ab41dcab7d1421"
+}

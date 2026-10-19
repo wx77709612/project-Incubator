@@ -66,7 +66,7 @@ class V11TemplateTest(unittest.TestCase):
         self.assertIn("仅对高不透明 Capability", content)
 
     def test_skill_keeps_transparent_path_lightweight_and_correction_inside_p4(self):
-        skill = self.read("SKILL.md")
+        skill = self.read("references/legacy/EXECUTION_REFERENCE.md")
         self.assertIn("透明 Capability", skill)
         self.assertIn("E0", skill)
         self.assertIn("E5", skill)
@@ -76,7 +76,7 @@ class V11TemplateTest(unittest.TestCase):
         self.assertNotIn("所有 Managed Project 必须创建 `CAPABILITY_SPIRAL_RECORD.md`", skill)
 
     def test_skill_requires_explicit_authorization_and_multi_context_closure(self):
-        skill = self.read("SKILL.md")
+        skill = self.read("references/legacy/EXECUTION_REFERENCE.md")
         for phrase in (
             "Multi-Context Trigger",
             "Mutation Set Summary",
@@ -114,7 +114,7 @@ class V11TemplateTest(unittest.TestCase):
                 self.assertIn("省略", content)
 
     def test_codex_entry_requires_runtime_owned_multi_context_completion_report(self):
-        agents = self.read("templates/integrations/codex/AGENTS.template.md")
+        agents = self.read("references/legacy/AGENTS_REFERENCE.md")
         for phrase in (
             "Multi-Context Trigger",
             "Mutation Set Summary",

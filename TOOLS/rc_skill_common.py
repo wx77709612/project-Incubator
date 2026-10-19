@@ -1,3 +1,4 @@
+"""Legacy / 非现行：显式 V1.1 RC 兼容工具；现行安装使用 Plugin marketplace。"""
 from __future__ import annotations
 
 import hashlib

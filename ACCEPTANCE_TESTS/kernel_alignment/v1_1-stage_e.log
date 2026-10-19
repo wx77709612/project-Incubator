@@ -1,0 +1,100 @@
+FF......
+======================================================================
+FAIL: test_e01_complete_existing_tests_have_zero_failures (test_v1_1_regression_package_acceptance.V11RegressionPackageAcceptance.test_e01_complete_existing_tests_have_zero_failures)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\v1_1\stage_e\test_v1_1_regression_package_acceptance.py", line 40, in test_e01_complete_existing_tests_have_zero_failures
+    self.run_files(files)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\v1_1\stage_e\test_v1_1_regression_package_acceptance.py", line 35, in run_files
+    self.assertFalse(failures, "\n".join(failures))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ['C:\\Users\\Xenia_Woo\\.codex\\worktrees\\runtime-skill-alignment\\Project Incubator Skill\\TESTS\\unit\\test_context_coordinator.py:\n\n............................F\n======================================================================\nFAIL: test_verified_mutation_set_is_idempotent_and_rejects_payload_conflict (__main__.ContextCoordinatorTest.test_verified_mutation_set_is_idempotent_and_rejects_payload_conflict)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File "C:\\Users\\Xenia_Woo\\.codex\\worktrees\\runtime-skill-alignment\\Project Incubator Skill\\TESTS\\unit\\test_context_coordinator.py", line 700, in test_verified_mutation_set_is_idempotent_and_rejects_payload_conflict\n    self.assertIs(MutationSetStatus.VERIFIED, first.status)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: <MutationSetStatus.VERIFIED: \'VERIFIED\'> is not <MutationSetStatus.ROLLED_BACK: \'ROLLED_BACK\'>\n\n----------------------------------------------------------------------\nRan 29 tests in 3.207s\n\nFAILED (failures=1)\n'] is not false : C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\TESTS\unit\test_context_coordinator.py:
+
+............................F
+======================================================================
+FAIL: test_verified_mutation_set_is_idempotent_and_rejects_payload_conflict (__main__.ContextCoordinatorTest.test_verified_mutation_set_is_idempotent_and_rejects_payload_conflict)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\TESTS\unit\test_context_coordinator.py", line 700, in test_verified_mutation_set_is_idempotent_and_rejects_payload_conflict
+    self.assertIs(MutationSetStatus.VERIFIED, first.status)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: <MutationSetStatus.VERIFIED: 'VERIFIED'> is not <MutationSetStatus.ROLLED_BACK: 'ROLLED_BACK'>
+
+----------------------------------------------------------------------
+Ran 29 tests in 3.207s
+
+FAILED (failures=1)
+
+
+======================================================================
+FAIL: test_e02_v1_acceptance_stages_have_zero_failures (test_v1_1_regression_package_acceptance.V11RegressionPackageAcceptance.test_e02_v1_acceptance_stages_have_zero_failures)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\v1_1\stage_e\test_v1_1_regression_package_acceptance.py", line 45, in test_e02_v1_acceptance_stages_have_zero_failures
+    self.run_files(files)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\v1_1\stage_e\test_v1_1_regression_package_acceptance.py", line 35, in run_files
+    self.assertFalse(failures, "\n".join(failures))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ['C:\\Users\\Xenia_Woo\\.codex\\worktrees\\runtime-skill-alignment\\Project Incubator Skill\\ACCEPTANCE_TESTS\\layer2\\stage_b\\test_deterministic_capability_acceptance.py:\n\n.F...\n======================================================================\nFAIL: test_l2_b02_git_evidence_script (__main__.DeterministicCapabilityAcceptanceTest.test_l2_b02_git_evidence_script)\nTest Case:\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File "C:\\Users\\Xenia_Woo\\.codex\\worktrees\\runtime-skill-alignment\\Project Incubator Skill\\ACCEPTANCE_TESTS\\layer2\\stage_b\\test_deterministic_capability_acceptance.py", line 481, in test_l2_b02_git_evidence_script\n    repository = self._create_git_repository(workspace)\n  File "C:\\Users\\Xenia_Woo\\.codex\\worktrees\\runtime-skill-alignment\\Project Incubator Skill\\ACCEPTANCE_TESTS\\layer2\\stage_b\\test_deterministic_capability_acceptance.py", line 113, in _create_git_repository\n    self.assertEqual(0, self._run_git(repository, "add", "tracked.txt").returncode)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0 != 128\n\n----------------------------------------------------------------------\nRan 5 tests in 0.542s\n\nFAILED (failures=1)\n', 'C:\\Users\\Xenia_Woo\\.codex\\worktrees\\runtime-skill-alignment\\Project Incubator Skill\\ACCEPTANCE_TESTS\\layer2\\stage_e\\test_final_regression_package_isolation.py:\n\nF..\n======================================================================\nFAIL: test_l2_e01_layer2_regression (__main__.FinalRegressionPackageIsolationAcceptanceTest.test_l2_e01_layer2_regression)\nTest Case:\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File "C:\\Users\\Xenia_Woo\\.codex\\worktrees\\runtime-skill-alignment\\Project Incubator Skill\\ACCEPTANCE_TESTS\\layer2\\stage_e\\test_final_regression_package_isolation.py", line 367, in test_l2_e01_layer2_regression\n    self._run_regression_suite(suite)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^\n  File "C:\\Users\\Xenia_Woo\\.codex\\worktrees\\runtime-skill-alignment\\Project Incubator Skill\\ACCEPTANCE_TESTS\\layer2\\stage_e\\test_final_regression_package_isolation.py", line 114, in _run_regression_suite\n    self.fail(\n    ~~~~~~~~~^\n        "Layer 2 regression source test failed or errored:\\n"\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        + "\\n".join(details),\n        ^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\nAssertionError: Layer 2 regression source test failed or errored:\nACCEPTANCE_TESTS.layer2.stage_b.test_deterministic_capability_acceptance.DeterministicCapabilityAcceptanceTest.test_l2_b02_git_evidence_script\nTraceback (most recent call last):\n  File "C:\\Users\\Xenia_Woo\\.codex\\worktrees\\runtime-skill-alignment\\Project Incubator Skill\\ACCEPTANCE_TESTS\\layer2\\stage_b\\test_deterministic_capability_acceptance.py", line 481, in test_l2_b02_git_evidence_script\n    repository = self._create_git_repository(workspace)\n  File "C:\\Users\\Xenia_Woo\\.codex\\worktrees\\runtime-skill-alignment\\Project Incubator Skill\\ACCEPTANCE_TESTS\\layer2\\stage_b\\test_deterministic_capability_acceptance.py", line 113, in _create_git_repository\n    self.assertEqual(0, self._run_git(repository, "add", "tracked.txt").returncode)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0 != 128\n\n\n----------------------------------------------------------------------\nRan 3 tests in 1.589s\n\nFAILED (failures=1)\n'] is not false : C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\layer2\stage_b\test_deterministic_capability_acceptance.py:
+
+.F...
+======================================================================
+FAIL: test_l2_b02_git_evidence_script (__main__.DeterministicCapabilityAcceptanceTest.test_l2_b02_git_evidence_script)
+Test Case:
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\layer2\stage_b\test_deterministic_capability_acceptance.py", line 481, in test_l2_b02_git_evidence_script
+    repository = self._create_git_repository(workspace)
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\layer2\stage_b\test_deterministic_capability_acceptance.py", line 113, in _create_git_repository
+    self.assertEqual(0, self._run_git(repository, "add", "tracked.txt").returncode)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 128
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.542s
+
+FAILED (failures=1)
+
+C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\layer2\stage_e\test_final_regression_package_isolation.py:
+
+F..
+======================================================================
+FAIL: test_l2_e01_layer2_regression (__main__.FinalRegressionPackageIsolationAcceptanceTest.test_l2_e01_layer2_regression)
+Test Case:
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\layer2\stage_e\test_final_regression_package_isolation.py", line 367, in test_l2_e01_layer2_regression
+    self._run_regression_suite(suite)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\layer2\stage_e\test_final_regression_package_isolation.py", line 114, in _run_regression_suite
+    self.fail(
+    ~~~~~~~~~^
+        "Layer 2 regression source test failed or errored:\n"
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        + "\n".join(details),
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+AssertionError: Layer 2 regression source test failed or errored:
+ACCEPTANCE_TESTS.layer2.stage_b.test_deterministic_capability_acceptance.DeterministicCapabilityAcceptanceTest.test_l2_b02_git_evidence_script
+Traceback (most recent call last):
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\layer2\stage_b\test_deterministic_capability_acceptance.py", line 481, in test_l2_b02_git_evidence_script
+    repository = self._create_git_repository(workspace)
+  File "C:\Users\Xenia_Woo\.codex\worktrees\runtime-skill-alignment\Project Incubator Skill\ACCEPTANCE_TESTS\layer2\stage_b\test_deterministic_capability_acceptance.py", line 113, in _create_git_repository
+    self.assertEqual(0, self._run_git(repository, "add", "tracked.txt").returncode)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 128
+
+
+----------------------------------------------------------------------
+Ran 3 tests in 1.589s
+
+FAILED (failures=1)
+
+
+----------------------------------------------------------------------
+Ran 8 tests in 33.779s
+
+FAILED (failures=2)

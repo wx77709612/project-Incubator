@@ -155,5 +155,15 @@ class RcSkillBuilderTests(unittest.TestCase):
         self.assertIn("Invocation Policy: explicit-only", profile_template)
 
 
+
+    def test_explicit_rc_distribution_has_consistent_legacy_guidance(self):
+        result = self._build("legacy_guidance")
+        for relative in ("AGENTS.md", "README.md"):
+            content = (result.skill_root / "PROJECT_INCUBATOR" / relative).read_text(encoding="utf-8")
+            self.assertNotIn("project-incubator-router", content, relative)
+            self.assertNotIn("inspect_project", content, relative)
+            self.assertIn("PROJECT_STATE.md", content, relative)
+            self.assertIn("Legacy", content, relative)
+
 if __name__ == "__main__":
     unittest.main()

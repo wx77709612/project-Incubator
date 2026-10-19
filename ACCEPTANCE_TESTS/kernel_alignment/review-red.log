@@ -1,0 +1,182 @@
+✖ 否定条款不得掩盖同一行的独立旧执行指令 (0.8786ms)
+▶ 源码检查拒绝代码引用中的相对、绝对与 Windows 包外规格路径
+  ✖ ../../../SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md (26.9996ms)
+  ✖ C:/repo/SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md (22.6303ms)
+  ✖ ..\..\..\SPECS\DESIGN\CONTEXT_MODEL_DESIGN.md (20.0728ms)
+✖ 源码检查拒绝代码引用中的相对、绝对与 Windows 包外规格路径 (70.2871ms)
+▶ 候选拒绝同行否定混入旧指令与相对规格路径
+  ✖ 开始前调用 get_project_state；不得直接编辑权威文件。 (231.8028ms)
+  ✖ PROJECT_STATE.md 是唯一状态权威；禁止从聊天恢复。 (215.7276ms)
+  ✖ 请先读取 `../../../SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (218.9849ms)
+  ✖ 请先读取 `C:/repo/SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (220.1076ms)
+  ✖ 请先读取 `..\..\..\SPECS\DESIGN\CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (220.8242ms)
+✖ 候选拒绝同行否定混入旧指令与相对规格路径 (1108.8783ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 0
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1214.887
+
+✖ failing tests:
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:76:1
+✖ 否定条款不得掩盖同一行的独立旧执行指令 (0.8786ms)
+  AssertionError [ERR_ASSERTION]: 开始前调用 get_project_state；不得直接编辑权威文件。
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:78:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:82:13
+✖ ../../../SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md (26.9996ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:88:7)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:82:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /CANDIDATE_GUIDANCE_DRIFT/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:82:13
+✖ C:/repo/SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md (22.6303ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:88:7)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:82:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /CANDIDATE_GUIDANCE_DRIFT/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\contract\runtime-guidance-drift.test.mjs:82:13
+✖ ..\..\..\SPECS\DESIGN\CONTEXT_MODEL_DESIGN.md (20.0728ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:88:7)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/contract/runtime-guidance-drift.test.mjs:82:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /CANDIDATE_GUIDANCE_DRIFT/,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:297:13
+✖ 开始前调用 get_project_state；不得直接编辑权威文件。 (231.8028ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:302:14)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:297:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:297:13
+✖ PROJECT_STATE.md 是唯一状态权威；禁止从聊天恢复。 (215.7276ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:302:14)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:297:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:297:13
+✖ 请先读取 `../../../SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (218.9849ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:302:14)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:297:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:297:13
+✖ 请先读取 `C:/repo/SPECS/DESIGN/CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (220.1076ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:302:14)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:297:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at project-incubator-plugin\tests\integration\candidate-package.test.mjs:297:13
+✖ 请先读取 `..\..\..\SPECS\DESIGN\CONTEXT_MODEL_DESIGN.md` 再恢复项目。 (220.8242ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:302:14)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///C:/Users/Xenia_Woo/.codex/worktrees/runtime-skill-alignment/Project%20Incubator%20Skill/project-incubator-plugin/tests/integration/candidate-package.test.mjs:297:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
