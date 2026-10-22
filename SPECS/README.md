@@ -25,6 +25,13 @@
 
 这些提案用于 Project Incubator Plugin 的版本化迭代，不改变 V1.1 RC 的人工验收状态。Desktop 提案已获批准并实施；Web Product Architecture、Project Type Design、Contract 与 Runtime Specification 已获 Maker 书面批准，两份 Web Plan 已于 2026-10-14 获批，Web 实现已授权；Kernel 对齐范围已于 2026-10-19 获批。
 
+## 待审阅的 Codex 项目级协作入口变更
+
+| Layer | Document | Status | 说明 |
+| --- | --- | --- | --- |
+| Architecture | [Codex 项目级 AGENTS 初始化提案](ARCHITECTURE/CODEX_PROJECT_AGENT_ENTRY_CHANGE_PROPOSAL.md) | DRAFT / MAKER REVIEW REQUIRED | 补齐 0.3 Plugin 初始化的非权威 Codex 协作入口；不授权实现 |
+| Architecture | [事实与影响分析](ARCHITECTURE/CODEX_PROJECT_AGENT_ENTRY_IMPACT_ANALYSIS.md) | DRAFT / AUDIT EVIDENCE | 记录旧版能力与现行迁移缺口、受影响层级和风险 |
+
 ## 当前文档状态
 
 | Layer | Document | Status | 说明 |
