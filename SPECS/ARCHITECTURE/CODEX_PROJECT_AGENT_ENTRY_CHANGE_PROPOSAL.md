@@ -6,7 +6,7 @@
 
 Plugin 0.3.x 已将 `.project-incubator/activation.json`、`state.json`、`latest-receipt.json` 确立为唯一权威集合，`project-incubator-router` 是唯一现行入口。这些决定继续有效。当前 `initialize_project` 只创建三个 JSON；项目根目录缺少 Codex 原生 `AGENTS.md`，后续任务不会自动获得项目协作入口及默认中文规则。
 
-旧版曾分别提供 Skill Package 内的 `PROJECT_INCUBATOR/AGENTS.md` 和面向 Managed Project 的 `AGENTS.template.md` / `BOOTSTRAP_HOST_INTEGRATION`。两者职责不同。Kernel 对齐正确淘汰了依赖旧 Python Runtime、四份 Markdown Core Context 和旧 Skill 的执行路径，却没有把“新项目获得项目级 Codex 入口”迁移到现行初始化契约。旧 Feature 001 在活动层仍标为 `NOT_IMPLEMENTED` 且限定为 Legacy 语义，不得直接作为 Plugin 0.3.x 实现依据。
+旧版曾分别提供 Skill Package 内的 `PROJECT_INCUBATOR/AGENTS.md` 和面向 Managed Project 的 `AGENTS.template.md` / `BOOTSTRAP_HOST_INTEGRATION`。两者职责不同。Kernel 对齐正确淘汰了依赖旧 Python Runtime、四份 Markdown Core Context 和旧 Skill 的执行路径，却没有把“旧实现退役”和“宿主入口能力是否保留”拆开决策，也没有把“新项目获得项目级 Codex 入口”迁移到初始化契约。旧 Feature 001 在活动层仍标为 `NOT_IMPLEMENTED` 且限定为 Legacy 语义，不得直接作为 Plugin 0.3.x 实现依据。具体审查失误见[影响分析](CODEX_PROJECT_AGENT_ENTRY_IMPACT_ANALYSIS.md#11-为什么设计审查会漏掉它)。
 
 目标：使用当前 Codex Plugin 成功初始化一个根目录尚无 `AGENTS.md` 的 Managed Project 时，项目根目录必须存在经过回读验证的 `AGENTS.md`。它仅指导后续 Agent 使用 Router/Kernel，不成为第四份权威状态文件。既有 `AGENTS.md` 不覆盖、不自动追加。
 
