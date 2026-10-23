@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
 import { realpathSync, writeSync } from "node:fs";
-import { lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm } from "node:fs/promises";
+import { lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from "node:fs/promises";
 import { createRequire, isBuiltin, registerHooks } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const allowedRoots = new Set([
-  ".codex-plugin", ".mcp.json", "hooks", "profiles", "scripts", "skills", "src",
+  ".codex-plugin", ".mcp.json", "hooks", "profiles", "scripts", "skills", "src", "templates",
   "package.json", "package-lock.json", "CANDIDATE.json", "node_modules",
 ]);
 const auditPrefix = "\x1ePROJECT_INCUBATOR_CANDIDATE_AUDIT ";
@@ -110,7 +110,17 @@ async function structure(root) {
   const definition = mcp.mcpServers?.project_incubator;
   check(definition?.command === "node" && definition.cwd === ".", "CANDIDATE_ENTRY_INVALID");
   assert.deepEqual(definition.args, ["./src/server.mjs"]);
-  for (const name of ["src/server.mjs", "src/kernel/registry.mjs", "hooks/hooks.json", "hooks/user-prompt-submit.mjs", "scripts/verify-candidate.mjs"]) await reference(root, name);
+  for (const name of [
+    "src/server.mjs",
+    "src/kernel/registry.mjs",
+    "src/kernel/agent-entry.mjs",
+    "src/kernel/maintenance-requests.mjs",
+    "src/kernel/authority-recovery.mjs",
+    "templates/codex/AGENTS.md",
+    "hooks/hooks.json",
+    "hooks/user-prompt-submit.mjs",
+    "scripts/verify-candidate.mjs",
+  ]) await reference(root, name);
   const guidance = await import(pathToFileURL(await reference(root, "scripts/runtime-guidance.mjs")).href);
   await guidance.validateRuntimeGuidance(root);
   const registry = await json(root, "profiles/registry.json");
@@ -234,7 +244,62 @@ async function full(root, managedRoot) {
     check(readback.state.schema_version === "1.1" && readback.state.decisions.active[0].authorization_ref === initialized.receipt.authorization_ref.authorization_id, "CANDIDATE_READBACK_INVALID");
     const receipt = await call("verify_receipt", { project_root: managedRoot, receipt_id: initialized.receipt.receipt_id });
     check(receipt.verified === true, "CANDIDATE_RECEIPT_INVALID");
-    outcome = { mcp_server_version: version, mod_route: mod, desktop_route: desktop, web_route: web, host_forbidden_verified: true, activation: readback.activation, receipt_verified: true };
+    check(initialized.agent_entry?.status === "CREATED", "CANDIDATE_AGENT_ENTRY_CREATE_FAILED");
+    check((await readFile(path.join(managedRoot, "AGENTS.md"), "utf8")).includes("project-incubator-router"), "CANDIDATE_AGENT_ENTRY_READBACK_FAILED");
+
+    await rm(path.join(managedRoot, "AGENTS.md"));
+    const repairSession = "candidate-agent-entry-repair";
+    const repairTurn = "agent-entry-repair";
+    const repair = await call("prepare_agent_entry", { project_root: managedRoot, session_id: repairSession });
+    check(repair.agent_entry?.status === "MISSING", "CANDIDATE_AGENT_ENTRY_REPAIR_NOT_PREPARED");
+    await handleUserPromptSubmit({
+      cwd: managedRoot, session_id: repairSession, turn_id: repairTurn, timestamp,
+      prompt: `我明确批准请求 request_id=${repair.request_id}，scope_digest=${repair.scope_digest}`,
+    }, { runtimeDataRoot: path.join(pluginData, "runtime-events"), now: new Date(timestamp) });
+    const repaired = await call("install_agent_entry", {
+      project_root: managedRoot, request_id: repair.request_id, scope_digest: repair.scope_digest,
+      session_id: repairSession, turn_id: repairTurn,
+    });
+    check(repaired.agent_entry?.status === "CREATED", "CANDIDATE_AGENT_ENTRY_REPAIR_FAILED");
+    check((await readFile(path.join(managedRoot, "AGENTS.md"), "utf8")).includes("project-incubator-router"), "CANDIDATE_AGENT_ENTRY_REPAIR_READBACK_FAILED");
+
+    const receiptPath = path.join(managedRoot, ".project-incubator", "latest-receipt.json");
+    const damagedReceipt = JSON.parse(await readFile(receiptPath, "utf8"));
+    damagedReceipt.new_state_hash = "0".repeat(64);
+    await writeFile(receiptPath, `${JSON.stringify(damagedReceipt)}\n`, "utf8");
+    const recoverySession = "candidate-authority-recovery";
+    const recoveryTurn = "authority-recovery";
+    const recovery = await call("prepare_authority_recovery", {
+      project_root: managedRoot, session_id: recoverySession,
+      summary: "候选包外部验证：恢复损坏的 Receipt。",
+      proposed_activation: readback.activation,
+      proposed_state: { ...readback.state, revision: readback.state.revision + 1 },
+    });
+    check(recovery.proposed_revision === 1, "CANDIDATE_AUTHORITY_RECOVERY_NOT_PREPARED");
+    await handleUserPromptSubmit({
+      cwd: managedRoot, session_id: recoverySession, turn_id: recoveryTurn, timestamp,
+      prompt: `我明确批准恢复请求 request_id=${recovery.request_id}，scope_digest=${recovery.scope_digest}`,
+    }, { runtimeDataRoot: path.join(pluginData, "runtime-events"), now: new Date(timestamp) });
+    const recovered = await call("recover_project_authority", {
+      project_root: managedRoot, request_id: recovery.request_id, scope_digest: recovery.scope_digest,
+      session_id: recoverySession, turn_id: recoveryTurn,
+    });
+    check(recovered.recovery?.baseline === "CONTINUED" && recovered.receipt?.new_revision === 1, "CANDIDATE_AUTHORITY_RECOVERY_FAILED");
+    const recoveredReceipt = await call("verify_receipt", { project_root: managedRoot, receipt_id: recovered.receipt.receipt_id });
+    check(recoveredReceipt.verified === true, "CANDIDATE_AUTHORITY_RECOVERY_RECEIPT_INVALID");
+    outcome = {
+      mcp_server_version: version,
+      mod_route: mod,
+      desktop_route: desktop,
+      web_route: web,
+      host_forbidden_verified: true,
+      activation: readback.activation,
+      receipt_verified: true,
+      agent_entry_created: true,
+      agent_entry_repair_verified: true,
+      authority_recovery_verified: true,
+      recovery_revision: recovered.receipt.new_revision,
+    };
     } finally {
       await client.close();
       await transport.close();

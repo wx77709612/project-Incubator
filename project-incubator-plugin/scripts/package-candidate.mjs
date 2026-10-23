@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const pluginRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const destination = path.resolve(process.argv[2] ?? path.join(pluginRoot, "dist", "project-incubator-plugin"));
 const entries = [
-  ".codex-plugin", ".mcp.json", "hooks", "profiles", "scripts", "skills", "src",
+  ".codex-plugin", ".mcp.json", "hooks", "profiles", "scripts", "skills", "src", "templates",
   "package.json", "package-lock.json",
 ];
 await rm(destination, { recursive: true, force: true });

@@ -39,10 +39,23 @@ export async function validateRuntimeGuidance(root) {
       if (!source.includes(term)) violations.push(`${relative}:MISSING_${term}`);
     }
   }
+  const agentEntryRelative = "templates/codex/AGENTS.md";
+  let agentEntry;
+  try { agentEntry = await readFile(path.join(root, agentEntryRelative), "utf8"); }
+  catch (error) {
+    if (error.code !== "ENOENT") throw error;
+    violations.push(`${agentEntryRelative}:MISSING`);
+  }
+  if (agentEntry !== undefined) {
+    if (obsoleteInstructions(agentEntry).length) violations.push(`${agentEntryRelative}:OBSOLETE_INSTRUCTION`);
+    for (const term of ["project-incubator-router", "inspect_project", "activation.json", "state.json", "latest-receipt.json", "Maker", "Kernel", "简体中文"]) {
+      if (!agentEntry.includes(term)) violations.push(`${agentEntryRelative}:MISSING_${term}`);
+    }
+  }
   if (violations.length) {
     const error = new Error("CANDIDATE_GUIDANCE_DRIFT");
     error.violations = violations;
     throw error;
   }
-  return { files_checked: files.length };
+  return { files_checked: files.length + 1 };
 }

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { execFile, spawnSync } from "node:child_process";
-import { cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -54,8 +54,62 @@ test("候选结构模式从仓库外目录输出固定 JSON 和可独立重算�
   await mkdir(path.join(root, "node_modules"));
   await writeFile(path.join(root, "node_modules/ignored.txt"), "依赖不进入聚合哈希");
   assert.equal(verify(root).json.candidate_hash, result.json.candidate_hash);
+  const templatePath = path.join(root, "templates/codex/AGENTS.md");
+  const template = await readFile(templatePath, "utf8");
+  await writeFile(templatePath, `${template}\n模板哈希变化\n`);
+  assert.notEqual(verify(root).json.candidate_hash, result.json.candidate_hash);
+  await writeFile(templatePath, template);
   await writeFile(path.join(root, "skills/web-product-incubator/SKILL.md"), `${await readFile(path.join(root, "skills/web-product-incubator/SKILL.md"), "utf8")}\n变更内容\n`);
   assert.notEqual(verify(root).json.candidate_hash, result.json.candidate_hash);
+});
+
+test("候选包含 Agent Entry 模板和全部恢复 Kernel 模块", async (t) => {
+  const { root } = await candidate(t);
+  for (const name of [
+    "templates/codex/AGENTS.md",
+    "src/kernel/agent-entry.mjs",
+    "src/kernel/maintenance-requests.mjs",
+    "src/kernel/authority-recovery.mjs",
+  ]) {
+    assert.ok((await readFile(path.join(root, name))).length > 0, name);
+  }
+  assert.equal(verify(root).status, 0);
+});
+
+test("候选缺少 Agent Entry 模板或恢复模块时失败关闭", async (t) => {
+  for (const name of [
+    "templates/codex/AGENTS.md",
+    "src/kernel/agent-entry.mjs",
+    "src/kernel/maintenance-requests.mjs",
+    "src/kernel/authority-recovery.mjs",
+  ]) {
+    await t.test(name, async (t) => {
+      const { root } = await candidate(t);
+      await rm(path.join(root, name));
+      const result = verify(root);
+      assert.equal(result.status, 1);
+      assert.ok(result.json?.error, result.stderr);
+    });
+  }
+});
+
+test("候选拒绝链接模板和重新引入旧运行指令的模板", async (t) => {
+  const linked = await candidate(t);
+  const templatePath = path.join(linked.root, "templates/codex/AGENTS.md");
+  const outside = path.join(path.dirname(linked.root), "outside-agents.md");
+  await writeFile(outside, "外部模板");
+  await rm(templatePath);
+  await symlink(outside, templatePath, "file");
+  let result = verify(linked.root);
+  assert.equal(result.status, 1);
+  assert.equal(result.json?.error?.code, "CANDIDATE_REFERENCE_ESCAPE");
+
+  const legacy = await candidate(t);
+  const legacyPath = path.join(legacy.root, "templates/codex/AGENTS.md");
+  await writeFile(legacyPath, `${await readFile(legacyPath, "utf8")}\n开始前调用 get_project_state。\n`);
+  result = verify(legacy.root);
+  assert.equal(result.status, 1);
+  assert.equal(result.json?.error?.code, "CANDIDATE_GUIDANCE_DRIFT");
 });
 
 test("候选缺少 Web Profile、Skill、Workflow 或必要入口时失败关闭且不读取源码副本", async (t) => {
@@ -243,7 +297,7 @@ test("同一 Candidate 的并发 Full 使用独立子进程审计且忽略外来
   assert.equal(await readFile(path.join(foreignRoot, "sentinel.txt"), "utf8"), "外来共享目录不得被审计或清理");
 });
 
-test("完整模式通过真实 stdio MCP 验证三种 Route、Host Forbidden、Web Activation 和 Receipt", async (t) => {
+test("完整模式通过真实 stdio MCP 验证路由、激活、Agent Entry 修复和权威恢复", async (t) => {
   const { root, managed } = await candidate(t);
   // 仓库内测试只复制已安装依赖，避免网络服务；Stage G 另行执行全新 npm ci。
   await cp(path.join(pluginRoot, "node_modules"), path.join(root, "node_modules"), { recursive: true });
@@ -259,7 +313,12 @@ test("完整模式通过真实 stdio MCP 验证三种 Route、Host Forbidden、W
   assert.equal(full.json.host_forbidden_verified, true);
   assert.equal(full.json.activation.plugin_version, "0.3.0");
   assert.equal(full.json.receipt_verified, true);
+  assert.equal(full.json.agent_entry_created, true);
+  assert.equal(full.json.agent_entry_repair_verified, true);
+  assert.equal(full.json.authority_recovery_verified, true);
+  assert.equal(full.json.recovery_revision, 1);
   assert.equal(full.json.source_fallback_detected, false);
+  assert.match(await readFile(path.join(managed, "AGENTS.md"), "utf8"), /project-incubator-router/u);
   const activation = JSON.parse(await readFile(path.join(managed, ".project-incubator/activation.json"), "utf8"));
   assert.deepEqual(full.json.activation, activation);
 });

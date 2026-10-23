@@ -194,11 +194,11 @@ export async function createKernelService(options = {}) {
     throw new Error("PLUGIN_PACKAGE_VERSION_INVALID");
   }
   const pluginVersion = packageMetadata.version;
-  const agentEntryTemplate = await loadAgentEntryTemplate(pluginRoot);
   const runtimeDataRoot = options.runtimeDataRoot
     ?? resolveRuntimeDataRoot(options.env ?? process.env, pluginRoot);
   const registry = await loadRegistry(pluginRoot);
   const workflowEvaluators = await loadWorkflowEvaluators(pluginRoot, registry);
+  const agentEntryTemplate = await loadAgentEntryTemplate(pluginRoot);
   const diagnoseAuthorityRuntime = options.diagnoseAuthority ?? diagnoseAuthority;
 
   const handlers = {

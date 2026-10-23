@@ -58,6 +58,11 @@ test("分发 AGENTS 统一 Router/Kernel，模板逐份分类为非现行", asyn
     assert.match(source, /inspect_project/u);
     assert.deepEqual(obsoleteInstructions(source), [], relative);
   }
+  const currentTemplate = await read("project-incubator-plugin/templates/codex/AGENTS.md");
+  assert.match(currentTemplate, /project-incubator-router/u);
+  assert.match(currentTemplate, /inspect_project/u);
+  assert.match(currentTemplate, /简体中文/u);
+  assert.deepEqual(obsoleteInstructions(currentTemplate), []);
   for (const directory of ["context", "artifacts"]) {
     for (const name of await markdownFiles(path.join(repository, "PROJECT_INCUBATOR/templates", directory))) {
       assert.match(await readFile(name, "utf8"), /Legacy.*非现行/u, name);
