@@ -73,6 +73,15 @@ test("源码 Skill 使用与候选包相同的完整漂移检查", async () => {
   assert.ok((await validateRuntimeGuidance(plugin)).files_checked >= 7);
 });
 
+test("Router 将权威读取失败转向显式恢复请求而不是聊天补全", async () => {
+  const source = await read("project-incubator-plugin/skills/project-incubator-router/SKILL.md");
+  assert.match(source, /prepare_authority_recovery/u);
+  assert.match(source, /recover_project_authority/u);
+  assert.match(source, /逐文件.*MISSING.*VALID.*INVALID/su);
+  assert.match(source, /不得.*聊天.*生成|不得.*聊天.*补全/su);
+  assert.match(source, /request_id.*scope_digest/su);
+});
+
 test("否定条款不得掩盖同一行的独立旧执行指令", () => {
   for (const text of ["开始前调用 get_project_state；不得直接编辑权威文件。", "PROJECT_STATE.md 是唯一状态权威；禁止从聊天恢复。", "禁止从聊天恢复，开始前调用 get_project_state。", "请读取历史资料，然后执行 BOOTSTRAP_HOST_INTEGRATION。"])
     assert.ok(obsoleteInstructions(text).length > 0, text);

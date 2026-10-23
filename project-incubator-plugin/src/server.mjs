@@ -15,6 +15,11 @@ import {
   rollbackAgentEntry,
 } from "./kernel/agent-entry.mjs";
 import {
+  diagnoseAuthority,
+  normalizeRecoveryCandidate,
+  recoverProjectAuthority,
+} from "./kernel/authority-recovery.mjs";
+import {
   authorizePreparedChange,
   authorizePreparedDecline,
   prepareChange,
@@ -63,7 +68,12 @@ function success(value) {
 }
 
 function failure(error) {
-  const value = { error: { code: stableCode(error), message: String(error?.message ?? error) } };
+  const details = Array.isArray(error?.residual_paths)
+    ? { residual_paths: error.residual_paths }
+    : {};
+  const value = {
+    error: { code: stableCode(error), message: String(error?.message ?? error), ...details },
+  };
   return {
     isError: true,
     content: [{ type: "text", text: JSON.stringify(value) }],
@@ -112,6 +122,30 @@ function validateWorkflowEntry(initialState, evaluator) {
   if (!evaluation.allowed) throw new Error(evaluation.code);
   assertWorkflowShape(initialState.workflow, evaluation.workflow);
   return evaluation;
+}
+
+function validateRecoveryWorkflow(state, evaluator) {
+  if (typeof evaluator?.evaluateEntry !== "function"
+    || typeof evaluator?.evaluateTransition !== "function") {
+    throw new Error("WORKFLOW_EVALUATOR_NOT_FOUND");
+  }
+  if (state.schema_version === "1.1") {
+    const entryState = structuredClone(state);
+    entryState.workflow.stage = entryState.workflow.entry.initial_stage;
+    const entryEvaluation = evaluator.evaluateEntry(entryState);
+    if (!entryEvaluation.allowed) throw new Error(entryEvaluation.code);
+  }
+  for (const targetStage of state.workflow.allowed_next) {
+    const evaluation = evaluator.evaluateTransition(state, {
+      target_stage: targetStage,
+      completion_satisfied: true,
+      model_invalidated: true,
+      model_updated: true,
+      maker_authorized: true,
+      changes_boundary: false,
+    });
+    if (!evaluation.allowed) throw new Error("WORKFLOW_ALLOWED_NEXT_MISMATCH");
+  }
 }
 
 function assertWorkflowEntryImmutable(currentState, proposedState) {
@@ -165,6 +199,7 @@ export async function createKernelService(options = {}) {
     ?? resolveRuntimeDataRoot(options.env ?? process.env, pluginRoot);
   const registry = await loadRegistry(pluginRoot);
   const workflowEvaluators = await loadWorkflowEvaluators(pluginRoot, registry);
+  const diagnoseAuthorityRuntime = options.diagnoseAuthority ?? diagnoseAuthority;
 
   const handlers = {
     async propose_route(args) {
@@ -339,6 +374,91 @@ export async function createKernelService(options = {}) {
         throw error;
       }
       return { event: "AGENT_ENTRY_INSTALLED", agent_entry: created.result };
+    },
+
+    async prepare_authority_recovery(args, context) {
+      const diagnostics = await diagnoseAuthorityRuntime(args.project_root);
+      if (diagnostics.snapshot_valid) throw new Error("AUTHORITY_RECOVERY_NOT_REQUIRED");
+      const proposedState = parseProjectState(args.proposed_state);
+      if (proposedState.pending_requests.length !== 0) {
+        throw new Error("RECOVERY_CANDIDATE_INVALID");
+      }
+      const candidate = normalizeRecoveryCandidate(
+        diagnostics, args.proposed_activation, proposedState, context.now ?? new Date(),
+      );
+      const route = resolveRoute(
+        registry,
+        candidate.activation.project_type_id,
+        candidate.activation.host_profile_id ?? null,
+      );
+      if (candidate.activation.plugin_id !== "project-incubator-plugin"
+        || candidate.activation.plugin_version !== pluginVersion
+        || candidate.activation.status !== "ACTIVE"
+        || candidate.activation.child_skill_id !== route.child_skill_id) {
+        throw new Error("ACTIVATION_ROUTE_MISMATCH");
+      }
+      validateRecoveryWorkflow(candidate.state, workflowEvaluators.get(route.project_type_id));
+      const request = await prepareMaintenanceRequest({
+        runtimeDataRoot,
+        projectRoot: args.project_root,
+        projectId: candidate.activation.project_id,
+        sessionId: args.session_id,
+        operation: "AUTHORITY_RECOVERY",
+        requestPrefix: "recovery",
+        payload: {
+          summary: args.summary,
+          authority_diagnostics: diagnostics.items,
+          fingerprints: diagnostics.fingerprints,
+          candidate,
+        },
+        now: context.now ?? new Date(),
+      });
+      return {
+        event: "AUTHORITY_RECOVERY_PREPARED",
+        request_id: request.request_id,
+        scope_digest: request.scope_digest,
+        authority_diagnostics: diagnostics.items,
+        proposed_revision: candidate.state.revision,
+        expires_at: request.expires_at,
+      };
+    },
+
+    async recover_project_authority(args, context) {
+      const now = context.now ?? new Date();
+      const request = await getMaintenanceRequest({
+        runtimeDataRoot,
+        projectRoot: args.project_root,
+        requestId: args.request_id,
+        scopeDigest: args.scope_digest,
+        sessionId: args.session_id,
+        operation: "AUTHORITY_RECOVERY",
+        now,
+      });
+      const currentDiagnostics = await diagnoseAuthorityRuntime(request.project_root);
+      if (!sameValues(currentDiagnostics.fingerprints, request.payload.fingerprints)) {
+        throw new Error("RECOVERY_SOURCE_CHANGED");
+      }
+      const promptRef = await findPromptRef(runtimeDataRoot, {
+        project_id: request.project_id,
+        session_id: args.session_id,
+        turn_id: args.turn_id,
+      });
+      const authorizationRef = await authorizePreparedChange({
+        request_id: request.request_id,
+        scope_digest: request.scope_digest,
+        project_id: request.project_id,
+        session_id: args.session_id,
+        turn_id: args.turn_id,
+        requires_authorization: true,
+      }, promptRef, { now });
+      const recovered = await recoverProjectAuthority(
+        request.project_root,
+        request.payload.candidate,
+        request.payload.fingerprints,
+        authorizationRef,
+      );
+      await consumeMaintenanceRequest(request);
+      return recovered;
     },
 
     async prepare_change(args, context) {
@@ -525,6 +645,14 @@ export async function createMcpServer(options = {}) {
       project_root: z.string(), session_id: z.string(),
     },
     install_agent_entry: {
+      project_root: z.string(), request_id: z.string(), scope_digest: z.string(),
+      session_id: z.string(), turn_id: z.string(),
+    },
+    prepare_authority_recovery: {
+      project_root: z.string(), session_id: z.string(), summary: z.string(),
+      proposed_activation: z.record(z.unknown()), proposed_state: z.record(z.unknown()),
+    },
+    recover_project_authority: {
       project_root: z.string(), request_id: z.string(), scope_digest: z.string(),
       session_id: z.string(), turn_id: z.string(),
     },

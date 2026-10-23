@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { hashJson } from "./canonical-json.mjs";
@@ -25,8 +25,13 @@ function requestCodes(operation) {
   return { notFound: "MAINTENANCE_REQUEST_NOT_FOUND", expired: "MAINTENANCE_REQUEST_EXPIRED" };
 }
 
-function scopeFor({ operation, project_root, session_id, payload }) {
-  return { operation, project_root, session_id, payload };
+function scopeFor({ operation, project_root, project_id, session_id, payload }) {
+  return { operation, project_root, project_id: project_id ?? null, session_id, payload };
+}
+
+function within(candidate, root) {
+  const relative = path.relative(root, candidate);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
 }
 
 function parseRequest(raw) {
@@ -59,6 +64,7 @@ export async function prepareMaintenanceRequest({
   operation,
   requestPrefix,
   payload,
+  projectId = null,
   now = new Date(),
 }) {
   if (typeof sessionId !== "string" || sessionId.length === 0
@@ -72,6 +78,7 @@ export async function prepareMaintenanceRequest({
   const base = {
     operation,
     project_root: projectRootCanonical,
+    project_id: projectId,
     session_id: sessionId,
     payload: structuredClone(payload),
   };
@@ -126,6 +133,45 @@ export async function getMaintenanceRequest({
 
 export async function consumeMaintenanceRequest(request) {
   await rm(request.file_path);
+}
+
+export async function findPendingMaintenance(
+  runtimeDataRoot, cwd, sessionId, now = new Date(),
+) {
+  let entries;
+  try {
+    entries = await readdir(runtimeDataRoot, { withFileTypes: true });
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
+  const canonicalCwd = await canonicalProjectPath(cwd);
+  const matches = [];
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.startsWith("maintenance-") || !entry.name.endsWith(".json")) {
+      continue;
+    }
+    const filePath = path.join(runtimeDataRoot, entry.name);
+    let request;
+    try {
+      request = parseRequest(await readFile(filePath, "utf8"));
+    } catch {
+      continue;
+    }
+    if (new Date(request.expires_at) <= now) {
+      await rm(filePath, { force: true });
+      continue;
+    }
+    if (request.status === "PENDING"
+      && typeof request.project_id === "string"
+      && request.project_id.length > 0
+      && request.session_id === sessionId
+      && within(canonicalCwd, request.project_root)) {
+      matches.push({ ...request, file_path: filePath });
+    }
+  }
+  matches.sort((left, right) => right.project_root.length - left.project_root.length);
+  return matches[0] ?? null;
 }
 
 export const maintenanceRequestPolicy = Object.freeze({ maxAgeMs: MAX_AGE_MS });

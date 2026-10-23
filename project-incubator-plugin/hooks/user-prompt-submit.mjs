@@ -4,6 +4,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { findActivatedProjectRoot } from "../src/kernel/project-root.mjs";
+import { findPendingMaintenance } from "../src/kernel/maintenance-requests.mjs";
 import { recordBootstrapPrompt, recordMakerPrompt } from "../src/kernel/prompt-events.mjs";
 import { resolveRuntimeDataRoot } from "../src/kernel/runtime-paths.mjs";
 import { findPendingActivation } from "../src/kernel/router.mjs";
@@ -32,12 +33,7 @@ export async function handleUserPromptSubmit(event, options = {}) {
       ? resolveRuntimeDataRoot(runtimeEnv)
       : null);
   const timestamp = event.timestamp ?? new Date().toISOString();
-  if (!root) {
-    if (!runtimeDataRoot) return { continue: true };
-    const pending = await findPendingActivation(
-      runtimeDataRoot, event.cwd ?? ".", event.session_id, options.now ?? new Date(timestamp),
-    );
-    if (!pending) return { continue: true };
+  const capturePending = async (pending) => {
     await recordBootstrapPrompt({
       role: "maker", project_id: pending.project_id, session_id: event.session_id,
       turn_id: event.turn_id, text: event.prompt, captured_at: timestamp,
@@ -51,9 +47,29 @@ export async function handleUserPromptSubmit(event, options = {}) {
       started_at: timestamp,
     });
     return { continue: true };
+  };
+  if (!root) {
+    if (!runtimeDataRoot) return { continue: true };
+    const pending = await findPendingActivation(
+      runtimeDataRoot, event.cwd ?? ".", event.session_id, options.now ?? new Date(timestamp),
+    );
+    if (pending) return capturePending(pending);
+    const maintenance = await findPendingMaintenance(
+      runtimeDataRoot, event.cwd ?? ".", event.session_id, options.now ?? new Date(timestamp),
+    );
+    return maintenance ? capturePending(maintenance) : { continue: true };
   }
-  const snapshot = await readProjectSnapshot(root);
   if (!runtimeDataRoot) throw new Error("RUNTIME_DATA_ROOT_REQUIRED");
+  let snapshot;
+  try {
+    snapshot = await readProjectSnapshot(root);
+  } catch (error) {
+    const maintenance = await findPendingMaintenance(
+      runtimeDataRoot, root, event.session_id, options.now ?? new Date(timestamp),
+    );
+    if (maintenance?.operation === "AUTHORITY_RECOVERY") return capturePending(maintenance);
+    throw error;
+  }
   await recordMakerPrompt({
     activation: snapshot.activation,
     role: "maker",

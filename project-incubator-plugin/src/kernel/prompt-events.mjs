@@ -30,7 +30,7 @@ function extractAuthorizationClaim(text) {
         : "NONE";
   const requestIds = uniqueMatches(
     text,
-    /\b(?:request|activation)-[a-z0-9][a-z0-9-]*\b/giu,
+    /\b(?:request|activation|recovery)-[a-z0-9][a-z0-9-]*\b/giu,
   );
   const scopeDigests = uniqueMatches(text, /\b[a-f0-9]{64}\b/giu, (value) => value.toLowerCase());
   return {

@@ -68,13 +68,24 @@ Maker 询问“项目状态”“当前进度”“下一步做什么”“有�
 - 不默认生成 `PROJECT_OVERVIEW.md`。只有 Maker 当轮明确要求导出项目状态概览时，才调用 `export_project_overview`。
 - 展示顺序遵循 [状态摘要契约](references/status-summary.md)。
 
+## 权威集合恢复
+
+`inspect_project` 或实际状态操作因三个权威 JSON 缺失、残缺、Schema 错误、项目 ID 不一致或 Receipt 无法验证而失败时，先原样报告错误，不依据聊天自动生成或补全状态。只有现有 Artifact、Evidence、可用旧资料和 Maker 已表达事实足以形成完整候选时，才可提出恢复。
+
+1. 调用 `prepare_authority_recovery`，逐文件展示三个固定路径各自的 `MISSING`、`VALID` 或 `INVALID` 状态、可用错误码，以及恢复候选的 revision 基线。
+2. 完整展示 `request_id`、`scope_digest`、恢复摘要和候选范围，并请 Maker 在下一轮明确批准；不得代 Maker 批准。
+3. Maker 明确批准同一请求编号和摘要后，调用 `recover_project_authority`。准备后任何权威文件新增、删除或字节变化都必须返回 `RECOVERY_SOURCE_CHANGED`，不得覆盖。
+4. 只有 Kernel 写入三份权威 JSON、逐项回读并验证新 Receipt 后才报告恢复完成。`CONTINUED` 表示从可解析旧 State 的下一 revision 延续；`REESTABLISHED` 表示以 revision 0 建立新的恢复基线，不代表历史从未存在。
+
+证据不足时只报告缺口并等待 Maker，不得调用准备或提交恢复。恢复不新增阶段、Gate 或 Workflow；旧 Pending Request 不继承，后续需要时按现行流程重新提出。
+
 ## 强制边界
 
 - `ROUTE_PROPOSED` 不是路由已确认。
 - “评估”“看看”“可以考虑”不是批准。
 - 不得从聊天记忆伪造 PromptRef、AuthorizationRef 或 Receipt。
 - 不得直接编辑 `.project-incubator/` 中的任何权威文件。
-- 普通未激活项目不得留下 Prompt 或运行时记录；只有有效 Pending Activation 可以捕获一次对应 Maker 回复。
+- 普通未激活项目不得留下 Prompt 或运行时记录；只有有效 Pending Activation 或 Maker 已看到的 Pending Authority Recovery 可以捕获一次对应回复。
 - 调用 `prepare_activation` 前必须以 Runtime 结果确认项目没有任何权威文件；完整的已初始化项目返回 `PROJECT_ALREADY_INITIALIZED`，只存在部分权威文件时返回 `PROJECT_CONTROL_STATE_INCOMPLETE`。两种情况都不得改写项目或继续生成 Request。
 - `prepare_activation.state` 必须描述激活完成后的 revision 0 状态：当前行动和完成条件不得继续要求授权或初始化，`last_change.operation` 必须为 `INITIALIZE_PROJECT`，且不得包含 `ACTIVATION_DRAFT`、等待激活或尚未激活叙述。
 - 新激活必须使用 State 1.1，并包含不可变的 `workflow.entry`。Entry Stage 与 State Stage、`allowed_next` 和 `return_stage` 必须符合已选 Child Workflow。

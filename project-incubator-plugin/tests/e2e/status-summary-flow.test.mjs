@@ -15,7 +15,11 @@ test("three authority files restore a complete verified status summary", async (
   const activation = { schema_version: "1.0", project_id: "summary-project", plugin_id: "project-incubator-plugin", plugin_version: "0.1.0", status: "ACTIVE", project_type_id: "mod", child_skill_id: "mod-incubator", host_profile_id: "sims-4" };
   const state = { schema_version: "1.0", project_id: "summary-project", revision: 0, boundary: { objective: "恢复摘要", supported: ["状态查询"], excluded: [] }, workflow: { stage: "M1_RISK_MODEL", status: "ACTIVE", completed: ["边界已确认"], allowed_next: ["M2_VERTICAL_SLICE"] }, capabilities: [], decisions: { active: [], archive_ref: null }, assumptions: [], plan: { current_action: "风险评估", next_action: "垂直切片", completion_conditions: ["风险可见"] }, gates: [], risks: [], pending_requests: [], baselines: [], human_validation: { limit: "UNSET", consumed: 0 }, last_change: { operation: "INITIALIZE_PROJECT", changed_at: at, summary: "恢复" }, archive_refs: [] };
   await initializeProjectState(root, activation, state, { authorization_id: "a", request_id: "r", prompt_digest: "c".repeat(64) });
-  const service = await createKernelService({ pluginRoot: path.resolve(import.meta.dirname, "../.."), runtimeDataRoot: runtime });
+  const service = await createKernelService({
+    pluginRoot: path.resolve(import.meta.dirname, "../.."),
+    runtimeDataRoot: runtime,
+    diagnoseAuthority: async () => { throw new Error("NORMAL_QUERY_MUST_NOT_DIAGNOSE_RECOVERY"); },
+  });
   const result = await service.callTool("inspect_project", { project_root: root });
   assert.equal(result.structuredContent.summary.workflow.stage, "M1_RISK_MODEL");
   assert.match(result.structuredContent.markdown, /Receipt：已验证/);
