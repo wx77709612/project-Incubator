@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-状态：DRAFT / MAKER REVIEW REQUIRED；不得据此实施。
+状态：DRAFT / REVISION REQUIRED；本计划只覆盖首次初始化，尚未覆盖中途接入验收、已激活项目逐个补齐、旧版迁移与权威恢复。Maker 已选择分流方案，待新架构提案及下游规格获批后重写；不得据此实施。
 
 **Goal:** Codex Plugin 初始化新 Managed Project 时可靠创建或保护项目级 `AGENTS.md`，并独立报告入口结果与权威 Receipt。
 

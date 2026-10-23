@@ -1,6 +1,6 @@
 # Codex 项目级协作入口运行规范
 
-状态：DRAFT / MAKER REVIEW REQUIRED；上游：[Contract](../CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md)。仅适用于现行 `.codex-plugin` 分发的首次初始化。
+状态：DRAFT / REVISION REQUIRED；当前仅适用于现行 `.codex-plugin` 分发的首次初始化，待[接入与恢复分流提案](../ARCHITECTURE/MANAGED_PROJECT_ENTRY_AND_RECOVERY_CHANGE_PROPOSAL.md)审阅后修订，不得作为完整分流的实现依据。原上游：[Contract](../CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md)。
 
 ## 1. 执行序列
 

@@ -31,12 +31,14 @@
 | --- | --- | --- | --- |
 | Architecture | [Codex 项目级 AGENTS 初始化提案](ARCHITECTURE/CODEX_PROJECT_AGENT_ENTRY_CHANGE_PROPOSAL.md) | APPROVED | Maker 于 2026-10-23 批准非权威 Codex 协作入口初始化方向；不授权实现 |
 | Architecture | [事实与影响分析](ARCHITECTURE/CODEX_PROJECT_AGENT_ENTRY_IMPACT_ANALYSIS.md) | DRAFT / AUDIT EVIDENCE | 记录旧版能力与现行迁移缺口、受影响层级和风险；待单独审阅 |
-| Architecture | [Decision 016](ARCHITECTURE/ARCHITECTURE_DECISIONS.md#decision-016codex-managed-project-初始化协作入口) | PENDING / MAKER REVIEW REQUIRED | 提议补充 Decision 015，不改变三个 JSON 权威集合 |
-| Design | [协作入口设计](DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md) | DRAFT / MAKER REVIEW REQUIRED | 模板职责、入口结果与初始化协调；尚非当前实现依据 |
-| Contract | [初始化契约](CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md) | DRAFT / MAKER REVIEW REQUIRED | 返回 Shape、稳定错误码及既有文件保护；尚非当前实现依据 |
-| Runtime | [运行规范](RUNTIME/CODEX_PROJECT_AGENT_ENTRY_RUNTIME_SPEC.md) | DRAFT / MAKER REVIEW REQUIRED | 排他创建、回读、回滚和分发；尚非当前实现依据 |
-| Implementation | [实施计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md) | DRAFT / MAKER REVIEW REQUIRED | 五项可验证工作包；未授权修改代码 |
-| Acceptance | [验收计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_ACCEPTANCE_TEST_PLAN.md) | DRAFT / MAKER REVIEW REQUIRED | A01–A09 与安装后宿主验收；尚未执行 |
+| Architecture | [接入与恢复分流补充提案](ARCHITECTURE/MANAGED_PROJECT_ENTRY_AND_RECOVERY_CHANGE_PROPOSAL.md) | DRAFT / MAKER REVIEW REQUIRED | Maker 已选择分流并确认四项恢复边界；完整细化条款待审阅，不授权实现 |
+| Architecture | [分流影响分析](ARCHITECTURE/MANAGED_PROJECT_ENTRY_AND_RECOVERY_IMPACT_ANALYSIS.md) | DRAFT / AUDIT EVIDENCE | 首次接入、已激活入口补齐、旧版迁移和权威恢复的跨层影响 |
+| Architecture | [Decision 016](ARCHITECTURE/ARCHITECTURE_DECISIONS.md#decision-016codex-managed-project-初始化协作入口) | PENDING / MAKER REVIEW REQUIRED | 现仅拟覆盖首次初始化；待分流提案审阅后再确认最终适用范围 |
+| Design | [协作入口设计](DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md) | DRAFT / REVISION REQUIRED | 原草稿仅覆盖首次初始化；尚非完整分流的实现依据 |
+| Contract | [初始化契约](CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md) | DRAFT / REVISION REQUIRED | 原草稿仅覆盖首次初始化；尚非完整分流的实现依据 |
+| Runtime | [运行规范](RUNTIME/CODEX_PROJECT_AGENT_ENTRY_RUNTIME_SPEC.md) | DRAFT / REVISION REQUIRED | 原草稿仅覆盖首次初始化；尚非完整分流的实现依据 |
+| Implementation | [实施计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md) | DRAFT / REVISION REQUIRED | 原五项工作包只覆盖首次初始化；分流设计获批后重写，不得实施 |
+| Acceptance | [验收计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_ACCEPTANCE_TEST_PLAN.md) | DRAFT / REVISION REQUIRED | 原 A01–A09 未覆盖完整分流；尚未执行，不得作为实施依据 |
 
 ## 当前文档状态
 

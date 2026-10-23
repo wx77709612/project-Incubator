@@ -1,6 +1,6 @@
 # Codex 项目级协作入口契约
 
-状态：DRAFT / MAKER REVIEW REQUIRED；上游：[Design](../DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md)。只补充 Codex Plugin `initialize_project`，不改变既有 Tool 输入、Maker 授权或三个 JSON Schema。
+状态：DRAFT / REVISION REQUIRED；当前只补充首次初始化，待[接入与恢复分流提案](../ARCHITECTURE/MANAGED_PROJECT_ENTRY_AND_RECOVERY_CHANGE_PROPOSAL.md)审阅后修订，不得作为完整分流的实现依据。原上游：[Design](../DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md)。不改变既有 Maker 授权或三个 JSON Schema。
 
 ## 1. 输入与输出
 

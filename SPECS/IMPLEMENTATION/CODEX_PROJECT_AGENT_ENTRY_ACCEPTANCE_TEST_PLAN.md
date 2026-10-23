@@ -1,6 +1,6 @@
 # Codex 项目级 AGENTS 初始化验收计划
 
-状态：DRAFT / MAKER REVIEW REQUIRED；实施前不得把本计划当作通过证据。上游：[Implementation Plan](CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md)。
+状态：DRAFT / REVISION REQUIRED；仅覆盖首次初始化的原验收草稿，未覆盖完整分流。待新架构提案及下游规格获批后重写；实施前不得把本计划当作通过证据。上游：[Implementation Plan](CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md)。
 
 ## 验收目标与边界
 
