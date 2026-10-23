@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { mkdir, open, readFile, rename, rm } from "node:fs/promises";
 import path from "node:path";
 
@@ -32,8 +32,8 @@ async function readOptional(target) {
   }
 }
 
-async function atomicWrite(target, content, hooks = {}, useHook = true) {
-  if (useHook) hooks.beforeAtomicWrite?.(target, content);
+async function atomicWrite(target, content, hooks = {}, useHook = true, operation = undefined) {
+  if (useHook) hooks.beforeAtomicWrite?.(target, content, operation);
   const temporary = `${target}.${process.pid}.${randomUUID()}.tmp`;
   const handle = await open(temporary, "wx");
   try {
@@ -56,6 +56,33 @@ async function restore(target, previous) {
   } else {
     await atomicWrite(target, previous, {}, false);
   }
+}
+
+async function readOptionalBytes(target) {
+  try {
+    return await readFile(target);
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+function bytesFingerprint(bytes) {
+  return bytes === null
+    ? { exists: false }
+    : { exists: true, sha256: createHash("sha256").update(bytes).digest("hex") };
+}
+
+function authorityFingerprints(values) {
+  return {
+    activation: bytesFingerprint(values[0]),
+    state: bytesFingerprint(values[1]),
+    receipt: bytesFingerprint(values[2]),
+  };
+}
+
+function sameFingerprints(left, right) {
+  return canonicalJson(left) === canonicalJson(right);
 }
 
 async function withProjectQueue(root, operation) {
@@ -229,12 +256,120 @@ export function createStateStore(hooks = {}) {
     });
   }
 
+  async function recoverProjectAuthority(root, candidateInput, expectedFingerprints, authorizationRef) {
+    return withProjectQueue(root, async () => {
+      const files = controlPaths(root);
+      await mkdir(files.control, { recursive: true });
+      const targets = [files.activation, files.state, files.receipt];
+      const relativeTargets = [
+        ".project-incubator/activation.json",
+        ".project-incubator/state.json",
+        ".project-incubator/latest-receipt.json",
+      ];
+      const original = await Promise.all(targets.map((target) => readOptionalBytes(target)));
+      if (!sameFingerprints(authorityFingerprints(original), expectedFingerprints)) {
+        throw new Error("RECOVERY_SOURCE_CHANGED");
+      }
+
+      const activation = parseActivation(candidateInput.activation);
+      const previousState = candidateInput.previous_state === null
+        ? null
+        : parseProjectState(candidateInput.previous_state);
+      const candidateState = parseProjectState(candidateInput.state);
+      const baseline = previousState ? "CONTINUED" : "REESTABLISHED";
+      const expectedRevision = previousState ? previousState.revision + 1 : 0;
+      if (candidateInput.baseline !== baseline || candidateState.revision !== expectedRevision) {
+        throw new Error("RECOVERY_STATE_REVISION_INVALID");
+      }
+      if (activation.project_id !== candidateState.project_id
+        || previousState?.project_id !== undefined
+          && previousState.project_id !== candidateState.project_id) {
+        throw new Error("PROJECT_ID_MISMATCH");
+      }
+      if (candidateState.pending_requests.length !== 0
+        || candidateState.last_change.operation !== "RECOVER_PROJECT_AUTHORITY") {
+        throw new Error("RECOVERY_CANDIDATE_INVALID");
+      }
+
+      const receiptId = `receipt-${randomUUID()}`;
+      const state = parseProjectState({
+        ...candidateState,
+        last_change: { ...candidateState.last_change, receipt_id: receiptId },
+      });
+      const receipt = buildReceipt({
+        projectId: activation.project_id,
+        operation: "RECOVER_PROJECT_AUTHORITY",
+        previousState,
+        nextState: state,
+        authorizationRef,
+        committedAt: state.last_change.changed_at,
+        receiptId,
+      });
+      const nextBytes = [
+        Buffer.from(jsonFile(activation)),
+        Buffer.from(jsonFile(state)),
+        Buffer.from(jsonFile(receipt)),
+      ];
+
+      try {
+        for (let index = 0; index < targets.length; index += 1) {
+          await atomicWrite(targets[index], nextBytes[index], hooks, true, "RECOVERY_WRITE");
+          let readback = await readFile(targets[index]);
+          if (hooks.corruptRecoveryReadback === relativeTargets[index]) {
+            readback = Buffer.concat([readback, Buffer.from(" ")]);
+          }
+          if (!readback.equals(nextBytes[index])) throw new Error("RECOVERY_READBACK_MISMATCH");
+        }
+        const verified = await verifyLatestReceipt(root, receipt.receipt_id);
+        if (!verified.verified) throw new Error(verified.reason);
+        return {
+          activation,
+          receipt,
+          recovery: { baseline },
+        };
+      } catch (cause) {
+        const restoreFailures = new Set();
+        for (let index = 0; index < targets.length; index += 1) {
+          try {
+            hooks.beforeRecoveryRestore?.(targets[index]);
+            if (original[index] === null) {
+              await rm(targets[index], { force: true });
+            } else {
+              await atomicWrite(targets[index], original[index], {}, false, "RECOVERY_ROLLBACK");
+            }
+          } catch {
+            restoreFailures.add(index);
+          }
+        }
+        for (let index = 0; index < targets.length; index += 1) {
+          try {
+            const readback = await readOptionalBytes(targets[index]);
+            const matches = original[index] === null
+              ? readback === null
+              : readback !== null && readback.equals(original[index]);
+            if (matches) restoreFailures.delete(index);
+            else restoreFailures.add(index);
+          } catch {
+            restoreFailures.add(index);
+          }
+        }
+        if (restoreFailures.size === 0) {
+          throw new Error("RECOVERY_WRITE_FAILED", { cause });
+        }
+        const error = new Error("RECOVERY_ROLLBACK_INCOMPLETE", { cause });
+        error.residual_paths = [...restoreFailures].map((index) => relativeTargets[index]);
+        throw error;
+      }
+    });
+  }
+
   return {
     readProjectSnapshot,
     verifyLatestReceipt,
     initializeProjectState,
     initializeProjectWithAgentEntry,
     commitProjectState,
+    recoverProjectAuthority,
   };
 }
 
@@ -244,3 +379,4 @@ export const verifyLatestReceipt = defaultStore.verifyLatestReceipt;
 export const initializeProjectState = defaultStore.initializeProjectState;
 export const initializeProjectWithAgentEntry = defaultStore.initializeProjectWithAgentEntry;
 export const commitProjectState = defaultStore.commitProjectState;
+export const recoverProjectAuthority = defaultStore.recoverProjectAuthority;

@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { loadAgentEntryTemplate } from "../../src/kernel/agent-entry.mjs";
+import { diagnoseAuthority, normalizeRecoveryCandidate } from "../../src/kernel/authority-recovery.mjs";
 import {
   commitProjectState,
   createStateStore,
@@ -162,4 +163,72 @@ test("agent entry creation and authority initialization close as one recoverable
     /injected receipt failure/,
   );
   await assert.rejects(() => readFile(path.join(failingRoot, "AGENTS.md")), /ENOENT/);
+});
+
+test("authority recovery write failure restores original bytes or reports residual paths", async (t) => {
+  const root = await projectRoot(t);
+  await initializeProjectState(root, activation(), state(), authorizationRef);
+  const receiptPath = path.join(root, ".project-incubator", "latest-receipt.json");
+  await writeFile(receiptPath, "{broken-receipt");
+  const diagnostics = await diagnoseAuthority(root);
+  const candidateState = state();
+  candidateState.revision = 1;
+  const candidateActivation = activation();
+  candidateActivation.plugin_version = "0.3.0";
+  const candidate = normalizeRecoveryCandidate(
+    diagnostics, candidateActivation, candidateState, new Date(now),
+  );
+  const targets = ["activation.json", "state.json", "latest-receipt.json"]
+    .map((name) => path.join(root, ".project-incubator", name));
+  const before = await Promise.all(targets.map((target) => readFile(target)));
+
+  const failing = createStateStore({
+    beforeAtomicWrite(target, _content, operation) {
+      if (operation === "RECOVERY_WRITE" && target.endsWith("latest-receipt.json")) {
+        throw new Error("injected recovery failure");
+      }
+    },
+  });
+  await assert.rejects(
+    () => failing.recoverProjectAuthority(
+      root, candidate, diagnostics.fingerprints, authorizationRef,
+    ),
+    /RECOVERY_WRITE_FAILED/,
+  );
+  assert.deepEqual(await Promise.all(targets.map((target) => readFile(target))), before);
+
+  const harmlessRestoreFailure = createStateStore({
+    beforeAtomicWrite(target, _content, operation) {
+      if (operation === "RECOVERY_WRITE" && target.endsWith("latest-receipt.json")) {
+        throw new Error("injected recovery failure");
+      }
+    },
+    beforeRecoveryRestore(target) {
+      if (target.endsWith("latest-receipt.json")) throw new Error("unwritten file restore skipped");
+    },
+  });
+  await assert.rejects(
+    () => harmlessRestoreFailure.recoverProjectAuthority(
+      root, candidate, diagnostics.fingerprints, authorizationRef,
+    ),
+    /RECOVERY_WRITE_FAILED/,
+  );
+
+  const residual = createStateStore({
+    beforeAtomicWrite(target, _content, operation) {
+      if (operation === "RECOVERY_WRITE" && target.endsWith("latest-receipt.json")) {
+        throw new Error("injected recovery failure");
+      }
+    },
+    beforeRecoveryRestore(target) {
+      if (target.endsWith("activation.json")) throw new Error("injected restore failure");
+    },
+  });
+  await assert.rejects(
+    () => residual.recoverProjectAuthority(
+      root, candidate, diagnostics.fingerprints, authorizationRef,
+    ),
+    (error) => error.message === "RECOVERY_ROLLBACK_INCOMPLETE"
+      && error.residual_paths.includes(".project-incubator/activation.json"),
+  );
 });
