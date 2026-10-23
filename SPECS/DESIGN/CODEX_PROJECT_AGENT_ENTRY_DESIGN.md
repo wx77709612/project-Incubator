@@ -1,6 +1,6 @@
 # Codex 协作入口与权威恢复设计
 
-状态：DRAFT / MAKER REVIEW REQUIRED；上游：[Decision 016](../ARCHITECTURE/ARCHITECTURE_DECISIONS.md#decision-016codex-协作入口与-managed-project-权威恢复)。
+状态：APPROVED；Maker 于 2026-10-23 批准本设计及配套实施与验收计划。上游：[Decision 016](../ARCHITECTURE/ARCHITECTURE_DECISIONS.md#decision-016codex-协作入口与-managed-project-权威恢复)。
 
 ## 1. 两类对象
 

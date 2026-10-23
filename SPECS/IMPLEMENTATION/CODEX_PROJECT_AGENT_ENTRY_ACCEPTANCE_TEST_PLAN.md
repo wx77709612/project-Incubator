@@ -1,6 +1,6 @@
 # Codex 协作入口与权威恢复验收计划
 
-状态：DRAFT / MAKER REVIEW REQUIRED；上游：[Implementation Plan](CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md)。实施前不得把本计划当作通过证据。
+状态：APPROVED / NOT RUN；Maker 于 2026-10-23 批准本验收计划并授权实施。上游：[Implementation Plan](CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md)。
 
 ## 验收目标
 

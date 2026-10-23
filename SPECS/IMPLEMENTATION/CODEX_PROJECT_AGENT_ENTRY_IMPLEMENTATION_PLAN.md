@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-状态：DRAFT / MAKER REVIEW REQUIRED；不得在 Maker 批准本计划和配套验收计划前实施。
+状态：APPROVED / IMPLEMENTATION AUTHORIZED；Maker 于 2026-10-23 批准在当前任务逐项实施。
 
 **Goal:** 首次接入和任务首次进入时正确处理 `AGENTS.md`，并在三个权威 JSON 实际使用时发现损坏后提供 Maker 授权的受控恢复。
 

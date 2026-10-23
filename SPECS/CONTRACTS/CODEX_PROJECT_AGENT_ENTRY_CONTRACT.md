@@ -1,6 +1,6 @@
 # Codex 协作入口与权威恢复契约
 
-状态：DRAFT / MAKER REVIEW REQUIRED；上游：[Design](../DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md)。
+状态：APPROVED；Maker 于 2026-10-23 批准本契约及配套实施与验收计划。上游：[Design](../DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md)。
 
 ## 1. 首次接入返回
 

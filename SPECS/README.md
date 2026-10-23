@@ -34,11 +34,11 @@
 | Architecture | [权威恢复与 AGENTS 补齐提案](ARCHITECTURE/MANAGED_PROJECT_ENTRY_AND_RECOVERY_CHANGE_PROPOSAL.md) | APPROVED | `AGENTS.md` 按任务首次进入检查；三个 JSON 按实际使用验证；Maker 于 2026-10-23 确认 |
 | Architecture | [权威恢复与 AGENTS 补齐影响分析](ARCHITECTURE/MANAGED_PROJECT_ENTRY_AND_RECOVERY_IMPACT_ANALYSIS.md) | APPROVED / AUDIT EVIDENCE | 记录现有恢复能力缺口、必要改动和正常流程边界 |
 | Architecture | [Decision 016](ARCHITECTURE/ARCHITECTURE_DECISIONS.md#decision-016codex-协作入口与-managed-project-权威恢复) | ACTIVE | 首次接入生成入口、任务首次检查和 Maker 授权的权威恢复 |
-| Design | [协作入口与权威恢复设计](DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md) | DRAFT / MAKER REVIEW REQUIRED | 已按一致意见重写；待随实施计划一并确认 |
-| Contract | [协作入口与权威恢复契约](CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md) | DRAFT / MAKER REVIEW REQUIRED | 定义 Agent Entry 补建与权威恢复 MCP 输入、输出和失败语义 |
-| Runtime | [协作入口与权威恢复运行规范](RUNTIME/CODEX_PROJECT_AGENT_ENTRY_RUNTIME_SPEC.md) | DRAFT / MAKER REVIEW REQUIRED | 定义按需验证、任务首次检查、恢复事务与正常路径成本 |
-| Implementation | [实施计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md) | DRAFT / MAKER REVIEW REQUIRED | 五个可独立验收工作包；批准前不得实施 |
-| Acceptance | [验收计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_ACCEPTANCE_TEST_PLAN.md) | DRAFT / MAKER REVIEW REQUIRED | A01–A12 与安装后宿主验收；状态 NOT_RUN |
+| Design | [协作入口与权威恢复设计](DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md) | APPROVED | Maker 于 2026-10-23 批准 |
+| Contract | [协作入口与权威恢复契约](CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md) | APPROVED | Maker 于 2026-10-23 批准 |
+| Runtime | [协作入口与权威恢复运行规范](RUNTIME/CODEX_PROJECT_AGENT_ENTRY_RUNTIME_SPEC.md) | APPROVED | Maker 于 2026-10-23 批准 |
+| Implementation | [实施计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md) | APPROVED / IMPLEMENTATION AUTHORIZED | 五个可独立验收工作包；Maker 于 2026-10-23 授权当前任务执行 |
+| Acceptance | [验收计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_ACCEPTANCE_TEST_PLAN.md) | APPROVED / NOT RUN | A01–A12 与安装后宿主验收 |
 
 ## 当前文档状态
 

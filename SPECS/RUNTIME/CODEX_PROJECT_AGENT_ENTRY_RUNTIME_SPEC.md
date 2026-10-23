@@ -1,6 +1,6 @@
 # Codex 协作入口与权威恢复运行规范
 
-状态：DRAFT / MAKER REVIEW REQUIRED；上游：[Contract](../CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md)。
+状态：APPROVED；Maker 于 2026-10-23 批准本运行规范及配套实施与验收计划。上游：[Contract](../CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md)。
 
 ## 1. Agent Entry
 
