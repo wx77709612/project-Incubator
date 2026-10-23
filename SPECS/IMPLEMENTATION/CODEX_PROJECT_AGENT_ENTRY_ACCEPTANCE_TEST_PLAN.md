@@ -4,7 +4,7 @@
 
 ## 验收目标与边界
 
-证明新 Codex Plugin 的 `initialize_project` 在无项目级 `AGENTS.md` 的新项目中实际创建、回读并交付该文件，同时保持三个 JSON 权威、授权、Receipt 与既有文件保护。仅使用临时 Managed Project；不修改 Player Needs Hunter、其他已激活项目、插件缓存或 `_V*`。
+证明新 Codex Plugin 的 `initialize_project` 在无项目级 `AGENTS.md` 的新项目中实际创建、回读并交付该文件，同时保持三个 JSON 权威、授权、Receipt 与既有文件保护。仅使用临时 Managed Project；不修改任何真实 Managed Project、插件缓存或 `_V*`。
 
 ## 自动化矩阵
 

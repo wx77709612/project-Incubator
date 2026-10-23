@@ -83,4 +83,4 @@
 - [ ] **Step 1: 全量验证。** 在 `project-incubator-plugin/` 运行 `npm test`，记录总数、失败数和退出码；Legacy 回归按当前获批验收脚本运行并记录结果。
 - [ ] **Step 2: 候选验证。** 将候选打包到已验证的临时目录，从仓库外运行结构与完整模式；确认模板、来源隔离和哈希。不得直接改插件缓存。
 - [ ] **Step 3: 宿主验证。** 经受支持的插件安装路径安装新候选，在新 Codex 任务用临时项目完成真实授权初始化，回读 `AGENTS.md`、三个 JSON 和 Receipt；再开后续任务观察原生入口加载。若安装或新任务不可用，记录 `BLOCKED`，不声称已闭合。
-- [ ] **Step 4: 报告并提交。** 将证据写入 Acceptance Plan，按 Task/Status/Changed Files/Validation/Issues 报告；全部标准实际通过后再申请发布或合并，不修改 Player Needs Hunter。
+- [ ] **Step 4: 报告并提交。** 将证据写入 Acceptance Plan，按 Task/Status/Changed Files/Validation/Issues 报告；全部标准实际通过后再申请发布或合并，不修改任何真实 Managed Project。

@@ -21,7 +21,7 @@
 
 1. Decision 015 的唯一 Router、唯一三 JSON 权威集合、`inspect_project` 只读查询、Maker 授权、revision／回读／Receipt 闭合规则不变。任何权威写入只能经新定义并获批的 Kernel MCP 受控流程，不能由 Agent 直接编辑文件。
 2. `AGENTS.md` 是 Codex 宿主协作 Artifact。缺失、旧版或与模板不同，不自动使已验证的三 JSON 状态失效；它不进入 State Schema、Receipt 哈希、阶段或 Gate。入口操作须独立报告结果。
-3. 不批量扫描并改写所有存量项目；每次由 Maker 指定一个项目。`inspect_project` 和任何只读诊断均不得产生修复副作用。Player Needs Hunter 的 P2、Pending Request 与 Receipt 不因本文改变。
+3. 不批量扫描并改写所有存量项目；每次由 Maker 指定一个项目。`inspect_project` 和任何只读诊断均不得产生修复副作用。任何项目现有的阶段、Pending Request 与 Receipt 均不因本文自动改变。
 4. 不使用 `_V*` 历史规格、旧 Python Runtime 或旧 Markdown 状态作为现行运行权威；旧文档可以是迁移证据，但不能未经核对直接复制成三个 JSON。
 5. 原[初始化提案](CODEX_PROJECT_AGENT_ENTRY_CHANGE_PROPOSAL.md)的已批准范围保持有效；本提案是新增范围和必要澄清，不追溯修改其批准记录。现有 Decision 016 与下游草稿在审阅本文后须按新的适用范围修订，不能直接实施。
 
@@ -79,7 +79,7 @@ Maker 可以根据可复核的当前 Artifact、Evidence 和自身明确确认�
 
 这是一项跨 Architecture、Design、Contract、Runtime、Plan、Plugin Tool、Router 和验收的变更。先补影响分析与 Architecture Decision，再更新分流设计、输入输出与错误语义、事务和失败恢复规范，最后重写实施及验收计划。现有五项初始化计划和 A01–A09 验收草稿只覆盖首次路径，应标为**待修订、不得实施**；可以保留可复用条目，但新增 `ADOPT_EXISTING`、已激活补齐、差异审阅、旧版迁移与残缺恢复的独立验收。
 
-本提案不要求立即迁移或补齐任何真实项目，不更改 Player Needs Hunter 的权威状态，不批准 P2→P3，不自动升级插件，不修改 `_V*`。实现仍须经完整下游规格和两份计划的 Maker 批准。
+本提案只解决 Project Incubator 的通用接入与恢复流程；不要求立即迁移或补齐任何真实项目，不批准任何项目的阶段变更，不自动升级插件，不修改 `_V*`。实现仍须经完整下游规格和两份计划的 Maker 批准。
 
 ## 7. 提请 Maker 审阅的架构决定
 

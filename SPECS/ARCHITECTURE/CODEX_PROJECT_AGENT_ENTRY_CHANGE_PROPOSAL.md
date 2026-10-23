@@ -40,7 +40,7 @@ Plugin 0.3.x 已将 `.project-incubator/activation.json`、`state.json`、`lates
 
 ### 3.3 既有项目与版本边界
 
-不自动修改已经激活的 Managed Project，包括 Player Needs Hunter；其 P2、Pending Request、Receipt 保持不变。存量项目补齐入口应走单独、显式的修复流程，经 Maker 决定后再设计，不能通过重新运行 `initialize_project` 或直接改三个权威 JSON 实现。本提案不更改 Project Type、阶段、Gate、授权协议、请求摘要算法或旧 V1.x / RC 历史基线。
+不自动修改任何已经激活的 Managed Project；其现有阶段、Pending Request 与 Receipt 保持不变。存量项目补齐入口应走单独、显式的修复流程，经 Maker 决定后再设计，不能通过重新运行 `initialize_project` 或直接改三个权威 JSON 实现。本提案不更改 Project Type、阶段、Gate、授权协议、请求摘要算法或旧 V1.x / RC 历史基线。
 
 ## 4. 验收上限
 

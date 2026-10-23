@@ -8,7 +8,7 @@
 2. 活动 Feature 001 曾设计目标项目的 `AGENTS.md`，旧脚本也存在；但该文档标为 `NOT_IMPLEMENTED`、现属 Legacy 兼容语义，模板仍包含已失效的旧状态模型。不能直接恢复旧脚本或复制旧模板。
 3. Kernel Alignment ACP 将 `BOOTSTRAP_HOST_INTEGRATION` 排除出 Plugin 0.3.x 现行路径；原影响分析将模板转为最小 Router/Kernel 指引并限定显式生成，却没有为新项目初始化建立替代能力。
 4. `project-incubator-plugin/src/server.mjs` 的 `initialize_project` 调用 `initializeProjectState`；`src/kernel/state-store.mjs` 只持久化并验证三个 JSON。`scripts/package-candidate.mjs` 的打包白名单未包含旧模板目录。现行 Router Skill 也没有入口创建步骤。
-5. 现行漂移测试仅验证兼容 AGENTS 文本不含过时指令，不检查候选包模板与 `initialize_project` 的生成结果。Player Needs Hunter 已成功初始化但无根目录 `AGENTS.md`，是该缺口的实际观察；不因此推断它的 P2 权威状态无效。
+5. 现行漂移测试仅验证兼容 AGENTS 文本不含过时指令，不检查候选包模板与 `initialize_project` 的生成结果。因此项目即使成功初始化，也可能缺少根目录 `AGENTS.md`；入口缺失不意味着三个 JSON 的权威状态无效。
 
 归因：0.3 迁移时正确移除了旧执行路径，却未把非权威的宿主入口能力重新纳入新初始化契约；分发清单和验收条件同步遗漏。英文计划还受计划流程文案影响，不能单独归因于本缺口。
 
@@ -39,7 +39,7 @@
 - 规格：`SPECS/README.md`、活动 Architecture Decision、Design、Contract、Runtime Specification、Implementation/Acceptance Plan；旧 `_V*` 不修改。
 - Plugin：`project-incubator-plugin/src/server.mjs`、`src/kernel/state-store.mjs` 或职责等价的新模块、包内 Agent Entry 模板、`scripts/package-candidate.mjs`、候选验证、Router Skill。
 - 测试：初始化单元/集成/E2E、候选包安装与漂移检查；旧 Legacy 测试只用于确认未退化，不作为新机制的实现路径。
-- 目标项目：本轮不修改 `F:/projects/Player_Needs_Hunter`。补齐既有项目需要另行明确授权及单独方案。
+- 目标项目：本轮不修改任何真实 Managed Project。补齐既有项目需要另行明确授权及单独方案。
 
 ## 4. 待下游精确定义的风险
 
