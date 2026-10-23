@@ -41,7 +41,7 @@
 
 ## 结果记录
 
-执行日期：2026-10-23。源码实现提交：`23f3932e95e800c9625bd8b45745d8ea71b5100b`。
+执行日期：2026-10-23。候选分发实现提交：`23f3932e95e800c9625bd8b45745d8ea71b5100b`；最终独立审查修复提交：`1bb2717e4e960cc20d340616b9b2ec7d73d3afee`。
 
 ### 自动化与回归
 
@@ -49,7 +49,7 @@
 | --- | --- | --- |
 | A01–A11 | PASS | Plugin 单元、集成、Contract 与 E2E 覆盖首次创建、已有文件保留、当前任务入口指导、授权补建、路径竞争、只读 Inspect、诊断、两类恢复基线、源变化和回滚／残留报告。新增 `ADOPT_EXISTING` 缺文件场景单测通过。 |
 | A12 | PASS | 候选专项 `71/71`；模板进入白名单和聚合哈希，缺失、链接、包外回退与旧指令均失败关闭。 |
-| Plugin 全量 | PASS | `npm test`，退出码 0，`378/378`。 |
+| Plugin 全量 | PASS | 审查修复后运行 `npm test`，退出码 0，`381/381`。 |
 | Legacy unit | PASS | `python -m unittest discover -s TESTS/unit -p "test_*.py"`，退出码 0，`133/133`。 |
 | Legacy integration | PASS | `python -m unittest discover -s TESTS/integration -p "test_*.py"`，退出码 0，`32/32`。 |
 | Legacy e2e | PASS | `python -m unittest discover -s TESTS/e2e -p "test_*.py"`，退出码 0，`3/3`。 |
@@ -58,12 +58,14 @@
 
 ### 仓库外候选进程
 
-- 候选来源：上述源码实现提交；由 `scripts/package-candidate.mjs` 生成到仓库外系统临时目录。
+- 候选来源：上述候选分发实现与最终独立审查修复提交；由 `scripts/package-candidate.mjs` 生成到仓库外系统临时目录。
 - 候选版本：`0.3.0+codex.20261019210340`；包版本：`0.3.0`。
-- 聚合算法：`SHA-256-AGGREGATE-V1`；最终哈希：`d72d0ab6047ec767dab9ad362f73b9983c9afc72ce4f48e2486f042263d7d704`。
+- 聚合算法：`SHA-256-AGGREGATE-V1`；最终哈希：`a94bf9b2b523d90b24e6523775d39f85045fd0dc0553fb5f17ac4fb6d7618cd4`。
 - `npm ci --omit=dev` 退出码 0，安装 94 个包；审计报告 1 个 moderate 和 1 个 high 依赖漏洞，本任务未执行自动升级，以免越过锁文件与获批范围。
 - Candidate 自带校验器 `--structure-only` 与 `--full` 均退出码 0，`source_fallback_detected=false`。
 - Full 通过真实 stdio MCP 验证三种 Route、Web Host Forbidden、首次激活、`AGENTS.md` 创建与回读、删除后授权补建、损坏 Receipt 后 `CONTINUED` 恢复到 revision 1，以及新 Receipt 验证。
+
+最终独立只读审查发现的三个 Important 已在一次修复轮中以 RED→GREEN 闭合：损坏项目的第一条恢复消息可达、恢复候选不可用空后继绕过 Workflow 校验、AGENTS 回滚不会误删同字节替代文件。针对性测试 `16/16`，随后 Plugin 全量 `381/381`、Legacy `168/168`、仓库外 Candidate Structure/Full 均再次通过。
 
 ### 安装后宿主验收
 
