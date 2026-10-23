@@ -1,37 +1,77 @@
-# Codex 项目级协作入口契约
+# Codex 协作入口与权威恢复契约
 
-状态：DRAFT / REVISION REQUIRED；当前只补充首次初始化，待[接入与恢复分流提案](../ARCHITECTURE/MANAGED_PROJECT_ENTRY_AND_RECOVERY_CHANGE_PROPOSAL.md)审阅后修订，不得作为完整分流的实现依据。原上游：[Design](../DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md)。不改变既有 Maker 授权或三个 JSON Schema。
+状态：DRAFT / MAKER REVIEW REQUIRED；上游：[Design](../DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md)。
 
-## 1. 输入与输出
+## 1. 首次接入返回
 
-`initialize_project` 输入仍为 `project_root`、`request_id`、`scope_digest`、`session_id`、`turn_id`。服务继续先验证 Pending Activation、路由、初始状态、PromptRef 与 Maker Authorization。失败授权不得产生 `AGENTS.md` 或三个权威文件。
-
-成功返回保留 `activation` 和 `receipt`，新增：
+`initialize_project` 输入和既有授权语义不变。成功返回增加：
 
 ```json
 "agent_entry": {
   "path": "AGENTS.md",
-  "status": "CREATED | EXISTING_REVIEW_REQUIRED"
+  "status": "CREATED | CURRENT | EXISTING_REVIEW_REQUIRED"
 }
 ```
 
-上述 `status` 表示互斥枚举值，不是实际返回的含竖线字符串。`CREATED` 只在新文件与模板字节一致、回读成功时出现；`EXISTING_REVIEW_REQUIRED` 只在已有可读普通文件完全未修改时出现。成功 Receipt 仍仅证明权威 State 变更闭合；`agent_entry` 独立证明协作入口处理结果，不增加第四份权威状态。Maker 应看到已有文件的人工核对提示。
+枚举竖线仅表示互斥选项。`CREATED` 表示本次排他创建并回读成功；`CURRENT` 和 `EXISTING_REVIEW_REQUIRED` 均表示原文件未修改。Agent Entry 不进入 State、revision 或 Receipt。
 
-## 2. 错误码与副作用
+## 2. 任务首次入口检查与补建
 
-| 稳定错误码 | 触发条件 | 合同结果 |
+`prepare_agent_entry` 输入：`project_root`、`session_id`。它不读取或修改权威 JSON。
+
+- 文件与模板相同：返回 `{event:"AGENT_ENTRY_INSPECTED",agent_entry:{path,status:"CURRENT"}}`。
+- 文件存在但不同：返回 `status:"EXISTING_REVIEW_REQUIRED"` 和双方 SHA-256，不创建写入请求。
+- 文件不存在：在 Runtime Data 建立 24 小时短期请求，返回 `{event:"AGENT_ENTRY_INSTALL_PREPARED",request_id,scope_digest,agent_entry:{path,status:"MISSING"}}`。
+
+`install_agent_entry` 输入：`project_root`、`request_id`、`scope_digest`、`session_id`、`turn_id`。只有同一项目、同一 session、未过期请求和当前 Maker Prompt 明确批准该编号及摘要时，才排他创建模板并回读，返回 `status:"CREATED"`。目标在准备后出现时返回 `AGENT_ENTRY_SOURCE_CHANGED`，不覆盖。
+
+Router 仅在当前 Codex 任务首次进入该 `project_root` 时调用 `prepare_agent_entry`。这是一条 Agent 行为契约，不通过持久业务状态追踪。
+
+## 3. 权威恢复准备
+
+`prepare_authority_recovery` 输入：
+
+```text
+project_root, session_id, summary, proposed_activation, proposed_state
+```
+
+Kernel 分别诊断三个权威路径并返回 `authority_diagnostics`，每项包含 `path`、`status`（`MISSING | VALID | INVALID`）、可用时的稳定错误码和现存字节 SHA-256。只有完整集合不能通过现行 Snapshot／Receipt 验证时才能准备恢复；完整且有效时返回 `AUTHORITY_RECOVERY_NOT_REQUIRED`。
+
+Kernel 校验候选 Activation、State、Registry Route 与 Workflow；`proposed_state.pending_requests` 必须为空。若现存 State 可解析，候选 revision 必须是其 revision + 1；否则必须是 0。请求的 `scope_digest` 覆盖项目规范路径、诊断指纹、完整候选、summary 和操作名。请求保存在 Runtime Data，24 小时过期，不写项目。
+
+成功返回：
+
+```json
+{
+  "event": "AUTHORITY_RECOVERY_PREPARED",
+  "request_id": "recovery-...",
+  "scope_digest": "...",
+  "authority_diagnostics": [],
+  "proposed_revision": 0
+}
+```
+
+## 4. 权威恢复提交
+
+`recover_project_authority` 输入：`project_root`、`request_id`、`scope_digest`、`session_id`、`turn_id`。它要求当前 Maker Prompt 明确批准同一请求和摘要，并在写入前重新核对三个路径的存在性与字节 SHA-256。
+
+Kernel 清空 Pending Request，覆盖 `last_change` 为 `RECOVER_PROJECT_AUTHORITY`，受控写入完整三个 JSON、回读并验证新 Receipt。成功返回 `{activation,receipt,recovery:{baseline:"CONTINUED"|"REESTABLISHED"}}`；`CONTINUED` 对应可解析旧 State 的下一 revision，`REESTABLISHED` 对应 revision 0 恢复基线。
+
+新 Receipt 的 Authorization Ref 指向本次 Maker Prompt。旧文件和旧资料只是恢复输入，不被新 Receipt 宣称为已验证历史。
+
+## 5. 稳定失败语义
+
+| 错误码 | 含义 | 写入结果 |
 | --- | --- | --- |
-| `AGENT_ENTRY_TEMPLATE_INVALID` | 包内模板缺失、不可读、空白或违反最小模板检查 | 初始化停止；不消费请求 |
-| `AGENT_ENTRY_PATH_UNSAFE` | 目标已存在但不是可读普通文件，含目录、链接、不可读文件 | 不覆盖目标；初始化停止 |
-| `AGENT_ENTRY_CONFLICT` | 排他创建遭遇并发 `EEXIST` | 不覆盖、不删除竞争者文件；初始化停止 |
-| `AGENT_ENTRY_WRITE_FAILED` | 新建或同步写入失败 | 尝试安全撤销；初始化停止 |
-| `AGENT_ENTRY_READBACK_MISMATCH` | 新建内容回读与模板不一致 | 尝试安全撤销；初始化停止 |
-| `AGENT_ENTRY_ROLLBACK_INCOMPLETE` | 本次失败后无法证明入口或权威文件已安全恢复 | 失败且报告残留路径；不得声称未初始化或完整初始化 |
+| `AGENT_ENTRY_TEMPLATE_INVALID` | 包内模板缺失、空白或含禁用旧指令 | 不写项目 |
+| `AGENT_ENTRY_PATH_UNSAFE` | 目标是目录、链接或不可读对象 | 不覆盖 |
+| `AGENT_ENTRY_SOURCE_CHANGED` | 准备后目标出现或变化 | 不覆盖 |
+| `AGENT_ENTRY_REQUEST_NOT_FOUND` / `AGENT_ENTRY_REQUEST_EXPIRED` | 补建请求不存在或过期 | 不写项目 |
+| `AUTHORITY_RECOVERY_NOT_REQUIRED` | 三 JSON 已完整并验证通过 | 不创建恢复请求 |
+| `AUTHORITY_RECOVERY_REQUEST_NOT_FOUND` / `AUTHORITY_RECOVERY_REQUEST_EXPIRED` | 恢复请求不存在或过期 | 不写项目 |
+| `RECOVERY_SOURCE_CHANGED` | 准备后任一权威路径变化 | 不写项目 |
+| `RECOVERY_STATE_REVISION_INVALID` | 候选 revision 不符合延续或重建规则 | 不创建请求 |
+| `RECOVERY_WRITE_FAILED` | 写入或回读失败但操作前字节已恢复 | 恢复失败，原状保留 |
+| `RECOVERY_ROLLBACK_INCOMPLETE` | 无法完整恢复操作前字节 | 报告 `residual_paths`，不得宣称成功 |
 
-既有 `PROJECT_ALREADY_INITIALIZED`、`PROJECT_CONTROL_STATE_INCOMPLETE`、授权与 Receipt 错误语义保留。失败返回使用现有 MCP `isError` 与 `structuredContent.error.code` 形状；可追加 `error.residual_paths` 为相对项目路径数组，仅在回滚不完整时使用，不暴露临时 Runtime Data。不得把原始系统错误文本当作稳定错误码。
-
-## 3. 初始化顺序与幂等边界
-
-在项目串行化域内，先确认三个权威文件均不存在，再检查/创建 Agent Entry，然后写三个 JSON 并验证 Receipt；只有全部成功才消费 Pending Activation。已有可读普通 `AGENTS.md` 不更改，即使含旧版内容也只报告人工核对，不自动将其改为新模板。
-
-`initialize_project` 不变成修复已激活项目的 API。失败后重试仍需通过原授权有效期、PromptRef 与权威文件检查；不保证任意部分失败都可自动重试。权威文件部分残留由现行失败关闭规则处理。
+现有授权、Prompt、Scope、项目路径、Registry、Schema 和 Workflow 错误继续使用既有稳定码。`inspect_project`、`prepare_change`、`commit_change`、`decline_change` 的接口和成功形状不因本契约变化。

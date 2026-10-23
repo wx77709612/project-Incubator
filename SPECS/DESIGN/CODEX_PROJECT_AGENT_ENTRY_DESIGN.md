@@ -1,39 +1,68 @@
-# Codex 项目级协作入口设计
+# Codex 协作入口与权威恢复设计
 
-状态：DRAFT / REVISION REQUIRED；当前仅覆盖首次初始化，待[接入与恢复分流提案](../ARCHITECTURE/MANAGED_PROJECT_ENTRY_AND_RECOVERY_CHANGE_PROPOSAL.md)审阅后修订，不得作为完整分流的实现依据。原上游：[ACP](../ARCHITECTURE/CODEX_PROJECT_AGENT_ENTRY_CHANGE_PROPOSAL.md)、[Decision 016](../ARCHITECTURE/ARCHITECTURE_DECISIONS.md#decision-016codex-managed-project-初始化协作入口)。
+状态：DRAFT / MAKER REVIEW REQUIRED；上游：[Decision 016](../ARCHITECTURE/ARCHITECTURE_DECISIONS.md#decision-016codex-协作入口与-managed-project-权威恢复)。
 
-## 目标与职责
+## 1. 两类对象
 
-Codex Plugin 初始化新的 Managed Project 时，为尚无项目级 `AGENTS.md` 的项目创建稳定的原生协作入口。Codex 后续任务通过该入口找到 Plugin Router、恢复方法和协作边界。它不是状态副本：任何项目当前阶段、计划、Decision、Gate 或 Receipt 均须通过现行 Kernel 查询。
+- **权威集合**：`.project-incubator/activation.json`、`state.json`、`latest-receipt.json`。Kernel 负责校验和写入。
+- **协作入口**：项目根目录 `AGENTS.md`。它为 Codex 提供稳定指导，但不保存项目阶段、Decision、Gate 或 Receipt。
 
-本能力分为三个单一职责单元：
+二者在同一次项目工作中都可能被发现缺失，但不得混成同一种状态或同一套 revision。
 
-1. **包内模板**：插件分发自包含的简体中文文本，只包含稳定入口规则；研发仓库旧 `PROJECT_INCUBATOR/` 模板不作为运行依赖。
-2. **Agent Entry 文件操作**：只处理项目根目录 `AGENTS.md` 的类型检查、排他创建、回读及可证明安全的撤销；不读写三个权威 JSON。
-3. **初始化协调**：在授权通过后、Pending Activation 消费前，把 Agent Entry 操作与原有 JSON 初始化放入同一项目串行化闭合过程；向调用者分别返回权威 Receipt 和入口结果。
+## 2. 任务首次进入
 
-Project Type 与 Host Profile 不参与入口选择：Codex 分发的 `mod`、`desktop-product`、`web-product` 新激活都遵守同一规则。`host_profile_id = null` 不是非 Codex 环境信号。普通 MCP 再分发不在本设计承诺范围内。
+“任务首次进入”是 Router 在同一 Codex 任务／聊天中第一次接管当前项目。Router 只在此时请求一次 Agent Entry 检查；后续轮次和后续 Plugin 调用复用当前任务已经得到的结果。切换 `project_root` 后，对新项目重新执行一次。
 
-## 模板内容边界
+Agent Entry 检查只返回：
 
-模板需有 Project Incubator 集成标记、Router 唯一入口、`inspect_project` 恢复、三个 JSON 权威文件及职责、受控变更通过 Kernel、Maker 决策权、缺少 Plugin/MCP 时停止，以及人类可读文本默认简体中文。标记用于人工识别，不作为已有文件可自动覆盖的许可。
+- `CURRENT`：已有普通文件与包内模板相同；
+- `EXISTING_REVIEW_REQUIRED`：已有普通文件但内容不同，不修改；
+- `MISSING`：文件不存在，可向 Maker 提出补建；
+- 不安全路径或读取失败：返回稳定错误并停止入口处理。
 
-不得包含旧全局 Skill 执行指令、旧 Python Runtime、四份 Markdown Core Context、包外 `SPECS/` 路径、动态阶段或当前项目事实。不同项目复制同一稳定模板；不注入项目名、类型、状态或授权引用。
+这项检查不调用 `inspect_project`，不读取三个 JSON，也不写持久“已检查”标记。重复调用是安全的，但 Router 指导不得要求重复调用。
 
-## 初始化结果与用户可见语义
+## 3. AGENTS 创建
 
-| 初始条件 | 行为 | Agent Entry 结果 | 权威初始化 |
-| --- | --- | --- | --- |
-| 根目录无 `AGENTS.md` | 排他创建模板并回读验证 | `CREATED` | 仅在入口和 JSON/Receipt 均闭合后成功 |
-| 已有可读普通文件 | 不修改、不推断兼容 | `EXISTING_REVIEW_REQUIRED` | 可以成功；Router 必须提醒 Maker 人工核对 |
-| 目录、链接、不可读文件 | 不跟随、不覆盖 | 无成功结果；`AGENT_ENTRY_PATH_UNSAFE` | 失败关闭 |
-| 排他创建时出现竞争者文件 | 不覆盖、不删除竞争者文件 | 无成功结果；`AGENT_ENTRY_CONFLICT` | 失败关闭 |
-| 新建入口或回读失败 | 撤销本次可识别的写入 | 无成功结果；`AGENT_ENTRY_WRITE_FAILED` 或 `AGENT_ENTRY_READBACK_MISMATCH` | 失败关闭 |
+首次接入的激活授权包含“缺失时创建入口”，无需第二次批准。已接入项目缺失入口时，Router 展示补建请求；Maker 明确确认后才创建。
 
-失败时 Pending Activation 不消费。若本次已创建入口且后续 JSON 初始化失败，只在文件仍是本次创建的同一对象、内容仍等于模板时撤销；否则保留并报告 `AGENT_ENTRY_ROLLBACK_INCOMPLETE` 及残留路径。三个 JSON 的恢复仍按 Kernel 原有闭合原则执行。部分恢复失败须保留可检查残留，不得报告完整成功，也不得用聊天推定项目状态。
+包内模板使用简体中文，只描述 Router、按需 `inspect_project`、三个 JSON 职责、Maker／Agent／Kernel 边界、受控写入、Receipt 和默认中文规则。它不包含动态项目状态，不引用 Legacy Python Runtime、旧 Markdown Core Context 或包外规格。
 
-## 边界与后续任务
+创建使用排他写入并回读。已有文件永不自动覆盖、追加或合并。当前任务中途创建后，Agent 显式读取一次；下一个新任务由 Codex 正常加载。
 
-`initialize_project` 的返回保留现有 `activation`、`receipt` 字段，并增加独立 `agent_entry` 结果；后者不进入 State Schema、Receipt Hash 或 revision。已有项目的 `inspect_project` 仍只验证权威集合，不因为过去缺少 `AGENTS.md` 而判状态无效。
+## 4. 权威 JSON 的按需验证
 
-本设计不自动补写已激活项目，不处理已有文件自动合并，不保证创建文件会在当前已启动的 Codex 任务中重新加载。存量项目补齐需另行请求和审批。
+不为三个 JSON 增加任务入口预检。现有操作在实际需要状态时读取：
+
+- 状态或恢复查询使用 `inspect_project`；
+- 普通变更使用现有 `prepare_change`、`commit_change`、`decline_change`；
+- 每次写入继续回读并验证 revision、state hash 和 Receipt。
+
+完整权威集合验证通过时，行为不变。缺失、残缺、Schema 错误、项目 ID 不一致或 Receipt 不可验证时，当前操作失败关闭，并允许 Router 提出权威恢复。
+
+## 5. 权威恢复请求
+
+权威恢复使用 Runtime Data 保存短期请求，因为损坏的 `state.json` 不能承载 Pending Request。
+
+准备恢复时，Kernel：
+
+1. 分别读取三个路径，记录 `MISSING`、`VALID` 或具体错误，并计算所有现存原始字节的 SHA-256；
+2. 接收 Agent 根据 Artifact、Evidence、可用旧资料和 Maker 已表达事实形成的完整 Activation 与 State 候选；
+3. 校验候选 Schema、路由和阶段，清空旧 `pending_requests`；
+4. 将当前文件指纹、候选状态和操作 `RECOVER_PROJECT_AUTHORITY` 纳入 `scope_digest`，返回短期 `request_id`。
+
+Maker 下一轮明确批准请求编号与范围后，Kernel 重新核对文件指纹。任何文件新增、删除或字节变化都返回 `RECOVERY_SOURCE_CHANGED`，不写入。
+
+## 6. 恢复提交
+
+- 现存 `state.json` 可按现行 Schema 解析时，候选 revision 必须是现存 revision + 1，Receipt 的 previous state 指向该 State。
+- State 缺失或不可解析时，候选 revision 必须为 0，Receipt 的 previous state 为 null；这是新的恢复基线，不代表历史从未存在。
+- Kernel 写入完整 Activation、State 和最新 Receipt，逐项回读并验证。State 的 `last_change.operation` 固定为 `RECOVER_PROJECT_AUTHORITY`。
+- 写入中发生可捕获错误时恢复操作前原始字节；若不能闭合，报告残留路径，不宣称恢复成功。
+- 恢复成功后，任何旧 Pending Request 都必须按现行流程重新提出。
+
+没有足够证据形成完整候选状态时，Agent 只报告缺口并等待 Maker，不调用准备或提交恢复。
+
+## 7. 非目标
+
+不扫描其他项目；不新增项目阶段、Gate 或恢复阶段；不自动更新已有 `AGENTS.md`；不让 `inspect_project` 产生写入；不将聊天、计划或旧 Markdown 直接升级为权威；不改变正常项目的 Router、Workflow 或状态变更语义。

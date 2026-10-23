@@ -1,32 +1,44 @@
-# Codex 项目级 AGENTS 初始化验收计划
+# Codex 协作入口与权威恢复验收计划
 
-状态：DRAFT / REVISION REQUIRED；仅覆盖首次初始化的原验收草稿，未覆盖完整分流。待新架构提案及下游规格获批后重写；实施前不得把本计划当作通过证据。上游：[Implementation Plan](CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md)。
+状态：DRAFT / MAKER REVIEW REQUIRED；上游：[Implementation Plan](CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md)。实施前不得把本计划当作通过证据。
 
-## 验收目标与边界
+## 验收目标
 
-证明新 Codex Plugin 的 `initialize_project` 在无项目级 `AGENTS.md` 的新项目中实际创建、回读并交付该文件，同时保持三个 JSON 权威、授权、Receipt 与既有文件保护。仅使用临时 Managed Project；不修改任何真实 Managed Project、插件缓存或 `_V*`。
+证明 Plugin 能在首次接入和已接入项目中正确处理 `AGENTS.md`，能在三个权威 JSON 实际使用失败后由 Maker 授权恢复，同时不改变正常项目的调用节奏、阶段或状态变更规则。只使用临时 Managed Project。
 
 ## 自动化矩阵
 
-| ID | 输入/故障 | 必须观察到的结果 | 证据 |
-| --- | --- | --- | --- |
-| A01 | `mod`、desktop、web 的有效新激活 | 各项目根目录生成相同稳定中文模板；`agent_entry.status=CREATED`；revision 0、Receipt 验证通过 | MCP E2E 与文件字节比较 |
-| A02 | 已有可读普通 `AGENTS.md`，包括含旧标记的文件 | 内容和文件身份不变；`EXISTING_REVIEW_REQUIRED`；Router 提醒人工核对 | 快照/哈希、返回值 |
-| A03 | 授权缺失、错误 request/digest、过期或路由不匹配 | 无新入口、无权威写入、Pending 规则不放宽 | MCP 错误码、目录检查 |
-| A04 | 目录、链接、不可读目标 | `AGENT_ENTRY_PATH_UNSAFE`；不跟随、不覆盖、不写权威文件 | 临时夹具、错误码 |
-| A05 | 创建时 `EEXIST` 或写入/回读故障 | 稳定错误；竞争者文件不变；无成功 Receipt；安全撤销 | 故障注入、字节/身份检查 |
-| A06 | 入口已新建后 JSON/Receipt 故障 | 只撤销仍可证明属于本次写入的入口；三个 JSON 恢复；Pending 未消费 | Kernel 故障注入、残留检查 |
-| A07 | 回滚前入口被外部修改或替换 | 不删除外部内容；`AGENT_ENTRY_ROLLBACK_INCOMPLETE` 与残留路径；不报告完整初始化 | 并发故障注入 |
-| A08 | 候选模板缺失、篡改、链接或源码回退 | 结构/完整验证失败；候选哈希覆盖模板；不加载包外文件 | 仓库外候选测试 |
-| A09 | 旧 Legacy 资产和已有四参 State Store API | 旧回归通过；现行包不含旧 Bootstrap，旧 API 调用不改变 | 全量测试与包清单 |
+| ID | 场景 | 必须观察到的结果 |
+| --- | --- | --- |
+| A01 | `NEW_PROJECT` 与 `ADOPT_EXISTING` 首次接入且缺 `AGENTS.md` | 创建中文模板并回读；三 JSON 与 Receipt 验证通过 |
+| A02 | 首次接入已有相同或不同 `AGENTS.md` | 文件字节不变；分别返回 `CURRENT` 或 `EXISTING_REVIEW_REQUIRED` |
+| A03 | 已接入项目当前任务首次进入 | 只调用一次 Agent Entry 检查；同任务后续 Plugin 调用不要求重复检查 |
+| A04 | 已接入项目缺 `AGENTS.md` | 准备阶段不写文件；Maker 批准后排他创建；当前 Agent 显式读取 |
+| A05 | 入口准备后目标出现，或目标为目录／链接 | 不覆盖、不删除，返回稳定错误；三个 JSON 不变 |
+| A06 | 完整有效的三 JSON | `inspect_project` 与普通 Mutation 保持原调用和结果，不进入恢复诊断 |
+| A07 | 任一 JSON 缺失、非法或 Receipt 不一致 | 原操作失败关闭；逐文件诊断可报告事实；准备恢复时项目零写入 |
+| A08 | 有效旧 State 的恢复 | Maker 授权后使用下一 revision，清空旧 Pending Request，新 Receipt 验证通过 |
+| A09 | State 缺失或不可解析的恢复 | Maker 授权后建立 revision 0 恢复基线；不得宣称补回旧历史 |
+| A10 | 恢复准备后任一源文件变化 | `RECOVERY_SOURCE_CHANGED`；三个路径保持变化后的现场，无恢复写入 |
+| A11 | 恢复写入或回读故障 | 能回滚则 `RECOVERY_WRITE_FAILED` 且原始字节一致；不能闭合则报告残留路径 |
+| A12 | 候选包与仓库外运行 | 模板和新模块自包含、聚合哈希覆盖；缺失／链接／包外回退／旧指令均失败 |
 
-## 安装与宿主验收
+## 安装后宿主验收
 
-1. 记录源 commit、候选版本、候选聚合 SHA-256、安装来源和实际加载的插件路径；必须使用正式插件管理器或当前受支持的安装流程，不能复制文件到缓存伪装安装。
-2. 在新 Codex 任务使用临时目录走 `prepare_activation`、Maker 授权、`initialize_project`；保存工具返回、文件内容哈希、权威 Snapshot 和 Receipt 回读结果。不得使用真实项目作为试验对象。
-3. 打开后续 Codex 任务，观察其是否原生接收项目级 `AGENTS.md` 指导；当前已启动任务不作为该项成功证据。
-4. 分别报告源码测试、候选进程、安装后宿主三个层级的结果。任一层缺证据时标 `BLOCKED` 或 `NOT_RUN`，不得把前一层的通过上升为后一层的通过。
+1. 记录源码 commit、候选版本、聚合 SHA-256、安装来源与实际加载路径。
+2. 在临时目录完成一次全新接入和一次已有产品首次接入，核对 `AGENTS.md`、三 JSON 和 Receipt。
+3. 新开 Codex 任务，证明生成的 `AGENTS.md` 被原生加载；在该任务中多次使用 Plugin，确认只执行一次入口检查。
+4. 在另一个临时项目删除 `AGENTS.md`，验证下次任务首次进入时提出补建，经 Maker 确认后创建。
+5. 用临时夹具制造部分／损坏 JSON，验证准备恢复、Maker 批准、恢复写入和下一次 `inspect_project` 成功。
+6. 分别报告源码测试、候选进程和安装后宿主结果；任何一层缺证据均标记 `BLOCKED` 或 `NOT_RUN`。
+
+## 回归边界
+
+- Plugin 全量测试和现有 Legacy 回归均通过。
+- 三种 Project Type 的 Router、Workflow、Gate、Transition 与正常授权行为不变。
+- `inspect_project` 仍严格只读；正常项目没有新增恢复请求或重复四文件预检。
+- 不修改真实 Managed Project、已安装缓存或 `SPECS/_V*`。
 
 ## 结果记录
 
-状态：NOT_RUN。逐项填入执行日期、环境、命令、退出码、测试计数、实际文件/Receipt 证据和问题。全部 A01–A09 与安装后宿主验收通过前，不声明本能力实现完成。
+状态：NOT_RUN。执行时逐项记录日期、环境、命令、退出码、测试计数、文件哈希、revision、Receipt 和未闭合事项。A01–A12、全量回归与安装后宿主验收全部通过前，不声明实现完成。

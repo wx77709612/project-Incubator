@@ -1,25 +1,42 @@
-# Codex 项目级协作入口运行规范
+# Codex 协作入口与权威恢复运行规范
 
-状态：DRAFT / REVISION REQUIRED；当前仅适用于现行 `.codex-plugin` 分发的首次初始化，待[接入与恢复分流提案](../ARCHITECTURE/MANAGED_PROJECT_ENTRY_AND_RECOVERY_CHANGE_PROPOSAL.md)审阅后修订，不得作为完整分流的实现依据。原上游：[Contract](../CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md)。
+状态：DRAFT / MAKER REVIEW REQUIRED；上游：[Contract](../CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md)。
 
-## 1. 执行序列
+## 1. Agent Entry
 
-1. `initialize_project` 完成原有请求、作用域、路由、PromptRef 与 Maker Authorization 检查；从当前插件根目录加载包内模板并验证基本内容。模板不可用时，返回 `AGENT_ENTRY_TEMPLATE_INVALID`，不写目标项目。
-2. 进入现有按项目根目录串行化队列；检查 `.project-incubator/` 三个权威文件均不存在，保持已有 `PROJECT_ALREADY_INITIALIZED` 和 `PROJECT_CONTROL_STATE_INCOMPLETE` 判定。
-3. 使用 `lstat` 检查根目录 `AGENTS.md`。可读普通文件仅记录 `EXISTING_REVIEW_REQUIRED`，不修改；其他现存类型失败关闭。不存在时用排他创建模式写入模板、同步并回读逐字节比较。`EEXIST` 是竞争冲突，不可退化为覆盖或成功。
-4. 沿用 Kernel 的 activation、state、latest-receipt 原子写入和 Receipt 验证。所有结果闭合后返回 `{ activation, receipt, agent_entry }`，随后消费 Pending Activation。`agent_entry` 不写入权威 JSON。
-5. Router 报告 Receipt 与 Agent Entry 独立结果；`EXISTING_REVIEW_REQUIRED` 需提示人工核对。新入口通常从后续 Codex 任务才作为原生指导加载。
+候选包包含 `templates/codex/AGENTS.md`。Runtime 只从当前插件根目录读取模板，验证非空、关键 Router／Kernel／中文规则齐全且无 Legacy 正向指令。
 
-## 2. 失败恢复
+首次接入在现有授权完成后、消费 Activation Request 前处理入口：`lstat` 确认目标类型；不存在时使用 `open("wx")` 排他创建、同步和逐字节回读；普通文件按模板哈希返回 `CURRENT` 或 `EXISTING_REVIEW_REQUIRED`；目录、链接和不可读对象失败关闭。随后执行现有三 JSON 初始化和 Receipt 验证。后续权威写入失败时，只撤销仍可证明为本次创建且字节未变化的入口。
 
-任何入口操作失败均不得进入权威文件写入。入口新建后，任何 JSON 写入或 Receipt 验证失败须先恢复权威文件，再核对本次新建入口的对象身份和字节内容；仅在两者均未变化时删除它。不能核对或发生外部修改时保留文件，返回 `AGENT_ENTRY_ROLLBACK_INCOMPLETE` 与残留路径。入口写入中途失败也遵循同一安全撤销限制。
+已接入项目由 Router 在任务首次进入时调用 `prepare_agent_entry`。同一任务后续调用不重复检查；Runtime 不为此建立持久业务标记。缺失时生成绑定规范项目路径、session、模板 SHA-256 和 24 小时有效期的 Runtime Data 请求。`install_agent_entry` 重新检查目标仍不存在和模板 SHA 未变化，经 Prompt 授权后创建、回读并消费请求。
 
-权威恢复失败时不得覆盖错误为一般入口错误；统一返回 `AGENT_ENTRY_ROLLBACK_INCOMPLETE` 和已知残留路径，并保留原始原因供诊断。Pending Activation 不消费。若留下部分控制文件，后续 `prepare_activation` 或 `initialize_project` 继续按现行控制状态规则失败关闭；不通过 Agent 私自删除真实项目文件。
+## 2. 权威诊断
 
-现有项目串行化只覆盖同一插件进程内请求；文件排他创建处理外部进程竞争。没有跨进程锁保证，因而不能用先 `exists()` 再普通写入的方式模拟排他创建。链接不得跟随。Windows 上对文件身份不可可靠确认时，宁可保留本次文件并报告残留，也不能删除可能被 Maker 或其他进程修改的文件。
+`prepare_authority_recovery` 不调用 `readProjectSnapshot` 作为唯一入口，因为它必须在部分文件缺失时仍能报告逐文件事实。它对三个固定路径分别执行：读取原始字节、计算 SHA-256、解析对应 Schema，并在可行时验证项目 ID 与 Receipt。诊断过程只读。
 
-## 3. 分发与验证
+完整集合通过 `readProjectSnapshot` 与 `verifyLatestReceipt` 时拒绝准备恢复。其他情况由 Server 校验候选 Route、Workflow、revision 和空 Pending Request，然后把诊断指纹与候选写入 Plugin Runtime Data。Runtime Data 不是项目权威。
 
-包内模板加入候选白名单并经候选验证器检查：文件存在、仍位于候选根目录内、中文规则和 Router/Kernel 关键语义齐全、无旧 Markdown/Python 正向执行指令。旧 `PROJECT_INCUBATOR/` 模板仍是 Legacy 兼容资产，不复制进现行候选。
+## 3. 恢复提交
 
-验收至少包括单元故障注入、三类项目的新激活、已有文件保护、链接/目录/不可读路径、并发 `EEXIST`、JSON/Receipt 失败回滚、候选包外运行，以及新 Codex 任务对生成文件的实际加载观察。源码测试通过不等于已安装 Plugin 更新成功；安装和宿主验证结果分别报告。
+`recover_project_authority` 按以下顺序执行：
+
+1. 读取未过期的恢复请求并验证 request、digest、session 和当前 Prompt；
+2. 重新计算三个路径的“缺失或 SHA-256”指纹，与准备时逐项比较；
+3. 进入现有按规范项目路径串行化队列，并再次比较指纹；
+4. 生成新 Receipt ID，规范化 Activation 与 State，设置 `last_change.operation=RECOVER_PROJECT_AUTHORITY`、当前时间和 Receipt ID；
+5. 依次安全写入 Activation、State、Receipt，逐字节回读，然后执行 Receipt 验证；
+6. 成功后消费 Runtime 请求并返回结果。
+
+可解析旧 State 作为 Receipt 的 `previousState`，候选使用下一 revision；不可解析或缺失 State 时 `previousState=null`，候选 revision 0。所有旧 Pending Request 在规范化时清空。
+
+Runtime 在写入前保存三个路径的原始字节。可捕获错误发生时按原值恢复：原来缺失的路径删除本次文件，原来存在的路径原子写回；全部回读一致时返回 `RECOVERY_WRITE_FAILED`，否则返回 `RECOVERY_ROLLBACK_INCOMPLETE` 和残留路径。无论何种失败都不消费请求。
+
+## 4. 正常路径与调用成本
+
+`inspect_project` 和普通 Mutation 继续直接读取并验证权威集合，不先调用恢复诊断。Agent Entry 检查不嵌入所有 MCP Tool，也不嵌入 `inspect_project`。因此正常任务除首次进入时的一次轻量入口检查外，没有新增调用；三个 JSON 的读取次数与现行按需行为一致。
+
+状态提交后的回读和 Receipt 校验必须保留，因为它证明本次写入闭合，不属于重复入口检查。发生 revision、Receipt 或文件错误时才向 Router 暴露恢复选择。
+
+## 5. 分发与验证
+
+模板、Agent Entry 模块、恢复 Runtime Data 模块和新 Tool 必须进入候选白名单与聚合哈希。候选验证拒绝模板缺失、链接、包外回退和旧指令。自动化分别覆盖首次接入、任务首次检查、补建授权、两种恢复基线、来源变化、故障回滚和正常路径无额外预检；安装后在临时项目验证，不改真实 Managed Project。

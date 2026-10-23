@@ -2665,14 +2665,16 @@ Scope：Plugin 0.3.x 现行执行轨道。部分替代 Decision 001–014 及旧
 
 Migration Impact：不自动迁移已有项目，不修改真实 Managed Project；兼容资产退出活动发现与默认分发，包与安装必须有来源核验。具体条款见 ACP 的逐项 Invariant 处置及影响清单。
 
-## Decision 016：Codex Managed Project 初始化协作入口
+## Decision 016：Codex 协作入口与 Managed Project 权威恢复
 
-Status：PENDING；Authority：Maker 于 2026-10-23 批准[上游 Codex 项目级协作入口 ACP](CODEX_PROJECT_AGENT_ENTRY_CHANGE_PROPOSAL.md)；本 Decision 的逐条文字仍待 Maker 确认。
+Status：ACTIVE；Authority：Maker 于 2026-10-23 先批准[项目级协作入口 ACP](CODEX_PROJECT_AGENT_ENTRY_CHANGE_PROPOSAL.md)，随后确认[权威恢复与 AGENTS 补齐提案](MANAGED_PROJECT_ENTRY_AND_RECOVERY_CHANGE_PROPOSAL.md)的检查节奏与边界。
 
-Decision：现行 Codex Plugin 在首次初始化 Managed Project 时，若根目录不存在 `AGENTS.md`，须从插件包内当前模板排他创建并回读验证；入口与三个权威 JSON 均闭合后，`initialize_project` 才可报告成功。已有普通 `AGENTS.md` 不覆盖、不追加，返回独立的人工核对结果；不安全路径、并发冲突和新建失败须失败关闭。
+Decision：现行 Codex Plugin 首次接入 `NEW_PROJECT` 或 `ADOPT_EXISTING` 时建立三个权威 JSON，并在根目录缺少 `AGENTS.md` 时从包内中文模板排他创建和回读；已有文件不覆盖。已接入项目在当前 Codex 任务第一次进入 Project Incubator 时只检查一次 `AGENTS.md`，缺失时先提出补建并取得 Maker 确认。三个 JSON 不做额外入口预检，只在实际读取或写入时按现行规则验证。
 
-Reason：旧 Host Bootstrap 的 Python/Markdown 实现必须退出，但项目级 Agent 协作入口是独立的合理能力。Codex 不强制所有项目拥有 `AGENTS.md`，并不构成 Project Incubator 放弃这一已设计能力的依据。旧实现退役与能力保留应分别决策。
+当权威 JSON 缺失、残缺或无法验证时，现有“从完整 Snapshot 恢复上下文”不足以修复项目。Agent 必须先根据项目证据提出完整恢复状态，Maker 以请求编号和范围明确确认，再由 Kernel 受控写入、回读并产生新的恢复 Receipt。可解析 State 延续到下一 revision；没有可信 State 时建立 revision 0 恢复基线。新 Receipt 不伪造丢失历史，旧 Pending Request 不自动继承。
 
-Effective Scope：仅 Codex Plugin 当前分发和其新项目初始化。`AGENTS.md` 是非权威 Host Integration Artifact；不加入 Decision 015 的三个 JSON 权威集合，不进入 revision、Receipt Hash、Stage、Gate 或 Maker Authorization。Project Type 的 `host_profile_id` 不表示 Agent Host Environment。
+Reason：旧 Host Bootstrap 的 Python/Markdown 实现必须退出，但 Codex 协作入口和权威损坏后的受控恢复是仍需保留的独立能力。按任务重复读取 `AGENTS.md` 或在尚未使用权威状态时预检三个 JSON 都没有必要。
 
-Migration Impact：不自动修改已激活项目，不复活旧 `BOOTSTRAP_HOST_INTEGRATION`，不修改历史 `_V*`。下游 Design、Contract、Runtime 与两份 Plan 应补齐模板、事务闭合、失败恢复、候选包和真实初始化验收。Plugin 实施须在下游计划获批后进行。
+Effective Scope：仅现行 Codex Plugin。`AGENTS.md` 是非权威 Host Integration Artifact，不进入 revision、Receipt Hash、Stage 或 Gate；三个 JSON 仍是唯一权威集合。正常 `inspect_project` 保持只读，正常 Mutation、Gate、Transition 和项目阶段语义不变。
+
+Migration Impact：不批量扫描或自动修改已激活项目，不复活旧 `BOOTSTRAP_HOST_INTEGRATION`，不修改历史 `_V*`。下游 Design、Contract、Runtime 与两份 Plan 只补任务首次入口检查、首次接入生成和两步权威恢复；Plugin 实施须在下游规格与计划获批后进行。
