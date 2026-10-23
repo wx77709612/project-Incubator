@@ -1,6 +1,6 @@
 # Codex 协作入口与权威恢复验收计划
 
-状态：APPROVED / NOT RUN；Maker 于 2026-10-23 批准本验收计划并授权实施。上游：[Implementation Plan](CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md)。
+状态：APPROVED / BLOCKED；Maker 于 2026-10-23 批准本验收计划并授权实施。自动化、Legacy 与仓库外候选进程验收已通过；安装后真实 Codex 新任务加载证据尚未取得。上游：[Implementation Plan](CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md)。
 
 ## 验收目标
 
@@ -41,4 +41,39 @@
 
 ## 结果记录
 
-状态：NOT_RUN。执行时逐项记录日期、环境、命令、退出码、测试计数、文件哈希、revision、Receipt 和未闭合事项。A01–A12、全量回归与安装后宿主验收全部通过前，不声明实现完成。
+执行日期：2026-10-23。源码实现提交：`23f3932e95e800c9625bd8b45745d8ea71b5100b`。
+
+### 自动化与回归
+
+| 范围 | 结果 | 证据 |
+| --- | --- | --- |
+| A01–A11 | PASS | Plugin 单元、集成、Contract 与 E2E 覆盖首次创建、已有文件保留、当前任务入口指导、授权补建、路径竞争、只读 Inspect、诊断、两类恢复基线、源变化和回滚／残留报告。新增 `ADOPT_EXISTING` 缺文件场景单测通过。 |
+| A12 | PASS | 候选专项 `71/71`；模板进入白名单和聚合哈希，缺失、链接、包外回退与旧指令均失败关闭。 |
+| Plugin 全量 | PASS | `npm test`，退出码 0，`378/378`。 |
+| Legacy unit | PASS | `python -m unittest discover -s TESTS/unit -p "test_*.py"`，退出码 0，`133/133`。 |
+| Legacy integration | PASS | `python -m unittest discover -s TESTS/integration -p "test_*.py"`，退出码 0，`32/32`。 |
+| Legacy e2e | PASS | `python -m unittest discover -s TESTS/e2e -p "test_*.py"`，退出码 0，`3/3`。 |
+
+首次在受限环境调用 Windows Python 应用别名时，进程因系统权限未启动；在允许访问系统 Python 后以相同参数重跑，三组均通过。该次启动失败不计为测试失败。Legacy 回归运行产生的已跟踪 `pyc` 变化已恢复，源码工作树未保留该副作用。
+
+### 仓库外候选进程
+
+- 候选来源：上述源码实现提交；由 `scripts/package-candidate.mjs` 生成到仓库外系统临时目录。
+- 候选版本：`0.3.0+codex.20261019210340`；包版本：`0.3.0`。
+- 聚合算法：`SHA-256-AGGREGATE-V1`；最终哈希：`d72d0ab6047ec767dab9ad362f73b9983c9afc72ce4f48e2486f042263d7d704`。
+- `npm ci --omit=dev` 退出码 0，安装 94 个包；审计报告 1 个 moderate 和 1 个 high 依赖漏洞，本任务未执行自动升级，以免越过锁文件与获批范围。
+- Candidate 自带校验器 `--structure-only` 与 `--full` 均退出码 0，`source_fallback_detected=false`。
+- Full 通过真实 stdio MCP 验证三种 Route、Web Host Forbidden、首次激活、`AGENTS.md` 创建与回读、删除后授权补建、损坏 Receipt 后 `CONTINUED` 恢复到 revision 1，以及新 Receipt 验证。
+
+### 安装后宿主验收
+
+| 步骤 | 状态 | 说明 |
+| --- | --- | --- |
+| 1 | PASS | 已记录源码提交、候选版本、最终聚合哈希、仓库外来源路径与候选实际运行路径。 |
+| 2 | PARTIAL | 仓库外真实 MCP 进程完成全新接入；`NEW_PROJECT` 与 `ADOPT_EXISTING` 的差异由全量自动化覆盖，但尚未把候选安装进 Codex 宿主。 |
+| 3 | BLOCKED | 当前任务不能证明“新开 Codex 任务后由宿主原生加载刚生成的 `AGENTS.md`”；候选进程和同一任务模拟均不能替代该证据。 |
+| 4 | BLOCKED | 候选进程已证明删除后可准备并授权补建，但“下一次真实 Codex 任务首次进入时提出补建”仍依赖步骤 3 的宿主级证据。 |
+| 5 | PASS | 仓库外临时项目已制造 Receipt 不一致，准备恢复、模拟精确 Maker 授权、写入、revision 1 与 Receipt 回读全部通过。 |
+| 6 | BLOCKED | 源码测试与候选进程结果已记录；安装后宿主结果因步骤 3、4 未闭合而不能判定 PASS。 |
+
+总状态：`BLOCKED`。未修改真实 Managed Project、已安装 Plugin 缓存或 `SPECS/_V*`。在候选通过受支持方式安装后，必须新开真实 Codex 任务完成步骤 3、4；在此之前不声明本版本实现完成。

@@ -192,6 +192,40 @@ test("ADOPT_EXISTING activation preserves an existing AGENTS file and reports re
   assert.equal(await readFile(path.join(projectRoot, "AGENTS.md"), "utf8"), existing);
 });
 
+test("ADOPT_EXISTING activation creates AGENTS when the adopted project has none", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  const adopted = activationState();
+  adopted.workflow.entry = {
+    mode: "ADOPT_EXISTING",
+    initial_stage: "M0_BOUNDARY",
+    assessment_summary: "根据既有设计与实现证据，当前仍处于边界确认阶段。",
+    evidence_refs: ["docs/design.md"],
+    assessed_at: approvalTime,
+  };
+  const prepared = await service.callTool("prepare_activation", {
+    project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
+    session_id: "session-1", summary: "接入缺少协作入口的已有 Mod 项目", state: adopted,
+    product_decisions: productDecisions(),
+  });
+  const request = prepared.structuredContent;
+  await handleUserPromptSubmit({
+    cwd: projectRoot, session_id: "session-1", turn_id: "turn-adopt-missing", timestamp: approvalTime,
+    prompt: `我明确批准 ${request.request_id}，scope_digest: ${request.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(approvalTime) });
+
+  const initialized = await service.callTool("initialize_project", {
+    project_root: projectRoot, request_id: request.request_id,
+    scope_digest: request.scope_digest, session_id: "session-1", turn_id: "turn-adopt-missing",
+  }, { now: new Date(approvalTime) });
+
+  assert.equal(initialized.isError, undefined);
+  assert.equal(initialized.structuredContent.agent_entry.status, "CREATED");
+  assert.match(await readFile(path.join(projectRoot, "AGENTS.md"), "utf8"), /project-incubator-router/u);
+  assert.equal((await service.callTool("verify_receipt", {
+    project_root: projectRoot, receipt_id: initialized.structuredContent.receipt.receipt_id,
+  })).structuredContent.verified, true);
+});
+
 test("an active project prepares one scoped AGENTS repair and installs only after Maker approval", async (t) => {
   const { projectRoot, runtimeDataRoot, service } = await activatedFixture(t);
   const prepared = await service.callTool("prepare_agent_entry", {
