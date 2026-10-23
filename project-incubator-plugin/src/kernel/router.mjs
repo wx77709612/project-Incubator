@@ -41,22 +41,23 @@ export function proposeRoute(registry, input) {
 }
 
 export function activationScopeDigest({
-  project_root, project_id, route, summary, initial_state, product_decisions,
+  project_root, project_id, route, summary, initial_state, product_decisions, agent_entry,
 }) {
   return hashJson({
-    project_root, project_id, route, summary, initial_state, product_decisions,
+    project_root, project_id, route, summary, initial_state, product_decisions, agent_entry,
   });
 }
 
 export async function prepareActivationRequest({
   runtimeDataRoot, projectRoot, projectId, route, sessionId, summary, initialState,
-  productDecisions, now = new Date(),
+  productDecisions, agentEntry, now = new Date(),
 }) {
   const canonicalRoot = await canonicalProjectPath(projectRoot);
   const requestId = `activation-${randomUUID()}`;
   const payload = {
     project_root: canonicalRoot, project_id: projectId, route,
     summary, initial_state: initialState, product_decisions: productDecisions,
+    agent_entry: agentEntry,
   };
   const request = {
     request_id: requestId,
@@ -69,6 +70,7 @@ export async function prepareActivationRequest({
     route,
     initial_state: initialState,
     product_decisions: productDecisions,
+    agent_entry: agentEntry,
     created_at: now.toISOString(),
     expires_at: new Date(now.getTime() + MAX_BOOTSTRAP_AGE_MS).toISOString(),
     status: "PENDING",

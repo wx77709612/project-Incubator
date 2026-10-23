@@ -126,6 +126,10 @@ test("pending activation captures one scoped Maker approval and initializes atom
   }, { now: new Date(approvalTime) });
   assert.equal(initialized.isError, undefined);
   assert.equal(initialized.structuredContent.receipt.new_revision, 0);
+  assert.deepEqual(initialized.structuredContent.agent_entry, {
+    path: "AGENTS.md", status: "CREATED",
+  });
+  assert.match(await readFile(path.join(projectRoot, "AGENTS.md"), "utf8"), /project-incubator-router/);
   const state = await service.callTool("get_project_state", { project_root: projectRoot });
   assert.equal(state.structuredContent.state.project_id, "project-1");
   assert.equal(state.structuredContent.activation.project_type_id, "mod");
@@ -153,6 +157,92 @@ test("pending activation captures one scoped Maker approval and initializes atom
   assert.equal(marker.turn_id, "turn-2");
   assert.equal(marker.baseline_revision, -1);
   assert.equal(marker.baseline_receipt_id, null);
+});
+
+test("ADOPT_EXISTING activation preserves an existing AGENTS file and reports review required", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  const existing = "# 项目自己的协作规则\n";
+  await writeFile(path.join(projectRoot, "AGENTS.md"), existing);
+  const adopted = activationState();
+  adopted.workflow.entry = {
+    mode: "ADOPT_EXISTING",
+    initial_stage: "M0_BOUNDARY",
+    assessment_summary: "根据既有设计与实现证据，当前仍处于边界确认阶段。",
+    evidence_refs: ["docs/design.md"],
+    assessed_at: approvalTime,
+  };
+  const prepared = await service.callTool("prepare_activation", {
+    project_root: projectRoot, project_id: "project-1", project_type_id: "mod",
+    session_id: "session-1", summary: "接入已有 Mod 项目", state: adopted,
+    product_decisions: productDecisions(),
+  });
+  const request = prepared.structuredContent;
+  await handleUserPromptSubmit({
+    cwd: projectRoot, session_id: "session-1", turn_id: "turn-adopt", timestamp: approvalTime,
+    prompt: `我明确批准 ${request.request_id}，scope_digest: ${request.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(approvalTime) });
+
+  const initialized = await service.callTool("initialize_project", {
+    project_root: projectRoot, request_id: request.request_id,
+    scope_digest: request.scope_digest, session_id: "session-1", turn_id: "turn-adopt",
+  }, { now: new Date(approvalTime) });
+
+  assert.equal(initialized.isError, undefined);
+  assert.equal(initialized.structuredContent.agent_entry.status, "EXISTING_REVIEW_REQUIRED");
+  assert.equal(await readFile(path.join(projectRoot, "AGENTS.md"), "utf8"), existing);
+});
+
+test("an active project prepares one scoped AGENTS repair and installs only after Maker approval", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await activatedFixture(t);
+  const prepared = await service.callTool("prepare_agent_entry", {
+    project_root: projectRoot, session_id: "session-agent-entry",
+  }, { now: new Date(approvalTime) });
+
+  assert.equal(prepared.isError, undefined);
+  assert.equal(prepared.structuredContent.event, "AGENT_ENTRY_INSTALL_PREPARED");
+  assert.equal(prepared.structuredContent.agent_entry.status, "MISSING");
+
+  let installed = await service.callTool("install_agent_entry", {
+    project_root: projectRoot,
+    request_id: prepared.structuredContent.request_id,
+    scope_digest: prepared.structuredContent.scope_digest,
+    session_id: "session-agent-entry", turn_id: "turn-agent-entry",
+  }, { now: new Date(approvalTime) });
+  assert.equal(installed.isError, true);
+  assert.equal(installed.structuredContent.error.code, "PROMPT_NOT_FOUND");
+  await assert.rejects(() => access(path.join(projectRoot, "AGENTS.md")), /ENOENT/);
+
+  await handleUserPromptSubmit({
+    cwd: projectRoot, session_id: "session-agent-entry", turn_id: "turn-agent-entry",
+    timestamp: approvalTime,
+    prompt: `我明确批准请求 request_id=${prepared.structuredContent.request_id}，scope_digest=${prepared.structuredContent.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(approvalTime) });
+  installed = await service.callTool("install_agent_entry", {
+    project_root: projectRoot,
+    request_id: prepared.structuredContent.request_id,
+    scope_digest: prepared.structuredContent.scope_digest,
+    session_id: "session-agent-entry", turn_id: "turn-agent-entry",
+  }, { now: new Date(approvalTime) });
+
+  assert.equal(installed.isError, undefined);
+  assert.equal(installed.structuredContent.agent_entry.status, "CREATED");
+  assert.match(await readFile(path.join(projectRoot, "AGENTS.md"), "utf8"), /project-incubator-router/);
+});
+
+test("agent entry inspection preserves an existing file and creates no repair request", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await activatedFixture(t);
+  const existing = "# 已有规则\n";
+  await writeFile(path.join(projectRoot, "AGENTS.md"), existing);
+  const inspected = await service.callTool("prepare_agent_entry", {
+    project_root: projectRoot, session_id: "session-agent-entry",
+  });
+
+  assert.equal(inspected.isError, undefined);
+  assert.equal(inspected.structuredContent.event, "AGENT_ENTRY_INSPECTED");
+  assert.equal(inspected.structuredContent.agent_entry.status, "EXISTING_REVIEW_REQUIRED");
+  assert.match(inspected.structuredContent.agent_entry.existing_sha256, /^[a-f0-9]{64}$/);
+  assert.equal(await readFile(path.join(projectRoot, "AGENTS.md"), "utf8"), existing);
+  assert.deepEqual(await readdir(runtimeDataRoot), []);
 });
 
 test("Maker-approved initialization closes through Stop in the same bootstrap turn", async (t) => {

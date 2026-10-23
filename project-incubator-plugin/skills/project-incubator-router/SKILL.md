@@ -20,6 +20,17 @@ Plugin Router `project-incubator-router` 是唯一现行入口。权威集合为
 4. 只有 Maker 在下一轮明确批准该请求后，才调用 `initialize_project`。
 5. 项目已激活后，转交注册表指定的 Child Skill；不得自行替代其领域流程。
 
+## 当前任务首次进入项目
+
+当前 Codex 任务第一次进入一个已激活项目并使用 Project Incubator 时，调用一次 `prepare_agent_entry` 检查根目录 `AGENTS.md`。同一任务对同一 `project_root` 的后续轮次和 Plugin 调用复用该结果，不重复检查；切换项目根目录后才对新项目检查一次。这项任务级记忆不写入项目状态。
+
+- 返回 `CURRENT` 时继续；返回 `EXISTING_REVIEW_REQUIRED` 时保留原文件，向 Maker 展示与包内模板的 SHA-256 差异，由 Maker 决定改动方向。
+- 返回 `MISSING` 时展示 `request_id`、`scope_digest` 与补建范围。只有 Maker 下一轮明确批准后才调用 `install_agent_entry`，不得直接创建或覆盖。
+- `install_agent_entry` 返回 `CREATED` 后，当前任务必须显式读取新建的 `AGENTS.md` 一次；下一个新任务由 Codex 正常加载。
+- 目录、链接、不可读对象或模板错误均报告稳定错误并停止入口处理。
+
+首次激活的 `initialize_project` 已在同一激活授权范围内处理 Agent Entry：缺失时创建，内容相同则复用，内容不同则保留并报告 `EXISTING_REVIEW_REQUIRED`，不再另行申请补建授权。
+
 ## Entry 与 Host 确认
 
 路由提议必须同时说明 `project_type_id`、`host_profile_requirement`、候选 `host_profile_id` 与 Workflow Entry Mode，不得用 Registry 中第一个 Host 或 `windows-desktop` 作为默认值。

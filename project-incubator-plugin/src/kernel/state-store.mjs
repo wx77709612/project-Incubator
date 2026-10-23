@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, open, readFile, rename, rm } from "node:fs/promises";
 import path from "node:path";
 
+import { createAgentEntry, inspectAgentEntry, rollbackAgentEntry } from "./agent-entry.mjs";
 import { canonicalJson, hashJson } from "./canonical-json.mjs";
 import { buildReceipt, evaluateReceipt } from "./receipt.mjs";
 import { parseActivation, parseProjectState, parseReceipt } from "./schemas.mjs";
@@ -118,7 +119,7 @@ export function createStateStore(hooks = {}) {
     return evaluateReceipt(snapshot.state, snapshot.receipt, expectedReceiptId);
   }
 
-  async function initializeProjectState(root, activationInput, stateInput, authorizationRef) {
+  async function initialize(root, activationInput, stateInput, authorizationRef, agentEntryTemplate) {
     return withProjectQueue(root, async () => {
       const files = controlPaths(root);
       await mkdir(files.control, { recursive: true });
@@ -143,20 +144,43 @@ export function createStateStore(hooks = {}) {
         authorizationRef,
         receiptId,
       });
+      let agentEntry = null;
+      let agentEntryRollback = null;
       try {
+        if (agentEntryTemplate) {
+          const inspected = await inspectAgentEntry(root, agentEntryTemplate);
+          if (inspected.status === "MISSING") {
+            const created = await createAgentEntry(root, agentEntryTemplate);
+            agentEntry = created.result;
+            agentEntryRollback = created.rollbackToken;
+          } else {
+            agentEntry = { path: inspected.path, status: inspected.status };
+          }
+        }
         await atomicWrite(files.activation, jsonFile(activation), hooks);
         await atomicWrite(files.state, jsonFile(state), hooks);
         await atomicWrite(files.receipt, jsonFile(receipt), hooks);
         const verified = await verifyLatestReceipt(root, receipt.receipt_id);
         if (!verified.verified) throw new Error(verified.reason);
-        return receipt;
+        return { receipt, agent_entry: agentEntry };
       } catch (error) {
         await Promise.all(existing.map((value, index) => restore(
           [files.activation, files.state, files.receipt][index], value,
         )));
+        if (agentEntryRollback) await rollbackAgentEntry(root, agentEntryRollback);
         throw error;
       }
     });
+  }
+
+  async function initializeProjectState(root, activationInput, stateInput, authorizationRef) {
+    return (await initialize(root, activationInput, stateInput, authorizationRef, null)).receipt;
+  }
+
+  async function initializeProjectWithAgentEntry(
+    root, activationInput, stateInput, authorizationRef, agentEntryTemplate,
+  ) {
+    return initialize(root, activationInput, stateInput, authorizationRef, agentEntryTemplate);
   }
 
   async function commitProjectState(root, request) {
@@ -205,11 +229,18 @@ export function createStateStore(hooks = {}) {
     });
   }
 
-  return { readProjectSnapshot, verifyLatestReceipt, initializeProjectState, commitProjectState };
+  return {
+    readProjectSnapshot,
+    verifyLatestReceipt,
+    initializeProjectState,
+    initializeProjectWithAgentEntry,
+    commitProjectState,
+  };
 }
 
 const defaultStore = createStateStore();
 export const readProjectSnapshot = defaultStore.readProjectSnapshot;
 export const verifyLatestReceipt = defaultStore.verifyLatestReceipt;
 export const initializeProjectState = defaultStore.initializeProjectState;
+export const initializeProjectWithAgentEntry = defaultStore.initializeProjectWithAgentEntry;
 export const commitProjectState = defaultStore.commitProjectState;

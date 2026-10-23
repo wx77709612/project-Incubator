@@ -4,9 +4,11 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { loadAgentEntryTemplate } from "../../src/kernel/agent-entry.mjs";
 import {
   commitProjectState,
   createStateStore,
+  initializeProjectWithAgentEntry,
   initializeProjectState,
   readProjectSnapshot,
 } from "../../src/kernel/state-store.mjs";
@@ -135,4 +137,29 @@ test("concurrent commits cannot both consume the same revision", async (t) => {
   assert.equal(results.filter((item) => item.status === "fulfilled").length, 1);
   assert.equal(results.filter((item) => item.status === "rejected").length, 1);
   assert.equal((await readProjectSnapshot(root)).state.revision, 1);
+});
+
+test("agent entry creation and authority initialization close as one recoverable transaction", async (t) => {
+  const root = await projectRoot(t);
+  const template = await loadAgentEntryTemplate(path.resolve(import.meta.dirname, "../.."));
+  const initialized = await initializeProjectWithAgentEntry(
+    root, activation(), state(), authorizationRef, template,
+  );
+  assert.equal(initialized.agent_entry.status, "CREATED");
+  assert.deepEqual(await readFile(path.join(root, "AGENTS.md")), template.bytes);
+  assert.equal((await readProjectSnapshot(root)).state.revision, 0);
+
+  const failingRoot = await projectRoot(t);
+  const store = createStateStore({
+    beforeAtomicWrite(target) {
+      if (target.endsWith("latest-receipt.json")) throw new Error("injected receipt failure");
+    },
+  });
+  await assert.rejects(
+    () => store.initializeProjectWithAgentEntry(
+      failingRoot, activation(), state(), authorizationRef, template,
+    ),
+    /injected receipt failure/,
+  );
+  await assert.rejects(() => readFile(path.join(failingRoot, "AGENTS.md")), /ENOENT/);
 });

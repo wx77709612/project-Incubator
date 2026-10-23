@@ -115,6 +115,9 @@ test("Router Skill binds status questions to inspect_project", async () => {
   }
   assert.match(skill, /inspect_project/);
   assert.match(skill, /不得.*聊天.*补全/);
+  assert.match(skill, /当前.*任务.*第一次.*prepare_agent_entry/s);
+  assert.match(skill, /同一任务.*不重复/s);
+  assert.match(skill, /创建.*显式读取/s);
 });
 
 test("三种 Child 恢复对 Receipt hash、revision 和引用篡改均失败关闭", async (t) => {

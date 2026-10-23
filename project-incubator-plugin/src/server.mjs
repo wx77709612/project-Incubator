@@ -9,11 +9,22 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 
 import {
+  createAgentEntry,
+  inspectAgentEntry,
+  loadAgentEntryTemplate,
+  rollbackAgentEntry,
+} from "./kernel/agent-entry.mjs";
+import {
   authorizePreparedChange,
   authorizePreparedDecline,
   prepareChange,
 } from "./kernel/authorization.mjs";
 import { hashJson } from "./kernel/canonical-json.mjs";
+import {
+  consumeMaintenanceRequest,
+  getMaintenanceRequest,
+  prepareMaintenanceRequest,
+} from "./kernel/maintenance-requests.mjs";
 import { findPromptRef } from "./kernel/prompt-events.mjs";
 import { buildProjectSummary, renderProjectSummary, writeProjectOverview } from "./kernel/project-summary.mjs";
 import { loadRegistry, loadWorkflowEvaluators, resolveRoute } from "./kernel/registry.mjs";
@@ -33,7 +44,7 @@ import {
 import {
   assertProjectUninitialized,
   commitProjectState,
-  initializeProjectState,
+  initializeProjectWithAgentEntry,
   readProjectSnapshot,
   verifyLatestReceipt,
 } from "./kernel/state-store.mjs";
@@ -149,6 +160,7 @@ export async function createKernelService(options = {}) {
     throw new Error("PLUGIN_PACKAGE_VERSION_INVALID");
   }
   const pluginVersion = packageMetadata.version;
+  const agentEntryTemplate = await loadAgentEntryTemplate(pluginRoot);
   const runtimeDataRoot = options.runtimeDataRoot
     ?? resolveRuntimeDataRoot(options.env ?? process.env, pluginRoot);
   const registry = await loadRegistry(pluginRoot);
@@ -171,7 +183,13 @@ export async function createKernelService(options = {}) {
       const request = await prepareActivationRequest({
         runtimeDataRoot, projectRoot: args.project_root, projectId: args.project_id,
         route, sessionId: args.session_id, summary: args.summary,
-        initialState: state, productDecisions, now: context.now ?? new Date(),
+        initialState: state, productDecisions,
+        agentEntry: {
+          path: "AGENTS.md",
+          policy: "CREATE_IF_MISSING_PRESERVE_EXISTING",
+          template_sha256: agentEntryTemplate.sha256,
+        },
+        now: context.now ?? new Date(),
       });
       return {
         event: "ACTIVATION_PREPARED",
@@ -180,6 +198,7 @@ export async function createKernelService(options = {}) {
         route,
         summary: request.summary,
         product_decisions: request.product_decisions,
+        agent_entry: request.agent_entry,
         expires_at: request.expires_at,
       };
     },
@@ -201,6 +220,11 @@ export async function createKernelService(options = {}) {
       }
       validateWorkflowEntry(state, workflowEvaluators.get(route.project_type_id));
       const productDecisions = parseActivationProductDecisions(request.product_decisions);
+      if (request.agent_entry?.path !== "AGENTS.md"
+        || request.agent_entry?.policy !== "CREATE_IF_MISSING_PRESERVE_EXISTING"
+        || request.agent_entry?.template_sha256 !== agentEntryTemplate.sha256) {
+        throw new Error("AGENT_ENTRY_TEMPLATE_INVALID");
+      }
       if (request.scope_digest !== activationScopeDigest(request)) {
         throw new Error("SCOPE_DIGEST_MISMATCH");
       }
@@ -247,11 +271,74 @@ export async function createKernelService(options = {}) {
           summary: "项目已按 Maker 授权完成初始化。",
         },
       };
-      const receipt = await initializeProjectState(
-        args.project_root, activation, initializedState, authorizationRef,
+      const initialized = await initializeProjectWithAgentEntry(
+        args.project_root, activation, initializedState, authorizationRef, agentEntryTemplate,
       );
       await consumeActivationRequest(request);
-      return { activation, receipt };
+      return { activation, receipt: initialized.receipt, agent_entry: initialized.agent_entry };
+    },
+
+    async prepare_agent_entry(args, context) {
+      const inspected = await inspectAgentEntry(args.project_root, agentEntryTemplate);
+      if (inspected.status !== "MISSING") {
+        return { event: "AGENT_ENTRY_INSPECTED", agent_entry: inspected };
+      }
+      const request = await prepareMaintenanceRequest({
+        runtimeDataRoot,
+        projectRoot: args.project_root,
+        sessionId: args.session_id,
+        operation: "AGENT_ENTRY_INSTALL",
+        requestPrefix: "request",
+        payload: { template_sha256: agentEntryTemplate.sha256 },
+        now: context.now ?? new Date(),
+      });
+      return {
+        event: "AGENT_ENTRY_INSTALL_PREPARED",
+        request_id: request.request_id,
+        scope_digest: request.scope_digest,
+        expires_at: request.expires_at,
+        agent_entry: inspected,
+      };
+    },
+
+    async install_agent_entry(args, context) {
+      const now = context.now ?? new Date();
+      const request = await getMaintenanceRequest({
+        runtimeDataRoot,
+        projectRoot: args.project_root,
+        requestId: args.request_id,
+        scopeDigest: args.scope_digest,
+        sessionId: args.session_id,
+        operation: "AGENT_ENTRY_INSTALL",
+        now,
+      });
+      if (request.payload.template_sha256 !== agentEntryTemplate.sha256) {
+        throw new Error("AGENT_ENTRY_SOURCE_CHANGED");
+      }
+      const inspected = await inspectAgentEntry(args.project_root, agentEntryTemplate);
+      if (inspected.status !== "MISSING") throw new Error("AGENT_ENTRY_SOURCE_CHANGED");
+      const snapshot = await readProjectSnapshot(args.project_root);
+      const promptRef = await findPromptRef(runtimeDataRoot, {
+        project_id: snapshot.state.project_id,
+        session_id: args.session_id,
+        turn_id: args.turn_id,
+      });
+      await authorizePreparedChange({
+        request_id: request.request_id,
+        scope_digest: request.scope_digest,
+        project_id: snapshot.state.project_id,
+        session_id: args.session_id,
+        turn_id: args.turn_id,
+        requires_authorization: true,
+      }, promptRef, { now });
+      const created = await createAgentEntry(args.project_root, agentEntryTemplate);
+      try {
+        await consumeMaintenanceRequest(request);
+      } catch (error) {
+        await rollbackAgentEntry(args.project_root, created.rollbackToken);
+        throw error;
+      }
+      return { event: "AGENT_ENTRY_INSTALLED", agent_entry: created.result };
     },
 
     async prepare_change(args, context) {
@@ -431,6 +518,13 @@ export async function createMcpServer(options = {}) {
       }).strict()).min(1).max(100),
     },
     initialize_project: {
+      project_root: z.string(), request_id: z.string(), scope_digest: z.string(),
+      session_id: z.string(), turn_id: z.string(),
+    },
+    prepare_agent_entry: {
+      project_root: z.string(), session_id: z.string(),
+    },
+    install_agent_entry: {
       project_root: z.string(), request_id: z.string(), scope_digest: z.string(),
       session_id: z.string(), turn_id: z.string(),
     },
