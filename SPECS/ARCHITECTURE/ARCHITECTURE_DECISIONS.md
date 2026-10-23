@@ -2664,3 +2664,15 @@ Scope：Plugin 0.3.x 现行执行轨道。部分替代 Decision 001–014 及旧
 现行入口仅为 Plugin Router；旧同名 Skill 最小转交。权威集合为 activation.json、state.json、latest-receipt.json；恢复统一 inspect_project。所有受控变更经 Kernel MCP，只有持久化、revision、回读和 Receipt 一致才闭合。Runtime 不替 Maker 决策，也不替 Agent 创作。
 
 Migration Impact：不自动迁移已有项目，不修改真实 Managed Project；兼容资产退出活动发现与默认分发，包与安装必须有来源核验。具体条款见 ACP 的逐项 Invariant 处置及影响清单。
+
+## Decision 016：Codex Managed Project 初始化协作入口
+
+Status：PENDING；Authority：Maker 于 2026-10-23 批准[上游 Codex 项目级协作入口 ACP](CODEX_PROJECT_AGENT_ENTRY_CHANGE_PROPOSAL.md)；本 Decision 的逐条文字仍待 Maker 确认。
+
+Decision：现行 Codex Plugin 在首次初始化 Managed Project 时，若根目录不存在 `AGENTS.md`，须从插件包内当前模板排他创建并回读验证；入口与三个权威 JSON 均闭合后，`initialize_project` 才可报告成功。已有普通 `AGENTS.md` 不覆盖、不追加，返回独立的人工核对结果；不安全路径、并发冲突和新建失败须失败关闭。
+
+Reason：旧 Host Bootstrap 的 Python/Markdown 实现必须退出，但项目级 Agent 协作入口是独立的合理能力。Codex 不强制所有项目拥有 `AGENTS.md`，并不构成 Project Incubator 放弃这一已设计能力的依据。旧实现退役与能力保留应分别决策。
+
+Effective Scope：仅 Codex Plugin 当前分发和其新项目初始化。`AGENTS.md` 是非权威 Host Integration Artifact；不加入 Decision 015 的三个 JSON 权威集合，不进入 revision、Receipt Hash、Stage、Gate 或 Maker Authorization。Project Type 的 `host_profile_id` 不表示 Agent Host Environment。
+
+Migration Impact：不自动修改已激活项目，不复活旧 `BOOTSTRAP_HOST_INTEGRATION`，不修改历史 `_V*`。下游 Design、Contract、Runtime 与两份 Plan 应补齐模板、事务闭合、失败恢复、候选包和真实初始化验收。Plugin 实施须在下游计划获批后进行。

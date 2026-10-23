@@ -1,6 +1,6 @@
 # Codex Managed Project 协作入口初始化变更提案
 
-状态：DRAFT，待 Maker 审阅；2026-10-22。本文不授权修改 Plugin 代码、安装包或真实 Managed Project。
+状态：APPROVED；Maker 于 2026-10-23 明确批准本书面提案。批准架构方向，不授权修改 Plugin 代码、安装包或真实 Managed Project；实施仍须通过下游规格与计划 Gate。
 
 ## 1. 问题与目标
 
