@@ -194,7 +194,14 @@ export function createStateStore(hooks = {}) {
         await Promise.all(existing.map((value, index) => restore(
           [files.activation, files.state, files.receipt][index], value,
         )));
-        if (agentEntryRollback) await rollbackAgentEntry(root, agentEntryRollback);
+        if (agentEntryRollback) {
+          const rollback = await rollbackAgentEntry(root, agentEntryRollback);
+          if (rollback.residual_paths.length) {
+            const rollbackError = new Error("AGENT_ENTRY_ROLLBACK_INCOMPLETE", { cause: error });
+            rollbackError.residual_paths = rollback.residual_paths;
+            throw rollbackError;
+          }
+        }
         throw error;
       }
     });

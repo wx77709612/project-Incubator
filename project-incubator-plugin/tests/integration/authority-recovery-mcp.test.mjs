@@ -128,6 +128,71 @@ test("recovery accepts an advanced State 1.1 while validating its original entry
   assert.equal(prepared.structuredContent.proposed_revision, 0);
 });
 
+test("recovery rejects unknown stages, missing successors, and invalid return stages", async (t) => {
+  const { projectRoot, service } = await fixture(t);
+  const invalid = [];
+
+  const unknown = state(0);
+  unknown.workflow.stage = "NOT_A_REAL_STAGE";
+  unknown.workflow.allowed_next = [];
+  invalid.push(unknown);
+
+  const missingSuccessor = state(0);
+  missingSuccessor.workflow.allowed_next = [];
+  invalid.push(missingSuccessor);
+
+  const invalidReturn = state(0);
+  invalidReturn.schema_version = "1.1";
+  invalidReturn.workflow = {
+    stage: "M3_BUILD_PACKAGE",
+    status: "ACTIVE",
+    completed: ["M0_BOUNDARY", "M1_RISK_MODEL", "M2_VERTICAL_SLICE"],
+    allowed_next: ["M4_TARGET_VALIDATION", "MODEL_REVIEW"],
+    return_stage: "M2_VERTICAL_SLICE",
+    entry: {
+      mode: "ADOPT_EXISTING",
+      initial_stage: "M0_BOUNDARY",
+      assessment_summary: "现有证据支持从 M0 接入并恢复到 M3。",
+      evidence_refs: ["docs/design.md"],
+      assessed_at: now.toISOString(),
+    },
+  };
+  invalid.push(invalidReturn);
+
+  for (const candidate of invalid) {
+    const result = await prepare(service, projectRoot, candidate);
+    assert.equal(result.isError, true);
+    assert.equal(result.structuredContent.error.code, "WORKFLOW_ALLOWED_NEXT_MISMATCH");
+  }
+});
+
+test("a broken active project lets the first recovery message reach the Agent before approval capture", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  await initializeProjectState(projectRoot, activation(), state(0), authorizationRef);
+  await writeFile(path.join(projectRoot, ".project-incubator", "state.json"), "{broken");
+
+  assert.deepEqual(await handleUserPromptSubmit({
+    cwd: projectRoot,
+    session_id: "session-recovery",
+    turn_id: "turn-diagnose",
+    timestamp: now.toISOString(),
+    prompt: "请检查并准备恢复这个项目。",
+  }, { runtimeDataRoot, now }), { continue: true });
+
+  const prepared = (await prepare(service, projectRoot, state(0))).structuredContent;
+  await approve(projectRoot, runtimeDataRoot, prepared);
+  const recovered = await service.callTool("recover_project_authority", {
+    project_root: projectRoot,
+    request_id: prepared.request_id,
+    scope_digest: prepared.scope_digest,
+    session_id: "session-recovery",
+    turn_id: "turn-recovery",
+  }, { now });
+  assert.equal(recovered.isError, undefined);
+  assert.equal(recovered.structuredContent.recovery.baseline, "REESTABLISHED");
+  assert.equal(recovered.structuredContent.receipt.new_revision, 0);
+});
+
 test("reestablished recovery requires exact Maker approval and closes revision zero", async (t) => {
   const { projectRoot, runtimeDataRoot, service } = await fixture(t);
   const prepared = (await prepare(service, projectRoot, state(0))).structuredContent;

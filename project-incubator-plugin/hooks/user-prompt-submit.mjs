@@ -68,7 +68,8 @@ export async function handleUserPromptSubmit(event, options = {}) {
       runtimeDataRoot, root, event.session_id, options.now ?? new Date(timestamp),
     );
     if (maintenance?.operation === "AUTHORITY_RECOVERY") return capturePending(maintenance);
-    throw error;
+    // 权威损坏但尚未准备恢复请求时，让诊断消息进入 Agent；此处不记录授权 Prompt。
+    return { continue: true };
   }
   await recordMakerPrompt({
     activation: snapshot.activation,

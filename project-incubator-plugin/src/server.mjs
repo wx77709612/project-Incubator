@@ -135,17 +135,38 @@ function validateRecoveryWorkflow(state, evaluator) {
     const entryEvaluation = evaluator.evaluateEntry(entryState);
     if (!entryEvaluation.allowed) throw new Error(entryEvaluation.code);
   }
-  for (const targetStage of state.workflow.allowed_next) {
-    const evaluation = evaluator.evaluateTransition(state, {
-      target_stage: targetStage,
-      completion_satisfied: true,
-      model_invalidated: true,
-      model_updated: true,
-      maker_authorized: true,
-      changes_boundary: false,
-    });
-    if (!evaluation.allowed) throw new Error("WORKFLOW_ALLOWED_NEXT_MISMATCH");
+
+  const currentProbe = structuredClone(state);
+  currentProbe.workflow.entry = {
+    mode: "ADOPT_EXISTING",
+    initial_stage: state.workflow.stage,
+    assessment_summary: "权威恢复期间验证当前阶段。",
+    evidence_refs: ["authority-recovery"],
+    assessed_at: state.last_change.changed_at,
+  };
+  const currentEvaluation = evaluator.evaluateEntry(currentProbe);
+  if (currentEvaluation.allowed) {
+    try {
+      assertWorkflowShape(state.workflow, currentEvaluation.workflow);
+    } catch {
+      throw new Error("WORKFLOW_ALLOWED_NEXT_MISMATCH");
+    }
+    return;
   }
+
+  const returnStage = state.workflow.return_stage ?? null;
+  if (!returnStage || !sameValues(state.workflow.allowed_next, [returnStage])) {
+    throw new Error("WORKFLOW_ALLOWED_NEXT_MISMATCH");
+  }
+  const reviewEvaluation = evaluator.evaluateTransition(state, {
+    target_stage: returnStage,
+    completion_satisfied: true,
+    model_invalidated: true,
+    model_updated: true,
+    maker_authorized: true,
+    changes_boundary: false,
+  });
+  if (!reviewEvaluation.allowed) throw new Error("WORKFLOW_ALLOWED_NEXT_MISMATCH");
 }
 
 function assertWorkflowEntryImmutable(currentState, proposedState) {
@@ -370,7 +391,12 @@ export async function createKernelService(options = {}) {
       try {
         await consumeMaintenanceRequest(request);
       } catch (error) {
-        await rollbackAgentEntry(args.project_root, created.rollbackToken);
+        const rollback = await rollbackAgentEntry(args.project_root, created.rollbackToken);
+        if (rollback.residual_paths.length) {
+          const rollbackError = new Error("AGENT_ENTRY_ROLLBACK_INCOMPLETE", { cause: error });
+          rollbackError.residual_paths = rollback.residual_paths;
+          throw rollbackError;
+        }
         throw error;
       }
       return { event: "AGENT_ENTRY_INSTALLED", agent_entry: created.result };

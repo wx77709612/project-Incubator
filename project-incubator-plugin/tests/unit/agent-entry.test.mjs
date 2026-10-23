@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -146,4 +146,26 @@ test("rollback removes only the unchanged file created by this operation", async
   await mkdir(path.join(replacementRoot, "AGENTS.md"));
   await rollbackAgentEntry(replacementRoot, replacement.rollbackToken);
   assert.equal((await inspectAgentEntry(replacementRoot, template).catch((error) => error.message)), "AGENT_ENTRY_PATH_UNSAFE");
+});
+
+test("rollback preserves a same-byte replacement before or during rollback", async (t) => {
+  const template = await loadAgentEntryTemplate(pluginRoot);
+
+  const replacedRoot = await temporaryRoot(t, "incubator-agent-entry-same-bytes-");
+  const replaced = await createAgentEntry(replacedRoot, template);
+  await rm(path.join(replacedRoot, "AGENTS.md"));
+  await writeFile(path.join(replacedRoot, "AGENTS.md"), template.bytes);
+  await rollbackAgentEntry(replacedRoot, replaced.rollbackToken);
+  assert.deepEqual(await readFile(path.join(replacedRoot, "AGENTS.md")), template.bytes);
+
+  const racedRoot = await temporaryRoot(t, "incubator-agent-entry-race-");
+  const raced = await createAgentEntry(racedRoot, template);
+  await rollbackAgentEntry(racedRoot, raced.rollbackToken, {
+    async beforeQuarantine(target) {
+      await rm(target);
+      await writeFile(target, template.bytes);
+    },
+  });
+  assert.deepEqual(await readFile(path.join(racedRoot, "AGENTS.md")), template.bytes);
+  assert.deepEqual((await readdir(racedRoot)).sort(), ["AGENTS.md"]);
 });

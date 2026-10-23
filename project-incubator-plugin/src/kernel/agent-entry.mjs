@@ -1,5 +1,5 @@
-import { createHash } from "node:crypto";
-import { lstat, open, readFile, realpath, rm, stat } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import { link, lstat, open, readFile, realpath, rename, rm } from "node:fs/promises";
 import path from "node:path";
 
 const AGENT_ENTRY_FILE = "AGENTS.md";
@@ -32,6 +32,20 @@ function normalizeTemplate(template) {
   }
   if (sha256(template.bytes) !== template.sha256) fail("AGENT_ENTRY_TEMPLATE_INVALID");
   return template;
+}
+
+function fileIdentity(metadata) {
+  return {
+    dev: metadata.dev.toString(),
+    ino: metadata.ino.toString(),
+    birthtime_ns: metadata.birthtimeNs.toString(),
+  };
+}
+
+function sameIdentity(metadata, identity) {
+  return identity?.dev === metadata.dev.toString()
+    && identity?.ino === metadata.ino.toString()
+    && identity?.birthtime_ns === metadata.birthtimeNs.toString();
 }
 
 async function inspectTarget(target) {
@@ -106,12 +120,13 @@ export async function createAgentEntry(projectRoot, templateInput, hooks = {}) {
 
   let handle;
   let created = false;
-  const rollbackToken = { path: AGENT_ENTRY_FILE, sha256: template.sha256 };
+  const rollbackToken = { path: AGENT_ENTRY_FILE, sha256: template.sha256, identity: null };
   try {
     handle = await open(target, "wx");
     created = true;
     await handle.writeFile(template.bytes);
     await handle.sync();
+    rollbackToken.identity = fileIdentity(await handle.stat({ bigint: true }));
     await handle.close();
     handle = undefined;
     await hooks.beforeReadback?.(target);
@@ -123,34 +138,75 @@ export async function createAgentEntry(projectRoot, templateInput, hooks = {}) {
     };
   } catch (error) {
     await handle?.close().catch(() => {});
-    if (created) await rollbackAgentEntry(projectRoot, rollbackToken);
+    if (created) {
+      const rollback = await rollbackAgentEntry(projectRoot, rollbackToken);
+      if (rollback.residual_paths.length) {
+        const rollbackError = new Error("AGENT_ENTRY_ROLLBACK_INCOMPLETE", { cause: error });
+        rollbackError.residual_paths = rollback.residual_paths;
+        throw rollbackError;
+      }
+    }
     if (error?.code === "EEXIST") fail("AGENT_ENTRY_SOURCE_CHANGED", error);
     throw error;
   }
 }
 
-export async function rollbackAgentEntry(projectRoot, rollbackToken) {
+export async function rollbackAgentEntry(projectRoot, rollbackToken, hooks = {}) {
   if (rollbackToken?.path !== AGENT_ENTRY_FILE || !/^[a-f0-9]{64}$/.test(rollbackToken?.sha256 ?? "")) {
-    return;
+    return { rolled_back: false, residual_paths: [] };
   }
   const target = path.join(path.resolve(projectRoot), AGENT_ENTRY_FILE);
   let before;
   try {
     before = await inspectTarget(target);
   } catch (error) {
-    if (error?.message === "AGENT_ENTRY_PATH_UNSAFE") return;
+    if (error?.message === "AGENT_ENTRY_PATH_UNSAFE") return { rolled_back: false, residual_paths: [] };
     throw error;
   }
-  if (before === null) return;
-  const bytes = await readTarget(target);
-  if (sha256(bytes) !== rollbackToken.sha256) return;
-  const after = await stat(target, { bigint: true });
-  if (!after.isFile()
-    || before.dev !== after.dev
-    || before.ino !== after.ino
-    || before.size !== after.size
-    || before.mtimeNs !== after.mtimeNs) {
-    return;
+  if (before === null || !sameIdentity(before, rollbackToken.identity)) {
+    return { rolled_back: false, residual_paths: [] };
   }
-  await rm(target);
+  const bytes = await readTarget(target);
+  if (sha256(bytes) !== rollbackToken.sha256) {
+    return { rolled_back: false, residual_paths: [] };
+  }
+
+  await hooks.beforeQuarantine?.(target);
+  const quarantine = path.join(
+    path.dirname(target), `.AGENTS.md.rollback-${process.pid}-${randomUUID()}`,
+  );
+  try {
+    await rename(target, quarantine);
+  } catch (error) {
+    if (error?.code === "ENOENT") return { rolled_back: false, residual_paths: [] };
+    throw error;
+  }
+
+  let moved;
+  let movedBytes = null;
+  try {
+    moved = await lstat(quarantine, { bigint: true });
+    if (moved.isFile() && !moved.isSymbolicLink()) movedBytes = await readFile(quarantine);
+  } catch {
+    moved = null;
+  }
+  if (moved?.isFile()
+    && !moved.isSymbolicLink()
+    && sameIdentity(moved, rollbackToken.identity)
+    && sha256(movedBytes) === rollbackToken.sha256) {
+    await rm(quarantine);
+    return { rolled_back: true, residual_paths: [] };
+  }
+
+  try {
+    if (!moved?.isFile() || moved.isSymbolicLink()) throw new Error("AGENT_ENTRY_RESTORE_UNSAFE");
+    await link(quarantine, target);
+    await rm(quarantine);
+    return { rolled_back: false, residual_paths: [] };
+  } catch {
+    return {
+      rolled_back: false,
+      residual_paths: [path.relative(path.resolve(projectRoot), quarantine).replaceAll(path.sep, "/")],
+    };
+  }
 }
