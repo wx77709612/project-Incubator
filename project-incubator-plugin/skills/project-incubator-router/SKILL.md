@@ -24,6 +24,8 @@ Plugin Router `project-incubator-router` 是唯一现行入口。权威集合为
 
 当前 Codex 任务第一次进入一个已激活项目并使用 Project Incubator 时，调用一次 `prepare_agent_entry` 检查根目录 `AGENTS.md`。同一任务对同一 `project_root` 的后续轮次和 Plugin 调用复用该结果，不重复检查；切换项目根目录后才对新项目检查一次。这项任务级记忆不写入项目状态。
 
+此处 `session_id` 必须直接使用真实宿主公开的 `CODEX_SESSION_ID`，不得从工作区名称、路径、聊天内容或其他 UUID 猜测。Maker 批准后调用 `install_agent_entry` 时不传 `turn_id`；真实回合、规范项目根与最新消息由 Hook 记录，Kernel 按同一规范项目根、项目 ID、Session、`request_id` 与 `scope_digest` 定位并校验最新批准。不同根目录不共享批准；指针不完整、出现重叠记录歧义或批准已被后续消息替代时失败关闭，不回退旧记录。若报告 `PROMPT_ORDER_AMBIGUOUS`，必须请 Maker 在并发记录结束后连续发送两条独立消息：第一条用于确认并清除冲突状态且仍会失败，第二条再精确批准或拒绝；不得把第一条当作有效授权。
+
 - 返回 `CURRENT` 时继续；返回 `EXISTING_REVIEW_REQUIRED` 时保留原文件，向 Maker 展示与包内模板的 SHA-256 差异，由 Maker 决定改动方向。
 - 返回 `MISSING` 时展示 `request_id`、`scope_digest` 与补建范围。只有 Maker 下一轮明确批准后才调用 `install_agent_entry`，不得直接创建或覆盖。
 - `install_agent_entry` 返回 `CREATED` 后，当前任务必须显式读取新建的 `AGENTS.md` 一次；下一个新任务由 Codex 正常加载。
@@ -76,6 +78,8 @@ Maker 询问“项目状态”“当前进度”“下一步做什么”“有�
 2. 完整展示 `request_id`、`scope_digest`、恢复摘要和候选范围，并请 Maker 在下一轮明确批准；不得代 Maker 批准。
 3. Maker 明确批准同一请求编号和摘要后，调用 `recover_project_authority`。准备后任何权威文件新增、删除或字节变化都必须返回 `RECOVERY_SOURCE_CHANGED`，不得覆盖。
 4. 只有 Kernel 写入三份权威 JSON、逐项回读并验证新 Receipt 后才报告恢复完成。`CONTINUED` 表示从可解析旧 State 的下一 revision 延续；`REESTABLISHED` 表示以 revision 0 建立新的恢复基线，不代表历史从未存在。
+
+恢复准备与提交同样必须使用真实 `CODEX_SESSION_ID`；调用 `recover_project_authority` 时不传 `turn_id`，由 Kernel 使用 Hook 已记录的真实回合完成授权绑定，不要求 Agent 推断宿主未公开的标识。
 
 证据不足时只报告缺口并等待 Maker，不得调用准备或提交恢复。恢复不新增阶段、Gate 或 Workflow；旧 Pending Request 不继承，后续需要时按现行流程重新提出。
 

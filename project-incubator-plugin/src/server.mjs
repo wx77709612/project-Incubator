@@ -30,7 +30,7 @@ import {
   getMaintenanceRequest,
   prepareMaintenanceRequest,
 } from "./kernel/maintenance-requests.mjs";
-import { findPromptRef } from "./kernel/prompt-events.mjs";
+import { findAuthorizedPromptRef, findPromptRef } from "./kernel/prompt-events.mjs";
 import { buildProjectSummary, renderProjectSummary, writeProjectOverview } from "./kernel/project-summary.mjs";
 import { loadRegistry, loadWorkflowEvaluators, resolveRoute } from "./kernel/registry.mjs";
 import {
@@ -374,17 +374,20 @@ export async function createKernelService(options = {}) {
       const inspected = await inspectAgentEntry(args.project_root, agentEntryTemplate);
       if (inspected.status !== "MISSING") throw new Error("AGENT_ENTRY_SOURCE_CHANGED");
       const snapshot = await readProjectSnapshot(args.project_root);
-      const promptRef = await findPromptRef(runtimeDataRoot, {
+      const promptRef = await findAuthorizedPromptRef(runtimeDataRoot, {
+        project_root: request.project_root,
         project_id: snapshot.state.project_id,
         session_id: args.session_id,
-        turn_id: args.turn_id,
+        request_id: request.request_id,
+        scope_digest: request.scope_digest,
+        intent: "APPROVE",
       });
       await authorizePreparedChange({
         request_id: request.request_id,
         scope_digest: request.scope_digest,
         project_id: snapshot.state.project_id,
         session_id: args.session_id,
-        turn_id: args.turn_id,
+        turn_id: promptRef.turn_id,
         requires_authorization: true,
       }, promptRef, { now });
       const created = await createAgentEntry(args.project_root, agentEntryTemplate);
@@ -464,17 +467,20 @@ export async function createKernelService(options = {}) {
       if (!sameValues(currentDiagnostics.fingerprints, request.payload.fingerprints)) {
         throw new Error("RECOVERY_SOURCE_CHANGED");
       }
-      const promptRef = await findPromptRef(runtimeDataRoot, {
+      const promptRef = await findAuthorizedPromptRef(runtimeDataRoot, {
+        project_root: request.project_root,
         project_id: request.project_id,
         session_id: args.session_id,
-        turn_id: args.turn_id,
+        request_id: request.request_id,
+        scope_digest: request.scope_digest,
+        intent: "APPROVE",
       });
       const authorizationRef = await authorizePreparedChange({
         request_id: request.request_id,
         scope_digest: request.scope_digest,
         project_id: request.project_id,
         session_id: args.session_id,
-        turn_id: args.turn_id,
+        turn_id: promptRef.turn_id,
         requires_authorization: true,
       }, promptRef, { now });
       const recovered = await recoverProjectAuthority(
@@ -672,7 +678,7 @@ export async function createMcpServer(options = {}) {
     },
     install_agent_entry: {
       project_root: z.string(), request_id: z.string(), scope_digest: z.string(),
-      session_id: z.string(), turn_id: z.string(),
+      session_id: z.string(), turn_id: z.string().optional(),
     },
     prepare_authority_recovery: {
       project_root: z.string(), session_id: z.string(), summary: z.string(),
@@ -680,7 +686,7 @@ export async function createMcpServer(options = {}) {
     },
     recover_project_authority: {
       project_root: z.string(), request_id: z.string(), scope_digest: z.string(),
-      session_id: z.string(), turn_id: z.string(),
+      session_id: z.string(), turn_id: z.string().optional(),
     },
     prepare_change: {
       project_root: z.string(), operation: z.string(), change_kind: z.string(),

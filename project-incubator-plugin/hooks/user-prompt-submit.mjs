@@ -14,6 +14,11 @@ function turnKey(projectId, sessionId, turnId) {
   return createHash("sha256").update(`${projectId}\0${sessionId}\0${turnId}`, "utf8").digest("hex");
 }
 
+function tracksMaintenancePrompt(pending) {
+  return pending?.operation === "AGENT_ENTRY_INSTALL"
+    || pending?.operation === "AUTHORITY_RECOVERY";
+}
+
 export function turnMarkerPath(runtimeDataRoot, projectId, sessionId, turnId) {
   return path.join(runtimeDataRoot, `turn-${turnKey(projectId, sessionId, turnId)}.json`);
 }
@@ -37,7 +42,10 @@ export async function handleUserPromptSubmit(event, options = {}) {
     await recordBootstrapPrompt({
       role: "maker", project_id: pending.project_id, session_id: event.session_id,
       turn_id: event.turn_id, text: event.prompt, captured_at: timestamp,
-    }, pending, runtimeDataRoot, { now: options.now ?? new Date(timestamp) });
+    }, pending, runtimeDataRoot, {
+      now: options.now ?? new Date(timestamp),
+      trackLatest: tracksMaintenancePrompt(pending),
+    });
     await writeTurnMarker(runtimeDataRoot, {
       project_id: pending.project_id,
       session_id: event.session_id,
@@ -57,7 +65,9 @@ export async function handleUserPromptSubmit(event, options = {}) {
     const maintenance = await findPendingMaintenance(
       runtimeDataRoot, event.cwd ?? ".", event.session_id, options.now ?? new Date(timestamp),
     );
-    return maintenance ? capturePending(maintenance) : { continue: true };
+    return maintenance && typeof maintenance.project_id === "string"
+      ? capturePending(maintenance)
+      : { continue: true };
   }
   if (!runtimeDataRoot) throw new Error("RUNTIME_DATA_ROOT_REQUIRED");
   let snapshot;
@@ -71,15 +81,22 @@ export async function handleUserPromptSubmit(event, options = {}) {
     // 权威损坏但尚未准备恢复请求时，让诊断消息进入 Agent；此处不记录授权 Prompt。
     return { continue: true };
   }
+  const maintenance = await findPendingMaintenance(
+    runtimeDataRoot, root, event.session_id, options.now ?? new Date(timestamp),
+  );
   await recordMakerPrompt({
     activation: snapshot.activation,
     role: "maker",
+    project_root: root,
     project_id: snapshot.state.project_id,
     session_id: event.session_id,
     turn_id: event.turn_id,
     text: event.prompt,
     captured_at: timestamp,
-  }, runtimeDataRoot, { now: options.now ?? new Date(timestamp) });
+  }, runtimeDataRoot, {
+    now: options.now ?? new Date(timestamp),
+    trackLatest: maintenance !== null,
+  });
   await writeTurnMarker(runtimeDataRoot, {
     project_id: snapshot.state.project_id,
     session_id: event.session_id,

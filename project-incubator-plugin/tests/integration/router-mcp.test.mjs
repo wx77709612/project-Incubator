@@ -240,27 +240,91 @@ test("an active project prepares one scoped AGENTS repair and installs only afte
     project_root: projectRoot,
     request_id: prepared.structuredContent.request_id,
     scope_digest: prepared.structuredContent.scope_digest,
-    session_id: "session-agent-entry", turn_id: "turn-agent-entry",
+    session_id: "session-agent-entry",
   }, { now: new Date(approvalTime) });
   assert.equal(installed.isError, true);
   assert.equal(installed.structuredContent.error.code, "PROMPT_NOT_FOUND");
   await assert.rejects(() => access(path.join(projectRoot, "AGENTS.md")), /ENOENT/);
 
+  installed = await service.callTool("install_agent_entry", {
+    project_root: projectRoot,
+    request_id: prepared.structuredContent.request_id,
+    scope_digest: prepared.structuredContent.scope_digest,
+    session_id: "wrong-session",
+  }, { now: new Date(approvalTime) });
+  assert.equal(installed.isError, true);
+  assert.equal(installed.structuredContent.error.code, "PROMPT_CONTEXT_MISMATCH");
+
+  installed = await service.callTool("install_agent_entry", {
+    project_root: projectRoot,
+    request_id: prepared.structuredContent.request_id,
+    scope_digest: "b".repeat(64),
+    session_id: "session-agent-entry",
+  }, { now: new Date(approvalTime) });
+  assert.equal(installed.isError, true);
+  assert.equal(installed.structuredContent.error.code, "SCOPE_DIGEST_MISMATCH");
+
   await handleUserPromptSubmit({
-    cwd: projectRoot, session_id: "session-agent-entry", turn_id: "turn-agent-entry",
+    cwd: projectRoot, session_id: "session-agent-entry", turn_id: "turn-agent-entry-decline",
     timestamp: approvalTime,
-    prompt: `我明确批准请求 request_id=${prepared.structuredContent.request_id}，scope_digest=${prepared.structuredContent.scope_digest}`,
+    prompt: `我明确拒绝请求 request_id=${prepared.structuredContent.request_id}，scope_digest=${prepared.structuredContent.scope_digest}`,
   }, { runtimeDataRoot, now: new Date(approvalTime) });
   installed = await service.callTool("install_agent_entry", {
     project_root: projectRoot,
     request_id: prepared.structuredContent.request_id,
     scope_digest: prepared.structuredContent.scope_digest,
-    session_id: "session-agent-entry", turn_id: "turn-agent-entry",
+    session_id: "session-agent-entry",
   }, { now: new Date(approvalTime) });
+  assert.equal(installed.isError, true);
+  assert.equal(installed.structuredContent.error.code, "EXPLICIT_APPROVAL_REQUIRED");
+
+  const laterApprovalTime = new Date(new Date(approvalTime).getTime() + 1000).toISOString();
+  await handleUserPromptSubmit({
+    cwd: projectRoot, session_id: "session-agent-entry", turn_id: "turn-agent-entry",
+    timestamp: laterApprovalTime,
+    prompt: `我明确批准请求 request_id=${prepared.structuredContent.request_id}，scope_digest=${prepared.structuredContent.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(laterApprovalTime) });
+  installed = await service.callTool("install_agent_entry", {
+    project_root: projectRoot,
+    request_id: prepared.structuredContent.request_id,
+    scope_digest: prepared.structuredContent.scope_digest,
+    session_id: "session-agent-entry",
+  }, { now: new Date(laterApprovalTime) });
 
   assert.equal(installed.isError, undefined);
   assert.equal(installed.structuredContent.agent_entry.status, "CREATED");
   assert.match(await readFile(path.join(projectRoot, "AGENTS.md"), "utf8"), /project-incubator-router/);
+});
+
+test("an AGENTS approval captured under another root cannot authorize the same project id", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await activatedFixture(t);
+  const otherRoot = await mkdtemp(path.join(os.tmpdir(), "incubator-router-other-project-"));
+  t.after(() => rm(otherRoot, { recursive: true, force: true }));
+  await initializeProjectState(otherRoot, {
+    schema_version: "1.0", project_id: "project-1",
+    plugin_id: "project-incubator-plugin", plugin_version: "0.1.0", status: "ACTIVE",
+    project_type_id: "mod", child_skill_id: "mod-incubator", host_profile_id: "sims-4",
+  }, initialState(), {
+    authorization_id: "authorization-other", request_id: "activation-other",
+    prompt_digest: "c".repeat(64),
+  });
+  const prepared = (await service.callTool("prepare_agent_entry", {
+    project_root: projectRoot, session_id: "session-agent-entry",
+  }, { now: new Date(approvalTime) })).structuredContent;
+
+  await handleUserPromptSubmit({
+    cwd: otherRoot, session_id: "session-agent-entry", turn_id: "turn-other-root",
+    timestamp: approvalTime,
+    prompt: `我明确批准请求 request_id=${prepared.request_id}，scope_digest=${prepared.scope_digest}`,
+  }, { runtimeDataRoot, now: new Date(approvalTime) });
+  const installed = await service.callTool("install_agent_entry", {
+    project_root: projectRoot, request_id: prepared.request_id,
+    scope_digest: prepared.scope_digest, session_id: "session-agent-entry",
+  }, { now: new Date(approvalTime) });
+
+  assert.equal(installed.isError, true);
+  assert.equal(installed.structuredContent.error.code, "PROMPT_NOT_FOUND");
+  await assert.rejects(() => access(path.join(projectRoot, "AGENTS.md")), /ENOENT/);
 });
 
 test("agent entry inspection preserves an existing file and creates no repair request", async (t) => {

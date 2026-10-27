@@ -186,7 +186,6 @@ test("a broken active project lets the first recovery message reach the Agent be
     request_id: prepared.request_id,
     scope_digest: prepared.scope_digest,
     session_id: "session-recovery",
-    turn_id: "turn-recovery",
   }, { now });
   assert.equal(recovered.isError, undefined);
   assert.equal(recovered.structuredContent.recovery.baseline, "REESTABLISHED");
@@ -202,7 +201,6 @@ test("reestablished recovery requires exact Maker approval and closes revision z
     request_id: prepared.request_id,
     scope_digest: prepared.scope_digest,
     session_id: "session-recovery",
-    turn_id: "turn-recovery",
   }, { now });
   assert.equal(recovered.isError, true);
   assert.equal(recovered.structuredContent.error.code, "PROMPT_NOT_FOUND");
@@ -214,12 +212,37 @@ test("reestablished recovery requires exact Maker approval and closes revision z
     request_id: prepared.request_id,
     scope_digest: prepared.scope_digest,
     session_id: "session-recovery",
-    turn_id: "turn-recovery",
   }, { now });
   assert.equal(recovered.isError, undefined);
   assert.equal(recovered.structuredContent.recovery.baseline, "REESTABLISHED");
   assert.equal(recovered.structuredContent.receipt.new_revision, 0);
   assert.equal((await verifyLatestReceipt(projectRoot, recovered.structuredContent.receipt.receipt_id)).verified, true);
+});
+
+test("authority recovery rejects approval captured under another root with the same project id", async (t) => {
+  const { projectRoot, runtimeDataRoot, service } = await fixture(t);
+  const otherRoot = await mkdtemp(path.join(os.tmpdir(), "incubator-recovery-other-project-"));
+  t.after(() => rm(otherRoot, { recursive: true, force: true }));
+  await initializeProjectState(otherRoot, activation(), state(0), authorizationRef);
+  const prepared = (await prepare(service, projectRoot, state(0))).structuredContent;
+
+  await handleUserPromptSubmit({
+    cwd: otherRoot,
+    session_id: "session-recovery",
+    turn_id: "turn-other-root",
+    timestamp: now.toISOString(),
+    prompt: `我明确批准恢复请求 request_id=${prepared.request_id}，scope_digest=${prepared.scope_digest}`,
+  }, { runtimeDataRoot, now });
+  const recovered = await service.callTool("recover_project_authority", {
+    project_root: projectRoot,
+    request_id: prepared.request_id,
+    scope_digest: prepared.scope_digest,
+    session_id: "session-recovery",
+  }, { now });
+
+  assert.equal(recovered.isError, true);
+  assert.equal(recovered.structuredContent.error.code, "PROMPT_NOT_FOUND");
+  assert.deepEqual(await authorityBytes(projectRoot), [null, null, null]);
 });
 
 test("continued recovery advances revision and never inherits old pending requests", async (t) => {
@@ -242,7 +265,6 @@ test("continued recovery advances revision and never inherits old pending reques
     request_id: prepared.request_id,
     scope_digest: prepared.scope_digest,
     session_id: "session-recovery",
-    turn_id: "turn-recovery",
   }, { now });
 
   assert.equal(recovered.isError, undefined);

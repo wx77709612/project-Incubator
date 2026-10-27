@@ -163,8 +163,8 @@ export async function findPendingMaintenance(
       continue;
     }
     if (request.status === "PENDING"
-      && typeof request.project_id === "string"
-      && request.project_id.length > 0
+      && (request.project_id === null
+        || (typeof request.project_id === "string" && request.project_id.length > 0))
       && request.session_id === sessionId
       && within(canonicalCwd, request.project_root)) {
       matches.push({ ...request, file_path: filePath });

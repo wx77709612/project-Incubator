@@ -46,7 +46,8 @@ function activeEvent(text, overrides = {}) {
       status: "ACTIVE", project_type_id: "mod", child_skill_id: "mod-incubator",
       host_profile_id: "sims-4",
     },
-    role: "maker", project_id: "project-1", session_id: "session-1", turn_id: "turn-2",
+    role: "maker", project_id: "project-1", project_root: "C:\\managed\\project-1",
+    session_id: "session-1", turn_id: "turn-2",
     text, captured_at: now, ...overrides,
   };
 }

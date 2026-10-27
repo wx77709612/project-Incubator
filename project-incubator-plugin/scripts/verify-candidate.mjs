@@ -258,7 +258,7 @@ async function full(root, managedRoot) {
     }, { runtimeDataRoot: path.join(pluginData, "runtime-events"), now: new Date(timestamp) });
     const repaired = await call("install_agent_entry", {
       project_root: managedRoot, request_id: repair.request_id, scope_digest: repair.scope_digest,
-      session_id: repairSession, turn_id: repairTurn,
+      session_id: repairSession,
     });
     check(repaired.agent_entry?.status === "CREATED", "CANDIDATE_AGENT_ENTRY_REPAIR_FAILED");
     check((await readFile(path.join(managedRoot, "AGENTS.md"), "utf8")).includes("project-incubator-router"), "CANDIDATE_AGENT_ENTRY_REPAIR_READBACK_FAILED");
@@ -282,7 +282,7 @@ async function full(root, managedRoot) {
     }, { runtimeDataRoot: path.join(pluginData, "runtime-events"), now: new Date(timestamp) });
     const recovered = await call("recover_project_authority", {
       project_root: managedRoot, request_id: recovery.request_id, scope_digest: recovery.scope_digest,
-      session_id: recoverySession, turn_id: recoveryTurn,
+      session_id: recoverySession,
     });
     check(recovered.recovery?.baseline === "CONTINUED" && recovered.receipt?.new_revision === 1, "CANDIDATE_AUTHORITY_RECOVERY_FAILED");
     const recoveredReceipt = await call("verify_receipt", { project_root: managedRoot, receipt_id: recovered.receipt.receipt_id });
