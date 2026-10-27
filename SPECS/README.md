@@ -6,7 +6,7 @@
 | --- | --- |
 | 当前研发版本 | V1.2 Plugin Web Product Incubator（独立分支） |
 | 上一发布基线 | `SPECS/_V1.0/` |
-| 当前阶段 | Kernel / Skill Alignment Implemented / Acceptance Passed（2026-10-19） |
+| 当前阶段 | Plugin 0.3.x Kernel / Skill Alignment 与 Agent Entry 修复均已实现并验收（2026-10-27） |
 | 产品实现状态 | V1.2 Tasks 1–7 已授权、尚未完成；V1.1 RC 状态保持不变，继续等待 Maker 执行 Round 2R |
 | 当前入口 | 本文件 |
 
@@ -37,8 +37,8 @@
 | Design | [协作入口与权威恢复设计](DESIGN/CODEX_PROJECT_AGENT_ENTRY_DESIGN.md) | APPROVED | Maker 于 2026-10-23 批准 |
 | Contract | [协作入口与权威恢复契约](CONTRACTS/CODEX_PROJECT_AGENT_ENTRY_CONTRACT.md) | APPROVED | Maker 于 2026-10-23 批准 |
 | Runtime | [协作入口与权威恢复运行规范](RUNTIME/CODEX_PROJECT_AGENT_ENTRY_RUNTIME_SPEC.md) | APPROVED | Maker 于 2026-10-23 批准 |
-| Implementation | [实施计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md) | APPROVED / IMPLEMENTATION AUTHORIZED | 五个可独立验收工作包；Maker 于 2026-10-23 授权当前任务执行 |
-| Acceptance | [验收计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_ACCEPTANCE_TEST_PLAN.md) | APPROVED / NOT RUN | A01–A12 与安装后宿主验收 |
+| Implementation | [实施计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_IMPLEMENTATION_PLAN.md) | IMPLEMENTED / ACCEPTANCE PASSED | Tasks 1–6 已完成；Maker 于 2026-10-23 授权主体实施，于 2026-10-26 批准真实宿主授权上下文修正 |
+| Acceptance | [验收计划](IMPLEMENTATION/CODEX_PROJECT_AGENT_ENTRY_ACCEPTANCE_TEST_PLAN.md) | PASSED | A01–A12、Plugin `399/399`、Legacy `168/168`、候选、正式安装与真实 Codex 新任务均通过 |
 
 ## 当前文档状态
 
