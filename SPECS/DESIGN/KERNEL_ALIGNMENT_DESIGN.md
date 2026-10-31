@@ -20,6 +20,14 @@ Plugin 包内 Skill 必须自包含，研发 SPECS 路径只是来源溯源，�
 
 安装从已记录权威源码构建唯一候选；正式插件管理器消费候选或已更新 marketplace source。旧全局 Skill 通过可审计、可恢复的安装步骤退出活动路径或被最小兼容路由替换；不能直接删除用户自定义内容。
 
+## Stop Hook 续轮闭合
+
+Codex 宿主可能在用户轮次被中断后，以新的 `turn_id` 自动恢复同一 `session_id`，而不再次触发 `UserPromptSubmit`。Stop Hook 不能把“每个 Stop 前必有同 `turn_id` marker”作为宿主不变量，也不能因此补造 marker 或把 Hook 生成消息当作 Maker Prompt。
+
+精确 turn marker 缺失时，Stop Hook 只可把最近的同 `project_id`、同 `session_id` 有效 marker 用作只读基线。只有该基线的 `baseline_revision` 与 `baseline_receipt_id` 同当前已验证 Snapshot 完全一致时，才能证明自最近用户 Prompt 起没有权威状态变化并放行。缺少同 session 基线、基线损坏、revision 或 Receipt ID 不一致、当前 Receipt 无法验证时继续失败关闭。该兼容不改变授权的同 turn 约束，也不允许无 marker 的轮次提交或证明状态变更。
+
 ## 正式批准记录
 
 Maker 于 2026-10-19 对本 chat 上轮列出的正式规格、逐项 Invariant 调整及实施/验收计划回复“确认”，批准本轮范围实施。该批准不授权更改任何真实 Managed Project 状态。
+
+Maker 于 2026-10-31 确认 Stop Hook 续轮闭合方案：只在同 project、同 session 最近有效 marker 的 revision 与 Receipt ID 均证明零状态变化时兼容放行；不得补造 marker、放宽 Receipt/revision 校验或修改真实 Managed Project 权威状态。

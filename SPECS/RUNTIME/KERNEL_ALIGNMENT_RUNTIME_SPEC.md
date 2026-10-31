@@ -11,6 +11,14 @@
 5. 受控变更继续使用 prepare_change / commit_change 或 decline_change；Runtime Data 不构成持久业务状态。
 6. 提交后验证当前 Receipt 与 revision、state_hash、last_change.receipt_id 对应；Stop Hook 继续执行现有闭合约束。
 
+## Stop Hook marker 解析
+
+1. Stop 必须先读取当前权威 Snapshot，并完整执行最新 Receipt 的 hash、revision、project、operation 与 authorization 引用校验；marker 兼容不能替代该步骤。
+2. 精确 `project_id + session_id + turn_id` marker 存在时，继续按现有规则校验来源、baseline revision、Receipt 时间和最终消息中的 receipt ID。
+3. 精确 marker 因宿主自动续轮而不存在时，从 Runtime Data 中选择 `started_at` 最新的同 `project_id`、同 `session_id` 有效 marker；其他项目、其他 session、损坏 marker 与无法读取的并发残留不得成为基线。
+4. 兼容基线必须同时满足 `baseline_revision === current revision` 与 `baseline_receipt_id === current receipt_id`。满足时只证明零状态变化，可放行只读或普通文件工作；不得据此证明任何状态变更。
+5. 没有兼容基线、基线 revision/Receipt 不一致、当前 revision 回退或 Receipt 无法验证时失败关闭，并返回稳定、可解释的原因；不得创建缺失 marker。
+
 ## 分发与失败
 
 禁止现行指导要求 Python runtime/、BOOTSTRAP_HOST_INTEGRATION、Markdown Core Context 或逐文件 Multi-Context Mutation。Legacy 资产只用于兼容回归，现行候选白名单不含 PROJECT_INCUBATOR、SPECS/_V* 或 tests。
@@ -26,3 +34,5 @@
 ## 正式批准记录
 
 Maker 于 2026-10-19 对本 chat 上轮列出的正式规格、逐项 Invariant 调整及实施/验收计划回复“确认”，批准本轮范围实施。该批准不授权更改任何真实 Managed Project 状态。
+
+Maker 于 2026-10-31 确认上述 marker 缺失分支；实现不得跳过 Receipt 或 revision 校验，也不得回写真实项目的三个权威 JSON。

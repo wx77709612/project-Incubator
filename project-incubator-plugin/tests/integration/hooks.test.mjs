@@ -6,7 +6,7 @@ import test from "node:test";
 
 import { handlePreToolUse } from "../../hooks/pre-tool-use.mjs";
 import { handleStop } from "../../hooks/stop.mjs";
-import { handleUserPromptSubmit } from "../../hooks/user-prompt-submit.mjs";
+import { handleUserPromptSubmit, turnMarkerPath } from "../../hooks/user-prompt-submit.mjs";
 import { commitProjectState, initializeProjectState } from "../../src/kernel/state-store.mjs";
 
 const now = "2026-09-29T08:00:00.000Z";
@@ -155,6 +155,78 @@ test("read-only turns do not require a new receipt", async (t) => {
   assert.deepEqual(await handleStop({
     cwd: root, session_id: "session-1", turn_id: "turn-1", last_assistant_message: "只读完成",
   }, { env }), { continue: true });
+});
+
+test("a host-resumed turn without an exact marker closes only from an unchanged same-session baseline", async (t) => {
+  const { root, env } = await workspace(t);
+  await initialize(root);
+  await handleUserPromptSubmit(promptEvent(root), { env });
+
+  assert.deepEqual(await handleStop({
+    cwd: root,
+    session_id: "session-1",
+    turn_id: "host-resumed-turn",
+    last_assistant_message: "只修改了普通验证文档",
+  }, { env }), { continue: true });
+});
+
+test("a missing exact marker cannot reuse another session baseline", async (t) => {
+  const { root, env } = await workspace(t);
+  await initialize(root);
+  await handleUserPromptSubmit(promptEvent(root), { env });
+
+  const result = await handleStop({
+    cwd: root,
+    session_id: "session-2",
+    turn_id: "host-resumed-turn",
+  }, { env });
+  assert.equal(result.decision, "block");
+  assert.match(result.reason, /没有可验证的同 session 基线/);
+});
+
+test("a missing exact marker fails closed when state changed after the same-session baseline", async (t) => {
+  const { root, env } = await workspace(t);
+  await initialize(root);
+  await handleUserPromptSubmit(promptEvent(root), { env });
+  await commitProjectState(root, {
+    operation: "ADVANCE_PLAN", expectedRevision: 0, authorizationRef,
+    mutate(current) {
+      current.plan.next_action = "实现垂直切片";
+      current.last_change = {
+        operation: "ADVANCE_PLAN", changed_at: "2026-09-29T08:02:00.000Z", summary: "推进",
+      };
+      return current;
+    },
+  });
+
+  const result = await handleStop({
+    cwd: root,
+    session_id: "session-1",
+    turn_id: "host-resumed-turn",
+    last_assistant_message: "已完成",
+  }, { env });
+  assert.equal(result.decision, "block");
+  assert.match(result.reason, /同 session 基线 revision 不匹配/);
+});
+
+test("a missing exact marker requires the same baseline receipt id even at the same revision", async (t) => {
+  const { root, codexHome, env } = await workspace(t);
+  await initialize(root);
+  await handleUserPromptSubmit(promptEvent(root), { env });
+  const runtimeDataRoot = path.join(codexHome, "project-incubator-plugin", "runtime-events");
+  const markerPath = turnMarkerPath(runtimeDataRoot, "project-1", "session-1", "turn-1");
+  const marker = JSON.parse(await readFile(markerPath, "utf8"));
+  await writeFile(markerPath, `${JSON.stringify({
+    ...marker, baseline_receipt_id: "receipt-from-another-baseline",
+  })}\n`, "utf8");
+
+  const result = await handleStop({
+    cwd: root,
+    session_id: "session-1",
+    turn_id: "host-resumed-turn",
+  }, { env });
+  assert.equal(result.decision, "block");
+  assert.match(result.reason, /同 session 基线 Receipt 不匹配/);
 });
 
 test("Stop never blocks twice when a previous Stop already continued the turn", async (t) => {

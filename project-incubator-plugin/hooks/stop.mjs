@@ -1,4 +1,5 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { findActivatedProjectRoot } from "../src/kernel/project-root.mjs";
@@ -20,6 +21,61 @@ function closureFailure(event, reason) {
   return block(reason);
 }
 
+function isValidSessionMarker(marker, projectId, sessionId) {
+  return marker !== null
+    && typeof marker === "object"
+    && marker.project_id === projectId
+    && marker.session_id === sessionId
+    && typeof marker.turn_id === "string"
+    && marker.turn_id.length > 0
+    && Number.isInteger(marker.baseline_revision)
+    && (marker.baseline_receipt_id === null || typeof marker.baseline_receipt_id === "string")
+    && typeof marker.started_at === "string"
+    && Number.isFinite(Date.parse(marker.started_at));
+}
+
+async function findLatestSessionMarker(runtimeDataRoot, projectId, sessionId) {
+  let names;
+  try {
+    names = await readdir(runtimeDataRoot);
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
+  let latest = null;
+  for (const name of names) {
+    if (!/^turn-[a-f0-9]{64}\.json$/u.test(name)) continue;
+    try {
+      const marker = JSON.parse(await readFile(path.join(runtimeDataRoot, name), "utf8"));
+      if (!isValidSessionMarker(marker, projectId, sessionId)) continue;
+      const startedAt = Date.parse(marker.started_at);
+      if (latest === null || startedAt > latest.startedAt
+        || (startedAt === latest.startedAt && name > latest.name)) {
+        latest = { marker, name, startedAt };
+      }
+    } catch (error) {
+      if (error?.code !== "ENOENT" && !(error instanceof SyntaxError)) throw error;
+    }
+  }
+  return latest?.marker ?? null;
+}
+
+async function readStopMarker(runtimeDataRoot, projectId, sessionId, turnId) {
+  try {
+    return {
+      exact: true,
+      marker: JSON.parse(await readFile(
+        turnMarkerPath(runtimeDataRoot, projectId, sessionId, turnId), "utf8",
+      )),
+    };
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  const marker = await findLatestSessionMarker(runtimeDataRoot, projectId, sessionId);
+  if (!marker) throw new Error("轮次 marker 缺失且没有可验证的同 session 基线");
+  return { exact: false, marker };
+}
+
 export async function handleStop(event, options = {}) {
   const root = await findActivatedProjectRoot(event.cwd ?? ".");
   if (!root) return { continue: true };
@@ -28,10 +84,18 @@ export async function handleStop(event, options = {}) {
     const verified = await verifyLatestReceipt(root);
     if (!verified.verified) return closureFailure(event, `Receipt 校验失败（${verified.reason}）`);
     const runtimeDataRoot = options.runtimeDataRoot ?? resolveRuntimeDataRoot(options.env ?? process.env);
-    const markerRaw = await readFile(turnMarkerPath(
+    const { exact, marker } = await readStopMarker(
       runtimeDataRoot, snapshot.state.project_id, event.session_id, event.turn_id,
-    ), "utf8");
-    const marker = JSON.parse(markerRaw);
+    );
+    if (!exact) {
+      if (snapshot.state.revision !== marker.baseline_revision) {
+        return closureFailure(event, "轮次 marker 缺失且同 session 基线 revision 不匹配");
+      }
+      if (snapshot.receipt.receipt_id !== marker.baseline_receipt_id) {
+        return closureFailure(event, "轮次 marker 缺失且同 session 基线 Receipt 不匹配");
+      }
+      return { continue: true };
+    }
     if (marker.project_id !== snapshot.state.project_id
       || marker.session_id !== event.session_id
       || marker.turn_id !== event.turn_id) return closureFailure(event, "轮次来源不匹配");

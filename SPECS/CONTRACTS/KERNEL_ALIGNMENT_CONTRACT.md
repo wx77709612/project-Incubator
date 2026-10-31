@@ -11,6 +11,7 @@
 | KAC-05 | 初始化/Prepare/Commit/Decline 结果 | 核对 revision、Read-back、Receipt ID/state hash/last_change 引用后报告完成；不修改 Kernel 当前工具语义 |
 | KAC-06 | 旧入口调用 | 仅转交 Router；Plugin 不可用则停止，无 Python/Bootstrap/Markdown 执行回退 |
 | KAC-07 | 模板、安装源、候选包 | 当前指导不能声明 Markdown 权威或要求旧 Runtime、旧 Host Bootstrap、逐文件 Mutation；Legacy 资产明确分区，不混入候选包 |
+| KAC-08 | Stop 收到未触发 UserPromptSubmit 的宿主续轮 | 先验证当前 Snapshot 与 Receipt；精确 turn marker 缺失时，仅当最近的同 project、同 session 有效 marker 的 baseline revision 与 receipt ID 均等于当前值才放行。无基线、基线损坏或任何状态变化均失败关闭；不创建 marker，不把 HookPrompt 当作 Maker Prompt |
 
 API 名称、Schema、现有错误码和返回 Shape 以当前 server.mjs 与 schemas.mjs 为实现事实；本轮不新增授权机制。inspect_project 的摘要继续遵守 Plugin Router references/status-summary.md；原始 Snapshot 工具不承担摘要恢复契约。
 
@@ -19,3 +20,5 @@ API 名称、Schema、现有错误码和返回 Shape 以当前 server.mjs 与 sc
 ## 正式批准记录
 
 Maker 于 2026-10-19 对本 chat 上轮列出的正式规格、逐项 Invariant 调整及实施/验收计划回复“确认”，批准本轮范围实施。该批准不授权更改任何真实 Managed Project 状态。
+
+Maker 于 2026-10-31 确认 KAC-08 的保守续轮兼容语义；该确认只授权修复 Stop Hook 闭合缺陷，不授权修改任何 Managed Project 权威状态。
