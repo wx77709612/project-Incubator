@@ -136,8 +136,8 @@ Maker 已批准以 Plugin 0.3.x MCP Kernel 与三个 JSON 权威文件为唯一�
 | Design | [Stop Hook 续轮闭合设计](DESIGN/KERNEL_ALIGNMENT_DESIGN.md#stop-hook-续轮闭合) | APPROVED |
 | Contract | [Stop Hook 续轮闭合契约](CONTRACTS/KERNEL_ALIGNMENT_CONTRACT.md) | APPROVED（KAC-08） |
 | Runtime | [Stop Hook marker 解析](RUNTIME/KERNEL_ALIGNMENT_RUNTIME_SPEC.md#stop-hook-marker-解析) | APPROVED |
-| Implementation | [Stop Hook 修复实施计划](IMPLEMENTATION/STOP_HOOK_CLOSURE_IMPLEMENTATION_PLAN.md) | IMPLEMENTED / SOURCE ACCEPTANCE PASSED |
-| Implementation | [Stop Hook 修复验收计划](IMPLEMENTATION/STOP_HOOK_CLOSURE_ACCEPTANCE_TEST_PLAN.md) | PASSED（未打包/安装） |
+| Implementation | [Stop Hook 修复实施计划](IMPLEMENTATION/STOP_HOOK_CLOSURE_IMPLEMENTATION_PLAN.md) | IMPLEMENTED / INSTALLED |
+| Implementation | [Stop Hook 修复验收计划](IMPLEMENTATION/STOP_HOOK_CLOSURE_ACCEPTANCE_TEST_PLAN.md) | PASSED（候选、正式安装与独立进程重放通过） |
 
 本轮 APPROVED 规格按 ACP 明示范围替代旧权威规则；旧规格仅在未冲突的领域设计与 Legacy 轨道适用。实施时更新活动文档作用域、Decision 与根 AGENTS；历史 `_V*` 保持冻结。
 
@@ -145,4 +145,4 @@ Plugin 0.3.x 的入口/状态/恢复契约优先使用已批准 Kernel Alignment
 
 Kernel Alignment 实施验证：Plugin `342/342`、Legacy `133/32/3`、Acceptance 分阶段 `79/79` 已通过；正式候选已安装为 `0.3.0+codex.20261019210340`，安装与候选聚合哈希一致。宿主新会话状态查询及三类型路由均实际通过，A01–A11 已闭合，详见 [验收证据](../ACCEPTANCE_TESTS/kernel_alignment/RESULTS.md)。本轮完成不等于 V1.1 RC/V1.2 产品现场验收完成或发布。
 
-2026-10-31 Stop Hook 续轮闭合缺陷已完成源码修复与验收：定向 14/14、Plugin 全量 403/403、真实缺陷轮次只读重放通过，且 `Player_Needs_Hunter` 三个权威 JSON 与缺失 marker 均未被改写。尚未构建或安装新候选，当前已安装 `0.3.0+codex.20261027131324` 不因此自动更新。
+2026-10-31 Stop Hook 续轮闭合缺陷已完成源码修复、候选与正式安装验收：定向 14/14、Plugin 全量 403/403，`0.3.0+codex.20261031145522` 候选/安装聚合哈希一致，从新安装路径独立重放真实缺陷轮次通过；`Player_Needs_Hunter` 三个权威 JSON 与缺失 marker 均未被改写。既有聊天不作为热加载证据，恢复使用时应在项目中新开聊天。
