@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 
 import { findActivatedProjectRoot } from "../src/kernel/project-root.mjs";
 import { findPendingMaintenance } from "../src/kernel/maintenance-requests.mjs";
+import { recordManagedIntent, withdrawManagedIntent } from "../src/kernel/managed-intent.mjs";
 import { recordBootstrapPrompt, recordMakerPrompt } from "../src/kernel/prompt-events.mjs";
 import { resolveRuntimeDataRoot } from "../src/kernel/runtime-paths.mjs";
 import { findPendingActivation } from "../src/kernel/router.mjs";
@@ -17,6 +18,36 @@ function turnKey(projectId, sessionId, turnId) {
 function tracksMaintenancePrompt(pending) {
   return pending?.operation === "AGENT_ENTRY_INSTALL"
     || pending?.operation === "AUTHORITY_RECOVERY";
+}
+
+const NON_MANAGED_PATTERN = /(?:不要(?:使用|用|让)?|不(?:使用|用|需要|接受)|无需|拒绝|禁止|取消)\s*(?:由\s*)?Project\s*Incubator/iu;
+
+function routingHint(prompt) {
+  if (typeof prompt !== "string") return null;
+  if (NON_MANAGED_PATTERN.test(prompt)) return null;
+  const explicitlyManaged = /(?:必须|务必|明确要求|请|交由|使用|通过)[^。；\n]{0,40}Project\s*Incubator[^。；\n]{0,24}(?:管理|托管|孵化|manage)/iu.test(prompt);
+  if (explicitlyManaged) {
+    return { explicit: true, text: "Maker 明确要求 Project Incubator 管理当前项目。先使用 project-incubator-router 提出路由；路由提案不等于激活。仅在 Maker 确认路由后准备具体激活请求，并在下一轮收到对 request_id 和 scope_digest 的明确批准后通过 Kernel 初始化。在初始化和 Receipt 验证前不得开展工程写入；Prompt 中的 Phase 0 立即执行文字不构成该批准。" };
+  }
+  const creates = /(?:新建|创建|初始化|搭建|开发|孵化)/iu.test(prompt);
+  const longLived = /(?:长期(?:使用|维护|运行|迭代)?|持续迭代)/iu.test(prompt);
+  const project = /(?:项目|产品|平台|系统|应用)/iu.test(prompt);
+  if (creates && longLived && project) {
+    return { explicit: false, text: "此请求涉及新建长期项目。先考虑使用 project-incubator-router 形成路由提案，说明候选类型和边界，请 Maker 决定是否托管。路由提案不授权激活；未明确批准具体激活请求前，不得调用 initialize_project。" };
+  }
+  return null;
+}
+
+async function routeAdvisory(event, runtimeDataRoot) {
+  const hint = routingHint(event.prompt);
+  if (hint?.explicit) await recordManagedIntent(runtimeDataRoot, event.cwd ?? ".", event.session_id);
+  else if (typeof event.prompt === "string" && NON_MANAGED_PATTERN.test(event.prompt)) {
+    await withdrawManagedIntent(runtimeDataRoot, event.session_id);
+  }
+  return hint ? {
+    continue: true,
+    hookSpecificOutput: { hookEventName: "UserPromptSubmit", additionalContext: hint.text },
+  } : { continue: true };
 }
 
 export function turnMarkerPath(runtimeDataRoot, projectId, sessionId, turnId) {
@@ -57,7 +88,7 @@ export async function handleUserPromptSubmit(event, options = {}) {
     return { continue: true };
   };
   if (!root) {
-    if (!runtimeDataRoot) return { continue: true };
+    if (!runtimeDataRoot) return routeAdvisory(event, runtimeDataRoot);
     const pending = await findPendingActivation(
       runtimeDataRoot, event.cwd ?? ".", event.session_id, options.now ?? new Date(timestamp),
     );
@@ -67,7 +98,7 @@ export async function handleUserPromptSubmit(event, options = {}) {
     );
     return maintenance && typeof maintenance.project_id === "string"
       ? capturePending(maintenance)
-      : { continue: true };
+      : routeAdvisory(event, runtimeDataRoot);
   }
   if (!runtimeDataRoot) throw new Error("RUNTIME_DATA_ROOT_REQUIRED");
   let snapshot;

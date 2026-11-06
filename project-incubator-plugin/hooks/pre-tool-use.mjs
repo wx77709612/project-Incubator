@@ -2,6 +2,8 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { findActivatedProjectRoot, isProtectedProjectPath } from "../src/kernel/project-root.mjs";
+import { hasManagedIntent } from "../src/kernel/managed-intent.mjs";
+import { resolveRuntimeDataRoot } from "../src/kernel/runtime-paths.mjs";
 
 const CONTROL_PATTERN = /(?:^|[^a-z0-9_.-])\.project-incubator[\\/](?:activation|state|latest-receipt)\.json(?=$|[^a-z0-9_.-])/iu;
 const PROTECTED_BASENAME_PATTERN = /(?:^|[^a-z0-9_.-])(activation|state|latest-receipt)\.json(?=$|[^a-z0-9_.-])/giu;
@@ -75,22 +77,31 @@ async function referencesProtectedState(root, cwd, toolInput) {
   return false;
 }
 
-export async function handlePreToolUse(event) {
+export async function handlePreToolUse(event, options = {}) {
   const cwd = event.cwd ?? ".";
   const root = await findActivatedProjectRoot(cwd);
-  if (!root) return {};
+  if (!root) {
+    const runtimeEnv = options.env ?? process.env;
+    const runtimeDataRoot = options.runtimeDataRoot
+      ?? (runtimeEnv.PLUGIN_DATA || runtimeEnv.CLAUDE_PLUGIN_DATA || runtimeEnv.CODEX_HOME
+        ? resolveRuntimeDataRoot(runtimeEnv)
+        : null);
+    if (!await hasManagedIntent(runtimeDataRoot, cwd, event.session_id)) return {};
+    if (KERNEL_TOOL_PREFIXES.some((prefix) => event.tool_name?.startsWith(prefix))) return {};
+    return isReadOnlyAccess(event) ? {} : deny("Project Incubator 托管请求尚未完成 Router 路由、Maker 激活批准和 Kernel 初始化；先完成受控激活，再写入工程文件。");
+  }
   if (KERNEL_TOOL_PREFIXES.some((prefix) => event.tool_name?.startsWith(prefix))) return {};
 
   if (!await referencesProtectedState(root, cwd, event.tool_input)) return {};
   return isReadOnlyAccess(event) ? {} : deny();
 }
 
-function deny() {
+function deny(reason = "Project Incubator 权威状态只能通过受控 Kernel MCP 修改。") {
   return {
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       permissionDecision: "deny",
-      permissionDecisionReason: "Project Incubator 权威状态只能通过受控 Kernel MCP 修改。",
+      permissionDecisionReason: reason,
     },
   };
 }

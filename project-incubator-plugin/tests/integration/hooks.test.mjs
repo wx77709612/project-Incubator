@@ -63,6 +63,59 @@ test("all hooks are side-effect free for unmanaged projects", async (t) => {
   await assert.rejects(() => access(path.join(codexHome, "project-incubator-plugin")), /ENOENT/);
 });
 
+const englishHubHandoff = `# English Learning Hub 交接说明
+目标：在空工作区新建一个长期使用的本地产品，包含前端学习界面、后端课程和进度数据。
+Phase 0：立即初始化项目目录、前后端工程和文档。
+Phase 1：完成产品边界与架构。Phase 2：建立基础功能。Phase 3：运行并验收。`;
+
+test("explicit managed handoff receives Router-first guidance before any activation", async (t) => {
+  const { root, env } = await workspace(t);
+  const result = await handleUserPromptSubmit(promptEvent(root, {
+    prompt: `${englishHubHandoff}\n本项目必须由 Project Incubator 管理，先确认路由和激活。`,
+  }), { env });
+  assert.match(result.hookSpecificOutput?.additionalContext ?? "", /project-incubator-router/u);
+  assert.match(result.hookSpecificOutput?.additionalContext ?? "", /工程写入/u);
+  await assert.rejects(() => access(path.join(root, ".project-incubator")), /ENOENT/);
+  const write = { cwd: root, session_id: "session-1", tool_name: "apply_patch", tool_input: { patch: "*** Add File: app.js" } };
+  assert.equal((await handlePreToolUse(write, { env })).hookSpecificOutput?.permissionDecision, "deny");
+  assert.equal((await handlePreToolUse({ cwd: root, session_id: "session-1", tool_name: "exec_command", tool_input: { cmd: "New-Item app.js" } }, { env })).hookSpecificOutput?.permissionDecision, "deny");
+  assert.deepEqual(await handlePreToolUse({ cwd: root, session_id: "session-1", tool_name: "mcp__project_incubator__propose_route", tool_input: {} }, { env }), {});
+  assert.deepEqual(await handlePreToolUse({ cwd: root, session_id: "session-1", tool_name: "read_file", tool_input: { path: "README.md" } }, { env }), {});
+  assert.deepEqual(await handlePreToolUse({ ...write, session_id: "another-session" }, { env }), {});
+  await initialize(root);
+  assert.deepEqual(await handlePreToolUse(write, { env }), {});
+});
+
+test("long new-product handoff without plugin name receives a route proposal hint", async (t) => {
+  const { root, codexHome, env } = await workspace(t);
+  const result = await handleUserPromptSubmit(promptEvent(root, { prompt: englishHubHandoff }), { env });
+  assert.match(result.hookSpecificOutput?.additionalContext ?? "", /project-incubator-router/u);
+  assert.match(result.hookSpecificOutput?.additionalContext ?? "", /路由提案/u);
+  await assert.rejects(() => access(path.join(codexHome, "project-incubator-plugin")), /ENOENT/);
+});
+
+test("Maker can withdraw a pre-activation managed intent without leaving a write block", async (t) => {
+  const { root, env } = await workspace(t);
+  await handleUserPromptSubmit(promptEvent(root, { prompt: "本项目必须由 Project Incubator 管理。" }), { env });
+  const write = { cwd: root, session_id: "session-1", tool_name: "apply_patch", tool_input: { patch: "*** Add File: app.js" } };
+  assert.equal((await handlePreToolUse(write, { env })).hookSpecificOutput?.permissionDecision, "deny");
+  await handleUserPromptSubmit(promptEvent(root, { prompt: "我改主意了，不要使用 Project Incubator 管理。" }), { env });
+  assert.deepEqual(await handlePreToolUse(write, { env }), {});
+});
+
+test("ordinary or explicitly non-managed work receives no Router hint", async (t) => {
+  const { root, env } = await workspace(t);
+  for (const prompt of [
+    "修复这个函数的空值错误",
+    "新建一次性演示页面，不使用 Project Incubator 管理",
+    "新建一个长期使用的产品，但不要使用 Project Incubator 管理。",
+    "请不要让 Project Incubator 管理这个长期项目。",
+    "调查 Project Incubator 管理新项目时的历史故障，只检查插件源码和测试。",
+  ]) {
+    assert.deepEqual(await handleUserPromptSubmit(promptEvent(root, { prompt }), { env }), { continue: true });
+  }
+});
+
 test("activated projects block direct writes through shell, patch and editor tools", async (t) => {
   const { root } = await workspace(t);
   await initialize(root);

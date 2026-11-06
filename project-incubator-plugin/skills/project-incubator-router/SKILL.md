@@ -1,6 +1,6 @@
 ---
 name: project-incubator-router
-description: 当 Maker 要创建、孵化、恢复或判断一个长期项目应采用哪种项目孵化器时使用。只提议项目类型和 Host Profile；未经 Maker 明确批准，不激活项目、不锁定路由，也不修改项目权威状态。
+description: 当 Maker 要新建长期使用的项目或产品、按 Phase 0 等阶段直接初始化、孵化、恢复，或判断应采用哪种项目孵化器时使用；即使用户未点名插件，也应先提出路由。只提议项目类型和 Host Profile；未经 Maker 对具体请求明确批准，不激活项目、不锁定路由，也不修改项目权威状态。
 ---
 
 # Project Incubator Router
@@ -13,6 +13,8 @@ Plugin Router `project-incubator-router` 是唯一现行入口。权威集合为
 
 
 ## 职责
+
+新建长期项目的交接说明即使要求“立即执行 Phase 0–3”，也先完成路由提案。若 Maker 明确要求由 Project Incubator 管理，首次工程写入必须排在路由确认、具体激活请求的下一轮明确批准、Kernel 初始化及 Receipt 验证之后。未点名插件的长期项目先提出是否采用 Project Incubator 的建议；Maker 未选择托管时，不替普通项目建立权威状态。
 
 1. 调用 `propose_route` 查询注册表中的候选项目类型与 Host Profile。
 2. 用简体中文说明候选路由、适用依据和不适用边界。
