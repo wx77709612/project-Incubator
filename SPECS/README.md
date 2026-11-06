@@ -18,6 +18,8 @@
 
 ## Plugin 后续架构提案
 
+阶段变更批准回复闭合：[架构提案](ARCHITECTURE/PREPARED_CHANGE_REPLY_CHANGE_PROPOSAL.md)与[事实及影响分析](ARCHITECTURE/PREPARED_CHANGE_REPLY_IMPACT_ANALYSIS.md)于 2026-11-06 获 Maker 确认有界保证及 Agent 言语引导，状态 `APPROVED`；[Decision 017](ARCHITECTURE/ARCHITECTURE_DECISIONS.md#decision-017待批准变更的可复制回复与有界闭合)为 `ACTIVE`。[Design](DESIGN/PREPARED_CHANGE_REPLY_DESIGN.md)、[Contract](CONTRACTS/PREPARED_CHANGE_REPLY_CONTRACT.md)、[Runtime](RUNTIME/PREPARED_CHANGE_REPLY_RUNTIME_SPEC.md)落实已确认范围；[实施计划](IMPLEMENTATION/PREPARED_CHANGE_REPLY_IMPLEMENTATION_PLAN.md)与[验收计划](IMPLEMENTATION/PREPARED_CHANGE_REPLY_ACCEPTANCE_TEST_PLAN.md)已完成定向验证，全量测试尚有环境和既有竞争用例失败，未标为全量验收通过。
+
 | Layer | Document | Status | 说明 |
 | --- | --- | --- | --- |
 | Architecture | `ARCHITECTURE/DESKTOP_PRODUCT_INCUBATOR_CHANGE_PROPOSAL.md` | APPROVED / IMPLEMENTED | 新增 `desktop-product` 与 `desktop-product-incubator`；Workflow Entry 与显式 Host Requirement 已进入 0.2.0 候选 |

@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import { handleUserPromptSubmit } from "../../hooks/user-prompt-submit.mjs";
+import { handleStop } from "../../hooks/stop.mjs";
 import { parseProjectState } from "../../src/kernel/schemas.mjs";
 import { createKernelService } from "../../src/server.mjs";
 
@@ -55,7 +56,7 @@ async function snapshot(value) {
 async function approve(value, request, turnId) {
   await handleUserPromptSubmit({
     cwd: value.root, session_id: "web-e2e-session", turn_id: turnId, timestamp: nowText,
-    prompt: `我明确批准 ${request.request_id}，scope_digest: ${request.scope_digest}`,
+    prompt: request.approval_message ?? `我明确批准 ${request.request_id}，scope_digest: ${request.scope_digest}`,
   }, { runtimeDataRoot: value.runtime, now: new Date(nowText) });
 }
 
@@ -112,10 +113,28 @@ test("Web Route → Maker 授权激活 → Receipt → P0-P1 → Read-back 完�
   assert.equal(before.state.workflow.stage, "P0");
   assert.equal(before.state.decisions.active[0].authorization_ref, initialized.receipt.authorization_ref.authorization_id);
 
+  await handleUserPromptSubmit({
+    cwd: value.root, session_id: "web-e2e-session", turn_id: "prepare-transition",
+    timestamp: nowText, prompt: "请准备 P0 到 P1 的阶段变更请求",
+  }, { runtimeDataRoot: value.runtime, now: new Date(nowText) });
+
   const prepared = await prepareTransition(value, "P1", true);
   assert.equal(prepared.isError, undefined);
+  const request = prepared.structuredContent;
+  assert.equal(request.approval_message,
+    `我明确批准变更请求 ${request.request_id}，scope_digest: ${request.scope_digest}。`);
   const pending = await snapshot(value);
   assert.equal(pending.state.workflow.stage, "P0");
+  const incompleteStop = await handleStop({
+    cwd: value.root, session_id: "web-e2e-session", turn_id: "prepare-transition",
+    last_assistant_message: `receipt_id: ${request.receipt.receipt_id}`,
+  }, { runtimeDataRoot: value.runtime });
+  assert.equal(incompleteStop.decision, "block");
+  assert.match(incompleteStop.reason, /request_id/u);
+  assert.deepEqual(await handleStop({
+    cwd: value.root, session_id: "web-e2e-session", turn_id: "prepare-transition",
+    last_assistant_message: `${request.approval_message}\nreceipt_id: ${request.receipt.receipt_id}`,
+  }, { runtimeDataRoot: value.runtime }), { continue: true });
   assertError(await commit(value, prepared.structuredContent, "advance"), "PROMPT_NOT_FOUND");
   assert.deepEqual(await snapshot(value), pending);
   await approve(value, prepared.structuredContent, "advance");

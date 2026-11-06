@@ -24,6 +24,7 @@ import {
   authorizePreparedDecline,
   prepareChange,
 } from "./kernel/authorization.mjs";
+import { changeApprovalMessage } from "./kernel/approval-message.mjs";
 import { hashJson } from "./kernel/canonical-json.mjs";
 import {
   consumeMaintenanceRequest,
@@ -528,7 +529,10 @@ export async function createKernelService(options = {}) {
           return current;
         },
       });
-      return { event: "CHANGE_PREPARED", request_id: requestId, scope_digest: scopeDigest, receipt };
+      return {
+        event: "CHANGE_PREPARED", request_id: requestId, scope_digest: scopeDigest,
+        approval_message: changeApprovalMessage(requestId, scopeDigest), receipt,
+      };
     },
 
     async commit_change(args, context) {

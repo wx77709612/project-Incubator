@@ -12,6 +12,8 @@ Managed Project 的权威集合只有 `.project-incubator/activation.json`、`.p
 
 所有权威变更必须经过 Kernel MCP。Maker 保留产品与架构决定权；Agent 负责分析、提案和实现；Kernel 负责校验、受控写入、revision、回读和 Receipt。未经 Maker 对具体请求明确授权，不得执行受控变更；没有通过回读与 Receipt 验证，不得宣称变更完成。
 
+`prepare_change` 成功后，向 Maker 原样展示 Kernel 返回的 `approval_message`，同时写出本轮 `receipt_id`。不要自行拼接或改写批准句；说明这只是待批准请求，须等 Maker 下一轮明确回复后才能调用 `commit_change`。
+
 `READY_FOR_TRANSITION` 只表示具备提出转换的条件，不表示阶段已经转换。Gate Result、Validation Result 和 Advisory 都不能自行修改项目阶段、Workflow 或权威状态。
 
 面向人类的新建或实质性改写文本默认使用简体中文。必要的英文技术术语、协议字段、代码标识符、枚举值和文件名可以保留。

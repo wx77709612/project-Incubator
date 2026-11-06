@@ -8,6 +8,7 @@ import { handlePreToolUse } from "../../hooks/pre-tool-use.mjs";
 import { handleStop } from "../../hooks/stop.mjs";
 import { handleUserPromptSubmit, turnMarkerPath } from "../../hooks/user-prompt-submit.mjs";
 import { commitProjectState, initializeProjectState } from "../../src/kernel/state-store.mjs";
+import { createKernelService } from "../../src/server.mjs";
 
 const now = "2026-09-29T08:00:00.000Z";
 const authorizationRef = {
@@ -320,6 +321,73 @@ test("a changed state requires the current verified receipt in the final message
     last_assistant_message: `已完成，receipt_id: ${receipt.receipt_id}`,
   }, { env });
   assert.deepEqual(allowed, { continue: true });
+});
+
+test("prepared change supplies a copyable approval and Stop checks this turn's request", async (t) => {
+  const { root, codexHome, env } = await workspace(t);
+  await initialize(root);
+  await handleUserPromptSubmit(promptEvent(root, { prompt: "请准备下一步变更" }), { env });
+  const runtimeDataRoot = path.join(codexHome, "project-incubator-plugin", "runtime-events");
+  const service = await createKernelService({
+    pluginRoot: path.resolve(import.meta.dirname, "../.."), runtimeDataRoot,
+  });
+  const snapshot = (await service.callTool("get_project_state", { project_root: root })).structuredContent;
+  const proposedState = structuredClone(snapshot.state);
+  proposedState.plan.next_action = "准备风险建模";
+  const preparedResult = await service.callTool("prepare_change", {
+    project_root: root, operation: "ADVANCE_PLAN", change_kind: "PRODUCT_DECISION",
+    session_id: "session-1", proposed_state: proposedState,
+  });
+  assert.equal(preparedResult.isError, undefined);
+  const prepared = preparedResult.structuredContent;
+  const expectedApproval = `我明确批准变更请求 ${prepared.request_id}，scope_digest: ${prepared.scope_digest}。`;
+  assert.equal(prepared.approval_message, expectedApproval);
+  assert.equal(prepared.receipt.operation, "PREPARE_CHANGE");
+  const latest = (await service.callTool("get_project_state", { project_root: root })).structuredContent;
+  const pending = latest.state.pending_requests.find((item) => item.request_id === prepared.request_id);
+  assert.equal(pending.scope_digest, prepared.scope_digest);
+  assert.equal(pending.project_revision, latest.state.revision);
+
+  const receipt = `receipt_id: ${prepared.receipt.receipt_id}`;
+  const stop = (message, extra = {}) => handleStop({
+    cwd: root, session_id: "session-1", turn_id: "turn-1",
+    last_assistant_message: message, ...extra,
+  }, { env });
+  const cases = [
+    { message: receipt, missing: /request_id/u },
+    { message: `request-wrong\nscope_digest: ${prepared.scope_digest}\n${receipt}`, missing: /request_id/u },
+    { message: `${prepared.request_id}\n${receipt}`, missing: /scope_digest/u },
+    { message: `${prepared.request_id}\nscope_digest: ${"a".repeat(64)}\n${receipt}`, missing: /scope_digest/u },
+    { message: `${prepared.request_id}\nscope_digest: ${prepared.scope_digest}\n${receipt}`, missing: /批准句/u },
+    { message: expectedApproval, missing: /receipt_id/u },
+  ];
+  for (const { message, missing } of cases) {
+    const result = await stop(message);
+    assert.equal(result.decision, "block");
+    assert.match(result.reason, missing);
+  }
+  assert.deepEqual(await stop(`${expectedApproval}\n${receipt}`), { continue: true });
+
+  const continued = await stop(receipt, { stop_hook_active: true });
+  assert.equal(continued.continue, true);
+  assert.match(continued.systemMessage, /request_id/u);
+  assert.match(continued.systemMessage, new RegExp(prepared.request_id, "u"));
+  assert.match(continued.systemMessage, new RegExp(prepared.scope_digest, "u"));
+
+  const hostResumed = await stop(receipt, {
+    turn_id: "host-resumed-turn", stop_hook_active: true,
+  });
+  assert.equal(hostResumed.continue, true);
+  assert.match(hostResumed.systemMessage, /轮次 marker 缺失/u);
+  assert.match(hostResumed.systemMessage, new RegExp(prepared.request_id, "u"));
+  assert.match(hostResumed.systemMessage, new RegExp(prepared.scope_digest, "u"));
+
+  await handleUserPromptSubmit(promptEvent(root, {
+    turn_id: "turn-2", prompt: "只查询已有待批准请求",
+  }), { env });
+  assert.deepEqual(await handleStop({
+    cwd: root, session_id: "session-1", turn_id: "turn-2", last_assistant_message: "当前仍有待批准请求。",
+  }, { env }), { continue: true });
 });
 
 test("Stop blocks hash mismatch, revision mismatch, and receipts older than the turn", async (t) => {

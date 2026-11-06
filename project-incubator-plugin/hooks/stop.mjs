@@ -3,6 +3,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { findActivatedProjectRoot } from "../src/kernel/project-root.mjs";
+import { changeApprovalMessage } from "../src/kernel/approval-message.mjs";
 import { resolveRuntimeDataRoot } from "../src/kernel/runtime-paths.mjs";
 import { readProjectSnapshot, verifyLatestReceipt } from "../src/kernel/state-store.mjs";
 import { turnMarkerPath } from "./user-prompt-submit.mjs";
@@ -19,6 +20,24 @@ function closureFailure(event, reason) {
     };
   }
   return block(reason);
+}
+
+function currentPreparedRequest(snapshot, sessionId) {
+  if (snapshot.receipt.operation !== "PREPARE_CHANGE") return null;
+  return snapshot.state.pending_requests.find((request) => (
+    request.status === "PENDING"
+    && request.project_revision === snapshot.state.revision
+    && request.payload?.session_id === sessionId
+  )) ?? null;
+}
+
+function preparedChangeGuidance(snapshot, pending) {
+  return `请原样向 Maker 展示以下可复制的批准句，并报告回执；这不是本轮授权：\n${changeApprovalMessage(pending.request_id, pending.scope_digest)}\nreceipt_id: ${snapshot.receipt.receipt_id}`;
+}
+
+function missingMarkerReason(snapshot, sessionId, reason) {
+  const pending = currentPreparedRequest(snapshot, sessionId);
+  return pending ? `${reason}。${preparedChangeGuidance(snapshot, pending)}` : reason;
 }
 
 function isValidSessionMarker(marker, projectId, sessionId) {
@@ -81,7 +100,7 @@ export async function handleStop(event, options = {}) {
   if (!root) return { continue: true };
   try {
     const snapshot = await readProjectSnapshot(root);
-    const verified = await verifyLatestReceipt(root);
+    const verified = await verifyLatestReceipt(root, snapshot.receipt.receipt_id);
     if (!verified.verified) return closureFailure(event, `Receipt 校验失败（${verified.reason}）`);
     const runtimeDataRoot = options.runtimeDataRoot ?? resolveRuntimeDataRoot(options.env ?? process.env);
     const { exact, marker } = await readStopMarker(
@@ -89,10 +108,14 @@ export async function handleStop(event, options = {}) {
     );
     if (!exact) {
       if (snapshot.state.revision !== marker.baseline_revision) {
-        return closureFailure(event, "轮次 marker 缺失且同 session 基线 revision 不匹配");
+        return closureFailure(event, missingMarkerReason(
+          snapshot, event.session_id, "轮次 marker 缺失且同 session 基线 revision 不匹配",
+        ));
       }
       if (snapshot.receipt.receipt_id !== marker.baseline_receipt_id) {
-        return closureFailure(event, "轮次 marker 缺失且同 session 基线 Receipt 不匹配");
+        return closureFailure(event, missingMarkerReason(
+          snapshot, event.session_id, "轮次 marker 缺失且同 session 基线 Receipt 不匹配",
+        ));
       }
       return { continue: true };
     }
@@ -106,7 +129,18 @@ export async function handleStop(event, options = {}) {
       return closureFailure(event, "最新 Receipt 不属于当前轮次");
     }
     const message = event.last_assistant_message ?? "";
-    if (!message.includes(snapshot.receipt.receipt_id)) {
+    const missing = [];
+    if (!message.includes(snapshot.receipt.receipt_id)) missing.push(`receipt_id ${snapshot.receipt.receipt_id}`);
+    const pending = currentPreparedRequest(snapshot, event.session_id);
+    if (pending) {
+      const approvalMessage = changeApprovalMessage(pending.request_id, pending.scope_digest);
+      if (!message.includes(pending.request_id)) missing.push(`request_id ${pending.request_id}`);
+      if (!message.includes(pending.scope_digest)) missing.push(`scope_digest ${pending.scope_digest}`);
+      if (!message.includes(approvalMessage)) missing.push("完整批准句");
+      if (missing.length > 0) {
+        return closureFailure(event, `状态已变化，完成报告缺少或不匹配：${missing.join("、")}。${preparedChangeGuidance(snapshot, pending)}`);
+      }
+    } else if (missing.length > 0) {
       return closureFailure(event, `状态已变化，完成报告必须包含 receipt_id ${snapshot.receipt.receipt_id}`);
     }
     return { continue: true };

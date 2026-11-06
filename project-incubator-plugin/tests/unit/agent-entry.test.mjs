@@ -31,6 +31,8 @@ test("packaged AGENTS template is Chinese guidance for the current Router and Ke
   assert.match(text, /latest-receipt\.json/);
   assert.match(text, /Maker/);
   assert.match(text, /Kernel/);
+  assert.match(text, /prepare_change.*approval_message/su);
+  assert.match(text, /receipt_id/u);
   assert.match(text, /简体中文/);
   assert.doesNotMatch(text, /开始前调用 get_project_state/);
   assert.doesNotMatch(text, /PROJECT_STATE\.md 是唯一状态权威/);

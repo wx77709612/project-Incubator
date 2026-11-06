@@ -2678,3 +2678,15 @@ Reason：旧 Host Bootstrap 的 Python/Markdown 实现必须退出，但 Codex �
 Effective Scope：仅现行 Codex Plugin。`AGENTS.md` 是非权威 Host Integration Artifact，不进入 revision、Receipt Hash、Stage 或 Gate；三个 JSON 仍是唯一权威集合。正常 `inspect_project` 保持只读，正常 Mutation、Gate、Transition 和项目阶段语义不变。
 
 Migration Impact：不批量扫描或自动修改已激活项目，不复活旧 `BOOTSTRAP_HOST_INTEGRATION`，不修改历史 `_V*`。下游 Design、Contract、Runtime 与两份 Plan 只补任务首次入口检查、首次接入生成和两步权威恢复；Plugin 实施须在下游规格与计划获批后进行。
+
+## Decision 017：待批准变更的可复制回复与有界闭合
+
+Status：ACTIVE；Authority：Maker 于 2026-11-06 确认[阶段变更批准回复提案](PREPARED_CHANGE_REPLY_CHANGE_PROPOSAL.md)，要求给 Agent 明确的言语引导。
+
+Decision：Kernel 在 `prepare_change` 返回由本次请求标识生成的完整 `approval_message`。正常 Stop 在最新已验证 Receipt 为本轮 `PREPARE_CHANGE`、当前 revision 对应仍有效的待批准请求时，逐项核对最终回复中的两个请求标识、完整批准句和最新 Receipt ID；首次失败时以具体字段及正确内容要求 Agent 补齐。仅查询旧请求不受此检查。
+
+Reason：展示批准回复不等于 Maker 授权，但 Agent 自行拼接会遗漏或抄错字段。权威请求与 Receipt 可为本轮回复提供可验证来源。
+
+Effective Scope：Plugin 0.3.x 的 `prepare_change` 结果与 Stop 闭合。保持 Maker Prompt 的独立授权、现有权威集合、Receipt 校验和 `stop_hook_active` 防循环边界；宿主不能替换最终回复，因此不能宣称无条件保证。
+
+Migration Impact：新增向后兼容的结果字段，不迁移既有请求或真实项目，不修改 `_V*`；Design、Contract、Runtime、Implementation 与 Acceptance 应逐层落实。
