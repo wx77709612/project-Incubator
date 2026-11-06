@@ -1,6 +1,6 @@
 {
   "name": "project-incubator-plugin",
-  "version": "0.3.0+codex.20261106143639",
+  "version": "0.3.0+codex.20261106213213",
   "description": "通过 Router、强制 Kernel 与项目类型子孵化器，受控推进长期项目。",
   "author": {
     "name": "Local developer"

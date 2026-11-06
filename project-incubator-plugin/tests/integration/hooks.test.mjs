@@ -86,12 +86,15 @@ test("explicit managed handoff receives Router-first guidance before any activat
   assert.deepEqual(await handlePreToolUse(write, { env }), {});
 });
 
-test("long new-product handoff without plugin name receives a route proposal hint", async (t) => {
-  const { root, codexHome, env } = await workspace(t);
+test("new-product handoff without plugin name requires Router before engineering writes", async (t) => {
+  const { root, env } = await workspace(t);
   const result = await handleUserPromptSubmit(promptEvent(root, { prompt: englishHubHandoff }), { env });
-  assert.match(result.hookSpecificOutput?.additionalContext ?? "", /project-incubator-router/u);
-  assert.match(result.hookSpecificOutput?.additionalContext ?? "", /路由提案/u);
-  await assert.rejects(() => access(path.join(codexHome, "project-incubator-plugin")), /ENOENT/);
+  assert.match(result.hookSpecificOutput?.additionalContext ?? "", /必须先调用 project-incubator-router/u);
+  const write = { cwd: root, session_id: "session-1", tool_name: "apply_patch", tool_input: { patch: "*** Add File: app.js" } };
+  assert.equal((await handlePreToolUse(write, { env })).hookSpecificOutput?.permissionDecision, "deny");
+  assert.deepEqual(await handlePreToolUse({ cwd: root, session_id: "session-1", tool_name: "mcp__project_incubator__propose_route", tool_input: {} }, { env }), {});
+  await handleUserPromptSubmit(promptEvent(root, { prompt: "明确不用 Project Incubator，按普通项目创建。" }), { env });
+  assert.deepEqual(await handlePreToolUse(write, { env }), {});
 });
 
 test("Maker can withdraw a pre-activation managed intent without leaving a write block", async (t) => {

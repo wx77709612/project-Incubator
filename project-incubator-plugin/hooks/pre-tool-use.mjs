@@ -88,7 +88,7 @@ export async function handlePreToolUse(event, options = {}) {
         : null);
     if (!await hasManagedIntent(runtimeDataRoot, cwd, event.session_id)) return {};
     if (KERNEL_TOOL_PREFIXES.some((prefix) => event.tool_name?.startsWith(prefix))) return {};
-    return isReadOnlyAccess(event) ? {} : deny("Project Incubator 托管请求尚未完成 Router 路由、Maker 激活批准和 Kernel 初始化；先完成受控激活，再写入工程文件。");
+    return isReadOnlyAccess(event) ? {} : deny("新建项目默认使用 Project Incubator。先调用 project-incubator-router 提出路由；只有 Maker 明确表示不用才跳过。路由及具体激活请求获得 Maker 批准、Kernel 初始化与 Receipt 验证完成前，不得写入工程文件。");
   }
   if (KERNEL_TOOL_PREFIXES.some((prefix) => event.tool_name?.startsWith(prefix))) return {};
 

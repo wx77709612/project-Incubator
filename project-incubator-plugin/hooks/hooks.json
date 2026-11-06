@@ -1,5 +1,5 @@
 {
-  "description": "在未激活项目中提示长期项目先走 Router；在已激活项目中保护权威状态与 Receipt 闭环。",
+  "description": "新建项目默认先走 Router；激活前拦截工程写入，激活后保护权威状态与 Receipt 闭环。",
   "hooks": {
     "UserPromptSubmit": [
       {

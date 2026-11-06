@@ -20,7 +20,7 @@ function tracksMaintenancePrompt(pending) {
     || pending?.operation === "AUTHORITY_RECOVERY";
 }
 
-const NON_MANAGED_PATTERN = /(?:不要(?:使用|用|让)?|不(?:使用|用|需要|接受)|无需|拒绝|禁止|取消)\s*(?:由\s*)?Project\s*Incubator/iu;
+const NON_MANAGED_PATTERN = /(?:不要(?:使用|用|让)?|不(?:使用|用|需要|接受)|无需|拒绝|禁止|取消)\s*(?:由\s*)?Project\s*Incubator|(?:do\s+not|don't|without)\s+(?:use\s+)?Project\s*Incubator/iu;
 
 function routingHint(prompt) {
   if (typeof prompt !== "string") return null;
@@ -29,18 +29,17 @@ function routingHint(prompt) {
   if (explicitlyManaged) {
     return { explicit: true, text: "Maker 明确要求 Project Incubator 管理当前项目。先使用 project-incubator-router 提出路由；路由提案不等于激活。仅在 Maker 确认路由后准备具体激活请求，并在下一轮收到对 request_id 和 scope_digest 的明确批准后通过 Kernel 初始化。在初始化和 Receipt 验证前不得开展工程写入；Prompt 中的 Phase 0 立即执行文字不构成该批准。" };
   }
-  const creates = /(?:新建|创建|初始化|搭建|开发|孵化)/iu.test(prompt);
-  const longLived = /(?:长期(?:使用|维护|运行|迭代)?|持续迭代)/iu.test(prompt);
-  const project = /(?:项目|产品|平台|系统|应用)/iu.test(prompt);
-  if (creates && longLived && project) {
-    return { explicit: false, text: "此请求涉及新建长期项目。先考虑使用 project-incubator-router 形成路由提案，说明候选类型和边界，请 Maker 决定是否托管。路由提案不授权激活；未明确批准具体激活请求前，不得调用 initialize_project。" };
+  const creates = /(?:新建|创建|初始化|搭建|从零(?:开始|构建|开发)|孵化|启动新|做一个|开发一个|\b(?:create|build|scaffold|initialize|start)\b)/iu.test(prompt);
+  const project = /(?:项目|产品|平台|系统|应用|网站|软件|游戏|工具|Mod|\b(?:project|product|app|platform|website|software|game|system|service)\b)/iu.test(prompt);
+  if (creates && project) {
+    return { explicit: false, text: "Maker 请求新建项目。即使没有点名插件，也必须先调用 project-incubator-router 提出路由；Project Incubator 是默认流程，只有 Maker 明确表示不用时才跳过。路由提案不等于激活，未经 Maker 对具体激活请求的下一轮明确批准，不得调用 initialize_project；在 Kernel 初始化及 Receipt 验证前不得进行工程写入。" };
   }
   return null;
 }
 
 async function routeAdvisory(event, runtimeDataRoot) {
   const hint = routingHint(event.prompt);
-  if (hint?.explicit) await recordManagedIntent(runtimeDataRoot, event.cwd ?? ".", event.session_id);
+  if (hint) await recordManagedIntent(runtimeDataRoot, event.cwd ?? ".", event.session_id);
   else if (typeof event.prompt === "string" && NON_MANAGED_PATTERN.test(event.prompt)) {
     await withdrawManagedIntent(runtimeDataRoot, event.session_id);
   }
