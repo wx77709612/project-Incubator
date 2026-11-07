@@ -24,4 +24,10 @@ Task 3：COMPLETED（有界验证）；全量无排除验收仍未通过。定�
 
 ## 候选包记录（2026-11-06）
 
-Maker 要求打包和推送。源码 manifest 构建号提升为 `0.3.0+codex.20261106223727`；白名单打包后安装锁定生产依赖，`verify-candidate --structure-only` 和隔离临时项目上的 `--full` 均通过。候选聚合 SHA-256 为 `30dd5bc00b704a8552662c9f0039c3d93c0983382fb139b8b95c9b3a571df67b`，`source_fallback_detected=false`。ZIP 位于 `project-incubator-plugin/dist/project-incubator-plugin-0.3.0+codex.20261106223727.zip`，SHA-256 为 `84b336bf16659945d73516478999852cdab8d57f232b0a68c3b7c77ba71844d1`。本记录不宣称已安装或已完成宿主热加载验收。
+Maker 要求打包和推送。源码 manifest 构建号提升为 `0.3.0+codex.20261106223727`；白名单打包后安装锁定生产依赖，`verify-candidate --structure-only` 和隔离临时项目上的 `--full` 均通过。候选聚合 SHA-256 为 `30dd5bc00b704a8552662c9f0039c3d93c0983382fb139b8b95c9b3a571df67b`，`source_fallback_detected=false`。ZIP 位于 `project-incubator-plugin/dist/project-incubator-plugin-0.3.0+codex.20261106223727.zip`，SHA-256 为 `84b336bf16659945d73516478999852cdab8d57f232b0a68c3b7c77ba71844d1`。打包时尚未安装；安装结果见下节。
+
+## 正式安装记录（2026-11-07）
+
+Maker 要求安装。先备份 `C:/Users/Xenia_Woo/.agents/plugins/marketplace.json` 到 `C:/Users/Xenia_Woo/.codex/backups/prepared-change-reply/0.3.0+codex.20261106223727/marketplace.json`；原文件 SHA-256 为 `b244e537dceb375f2183e64f21b05169b021e35a9be7d0ae1168c5d66f741fd6`。将已验证候选复制到版本化 personal source，结构聚合哈希仍为 `30dd5bc00b704a8552662c9f0039c3d93c0983382fb139b8b95c9b3a571df67b`；marketplace 仅将该插件 source 精确切换到新版本目录。
+
+`codex plugin add project-incubator-plugin@personal --json` 返回安装路径 `C:/Users/Xenia_Woo/.codex/plugins/cache/personal/project-incubator-plugin/0.3.0+codex.20261106223727`。随后 `codex plugin list --marketplace personal --json` 显示新版本 `installed=true`、`enabled=true`。安装目录的结构聚合哈希与候选相同，`server.mjs`、批准句模块、Stop Hook 和 Agent Entry 模板逐文件 SHA-256 相同；从安装目录启动独立 MCP 子进程运行 `verify-candidate --full` 通过，`source_fallback_detected=false`。验证仅使用已清理的隔离临时项目；未修改真实 Managed Project。当前已存在的聊天不作为热加载证据，新任务需由宿主重新加载新版本。

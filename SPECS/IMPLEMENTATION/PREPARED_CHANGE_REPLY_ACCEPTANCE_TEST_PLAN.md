@@ -25,3 +25,4 @@
 - 插件全量运行未通过。排除标题含链接、symlink、link 的用例后为 398/400：1 项仍因当前 Windows 无法创建 symlink（`EPERM`），1 项既有 Agent Entry 回滚竞争测试因 `AGENTS.md` 缺失返回 `ENOENT`；该后者单独重跑仍失败，与本次变更的文件及行为无交集。全量验收保持未闭合。
 - 对最终代码再排除上述两项后，回归 398/398 通过，0 失败。该结果证明可运行范围内无新增失败，不替代无排除全量验收。
 - 构建号 `0.3.0+codex.20261106223727` 的候选结构与独立 MCP 子进程 Full 均通过；ZIP 已核对包含 `.codex-plugin/plugin.json`、`.mcp.json`、新批准句模块、Stop Hook 和生产依赖。候选聚合哈希与 ZIP 哈希见[实施计划](PREPARED_CHANGE_REPLY_IMPLEMENTATION_PLAN.md)。
+- 2026-11-07 正式安装后，CLI 列表显示新版本已安装且启用；安装目录聚合哈希与候选完全一致，从安装目录独立启动的 MCP Full 验证通过。现有聊天未作为热加载验收；无排除全量测试限制保持。
